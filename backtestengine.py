@@ -6,7 +6,7 @@ import numpy as np
 # CONFIG PAGE (wide mode)
 # ---------------------------------------------------------------------
 st.set_page_config(
-    page_title="LP strategies Backtest Engine",
+    page_title="LP stratégies Backtest Engine",
     layout="wide"
 )
 
@@ -123,7 +123,7 @@ def impermanent_loss(old, new):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP strategies Backtest Engine")
+st.title("LP stratégies Backtest Engine")
 st.write("Analyse stratégie complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
