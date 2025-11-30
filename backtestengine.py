@@ -16,14 +16,11 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Fond général */
     .stApp {
         background: linear-gradient(135deg, #0a0024 0%, #12002c 40%, #1d003d 100%) !important;
         color: #FFFFFF !important;
         font-weight: 500 !important;
     }
-
-    /* TITRES : cyan néon + contour noir */
     h1, h2, h3, h4 {
         color: #00E8FF !important;
         text-shadow:
@@ -33,15 +30,11 @@ st.markdown(
             1px 1px 2px #000;
         font-weight: 700 !important;
     }
-
-    /* TEXTE NORMAL : blanc + ombre */
     p, span, div, label {
         color: #FFFFFF !important;
         text-shadow: 0px 0px 2px #000000aa !important;
         font-weight: 500 !important;
     }
-
-    /* INPUT, NUMBER */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input {
         background-color: #1C0036 !important;
@@ -51,8 +44,6 @@ st.markdown(
         font-weight: 600 !important;
         text-shadow: 0px 0px 2px #000;
     }
-
-    /* BOUTONS */
     .stButton > button {
         background: linear-gradient(90deg, #6400ff, #8a00ff) !important;
         color: #FFFFFF !important;
@@ -63,8 +54,6 @@ st.markdown(
         text-shadow: 0px 0px 3px #000;
         box-shadow: 0 0 12px #6400ff;
     }
-
-    /* Onglets néon lisibles */
     .stTabs [role="tab"] {
         color: #FFFFFF !important;
         border: 1px solid #8d4dff !important;
@@ -73,43 +62,18 @@ st.markdown(
         font-weight: 600 !important;
         text-shadow: 0px 0px 3px #000;
     }
-
     .stTabs [aria-selected="true"] {
         background-color: #6400ff66 !important;
         border-bottom: 2px solid #00E8FF !important;
         color: #FFFFFF !important;
     }
-
-    /* MENU DEROULE / SELECTBOX : texte noir */
-    .stSelectbox > div > div, 
-    .stSelectbox > div > div > div {
-        background-color: #1C0036 !important;
-        color: #000000 !important;
-        font-weight: 600 !important;
-    }
-
-    .stSelectbox > div > div > div > span {
-        color: #000000 !important;
-    }
-
-    div[role="option"] {
-        background-color: #1C0036 !important;
-        color: #000000 !important;
-        font-weight: 600 !important;
-    }
-
-    div[role="option"][aria-selected="true"] {
-        background-color: #6400ff33 !important;
-        color: #000000 !important;
-    }
-
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ---------------------------------------------------------------------
-# STRATEGIES
+# STRATEGIES ET COINS
 # ---------------------------------------------------------------------
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
@@ -128,6 +92,8 @@ COINGECKO_IDS = {
     "VIRTUAL": "virtual-protocol",
     "AERO": "aerodrome-finance"
 }
+
+PAIRS = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC"), ("VIRTUAL", "WETH"), ("AERO", "WETH")]
 
 # ---------------------------------------------------------------------
 # FONCTIONS
@@ -154,10 +120,14 @@ col1, col2, col3 = st.columns([1.2, 1, 1])
 # --------- COLONNE 1 ---------
 with col1:
     st.subheader("Configuration du Pool")
-    pairs = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC"), ("VIRTUAL", "WETH"), ("AERO", "WETH")]
-    tokenA, tokenB = st.selectbox("Paire :", pairs)
     
-    strategy_choice = st.selectbox("Stratégie :", list(STRATEGIES.keys()))
+    # Sélection de la paire via radio
+    pair_labels = [f"{a}/{b}" for a,b in PAIRS]
+    selected_pair = st.radio("Paire :", pair_labels)
+    tokenA, tokenB = selected_pair.split("/")
+    
+    # Sélection stratégie via radio
+    strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
     st.write(f"Ratio : {int(ratioA*100)}/{int(ratioB*100)}")
