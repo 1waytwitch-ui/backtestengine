@@ -6,7 +6,7 @@ import numpy as np
 # CONFIG PAGE (wide mode)
 # ---------------------------------------------------------------------
 st.set_page_config(
-    page_title="LP stratégie Backtest Engine",
+    page_title="LP Backtest Engine",
     layout="wide"
 )
 
@@ -41,10 +41,9 @@ st.markdown(
         font-weight: 500 !important;
     }
 
-    /* INPUT, NUMBER, SELECT */
+    /* INPUT, NUMBER */
     .stTextInput > div > div > input,
-    .stNumberInput > div > div > input,
-    .stSelectbox > div > div {
+    .stNumberInput > div > div > input {
         background-color: #1C0036 !important;
         color: #FFFFFF !important;
         border: 1px solid #8d4dff !important;
@@ -53,27 +52,16 @@ st.markdown(
         text-shadow: 0px 0px 2px #000;
     }
 
-    /* MENU DEROULE / OPTIONS SELECTBOX */
-    .stSelectbox > div > div, 
-    .stSelectbox > div > div > div {
-        background-color: #1C0036 !important;
-        color: #00FFFF !important;
-        font-weight: 600 !important;
-    }
-
-    .stSelectbox > div > div > div > span {
+    /* BOUTONS */
+    .stButton > button {
+        background: linear-gradient(90deg, #6400ff, #8a00ff) !important;
         color: #FFFFFF !important;
-    }
-
-    div[role="option"] {
-        background-color: #1C0036 !important;
-        color: #00FFFF !important;
-        font-weight: 600 !important;
-    }
-
-    div[role="option"][aria-selected="true"] {
-        background-color: #6400ff33 !important;
-        color: #FFFFFF !important;
+        font-weight: 700 !important;
+        border: 1px solid #000 !important;
+        padding: 0.6rem 1.2rem !important;
+        border-radius: 6px !important;
+        text-shadow: 0px 0px 3px #000;
+        box-shadow: 0 0 12px #6400ff;
     }
 
     /* Onglets néon lisibles */
@@ -92,17 +80,29 @@ st.markdown(
         color: #FFFFFF !important;
     }
 
-    /* Boutons rétro néon lisibles */
-    .stButton > button {
-        background: linear-gradient(90deg, #6400ff, #8a00ff) !important;
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-        border: 1px solid #000 !important;
-        padding: 0.6rem 1.2rem !important;
-        border-radius: 6px !important;
-        text-shadow: 0px 0px 3px #000;
-        box-shadow: 0 0 12px #6400ff;
+    /* MENU DEROULE / SELECTBOX : texte noir */
+    .stSelectbox > div > div, 
+    .stSelectbox > div > div > div {
+        background-color: #1C0036 !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
     }
+
+    .stSelectbox > div > div > div > span {
+        color: #000000 !important;
+    }
+
+    div[role="option"] {
+        background-color: #1C0036 !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+
+    div[role="option"][aria-selected="true"] {
+        background-color: #6400ff33 !important;
+        color: #000000 !important;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -147,8 +147,8 @@ def impermanent_loss(old, new):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP stratégies Backtest Engine")
-st.write("Analyse de stratégie complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
+st.title("LP Backtest Engine — DeFi Retro Flashy")
+st.write("Analyse AMM complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 3 COLONNES
