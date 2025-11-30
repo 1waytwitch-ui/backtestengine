@@ -112,13 +112,9 @@ def get_current_price(asset_id):
         response = requests.get(
             f"https://api.coingecko.com/api/v3/simple/price?ids={asset_id}&vs_currencies=usd"
         ).json()
-        return response[asset_id]["usd"]
-    except KeyError:
-        st.error(f"Impossible de récupérer le prix pour {asset_id}.")
-        return 1.0
-    except requests.exceptions.RequestException:
-        st.error("Erreur réseau lors de la récupération du prix.")
-        return 1.0
+        return response[asset_id]["usd"], True
+    except (KeyError, requests.exceptions.RequestException):
+        return 1.0, False  # False signifie que l’API a échoué
 
 def compute_volatility(prices):
     returns = np.diff(prices) / prices[:-1]
@@ -160,7 +156,9 @@ with col2:
     range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
     
     # Prix en temps réel sécurisé
-    priceA = get_current_price(COINGECKO_IDS[tokenA])
+    priceA, success = get_current_price(COINGECKO_IDS[tokenA])
+    if not success:
+        priceA = st.number_input(f"Prix manuel pour {tokenA} (USD)", value=1.0)
     
     # Calcul dynamique du range en fonction de la stratégie
     half_range = range_pct / 2 / 100
