@@ -109,8 +109,8 @@ def compute_volatility(prices):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP Backtest Engine — DeFi Retro Flashy")
-st.write("Analyse AMM complète : ratio, range, volatilité, rebalances historiques et simulation future.")
+st.title("LP stratégies Backtest Engine")
+st.write("Analyse complète : ratio, range, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 3 COLONNES
