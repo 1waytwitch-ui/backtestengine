@@ -190,19 +190,40 @@ with col2:
     st.write(f"{tokenB} : {capitalB:.2f} USD")
 
 # ---------------------------------------------------------------------
-# HISTORIQUES 30 JOURS EN MÉMOIRE
+# HISTORIQUE 30J AVEC SAUVEGARDE QUOTIDIENNE ANTI-API-FAIL
 # ---------------------------------------------------------------------
-if 'pricesA' not in st.session_state or st.session_state.get('tokenA') != tokenA:
+import datetime
+
+today = str(datetime.date.today())
+cache_key = f"{tokenA}_prices_{today}"
+
+# 1️⃣ Si déjà sauvegardé aujourd’hui → on recharge sans API
+if cache_key in st.session_state:
+    pricesA = st.session_state[cache_key]
+
+else:
+    # 2️⃣ Sinon : tentative API
     prices = get_market_chart(COINGECKO_IDS[tokenA])
+
+    # 3️⃣ Sécurité : jamais vide
     if not prices:
-        prices = [priceA] * 30
+        # 3a — fallback si ancienne sauvegarde existe
+        old_keys = [k for k in st.session_state.keys() if k.startswith(f"{tokenA}_prices_")]
+        if old_keys:
+            last_key = sorted(old_keys)[-1]
+            prices = st.session_state[last_key]
+        else:
+            # 3b — fallback minimal basé sur prix actuel
+            current_price, _ = get_current_price(COINGECKO_IDS[tokenA])
+            prices = [current_price] * 30
 
-    st.session_state.pricesA = prices
-    st.session_state.tokenA = tokenA
-    st.session_state.vol_30d = compute_volatility(prices)
+    # 4️⃣ Sauvegarde du jour → évite tout nouveau call API dans la journée
+    st.session_state[cache_key] = prices
+    pricesA = prices
 
-pricesA = st.session_state.pricesA
-vol_30d = st.session_state.vol_30d
+# 5️⃣ Vol 30j toujours cohérente
+vol_30d = compute_volatility(pricesA)
+
 
 # ---------------------------------------------------------------------
 # ONGLETS
