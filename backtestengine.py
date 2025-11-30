@@ -6,7 +6,7 @@ import numpy as np
 # CONFIG PAGE (wide mode)
 # ---------------------------------------------------------------------
 st.set_page_config(
-    page_title="LP Backtest Engine",
+    page_title="LP strategies Backtest Engine",
     layout="wide"
 )
 
@@ -123,8 +123,8 @@ def impermanent_loss(old, new):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP Backtest Engine — DeFi Retro Flashy")
-st.write("Analyse AMM complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
+st.title("LP strategies Backtest Engine")
+st.write("Analyse stratégie complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 3 COLONNES
@@ -133,7 +133,7 @@ col1, col2, col3 = st.columns([1.2, 1, 1])
 
 # --------- COLONNE 1 ---------
 with col1:
-    st.subheader("Configuration du Pool")
+    st.subheader("Configuration de la Pool")
     pairs = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC"), ("VIRTUAL", "WETH"), ("AERO", "WETH")]
     tokenA, tokenB = st.selectbox("Paire :", pairs)
     
