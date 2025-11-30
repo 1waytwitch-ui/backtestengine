@@ -109,8 +109,8 @@ def compute_volatility(prices):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP stratégies Backtest Engine")
-st.write("Analyse complète : ratio, range, volatilité, rebalances historiques et simulation future.")
+st.title("LP Backtest Engine — DeFi Retro Flashy")
+st.write("Analyse AMM complète : ratio, range, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 3 COLONNES
@@ -140,18 +140,22 @@ with col1:
 with col2:
     st.subheader("Range et Prix")
     range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
-    half_range = range_pct / 2 / 100
-
+    
+    # Prix en temps réel
     priceA = requests.get(
         f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[tokenA]}&vs_currencies=usd"
     ).json()[COINGECKO_IDS[tokenA]]["usd"]
-
-    st.write(f"Prix actuel {tokenA} : {priceA:.2f} USD")
+    
+    # Calcul dynamique du range en fonction de la stratégie
+    half_range = range_pct / 2 / 100
     range_low = priceA * (1 - half_range)
     range_high = priceA * (1 + half_range)
+    
+    st.write(f"Prix actuel {tokenA} : {priceA:.2f} USD")
     st.write(f"Limite basse : {range_low:.2f}")
     st.write(f"Limite haute : {range_high:.2f}")
-    st.write("Répartition du capital :")
+    
+    st.write("Répartition du capital selon la stratégie :")
     st.write(f"{tokenA} : {capital * ratioA:.2f} USD")
     st.write(f"{tokenB} : {capital * ratioB:.2f} USD")
 
