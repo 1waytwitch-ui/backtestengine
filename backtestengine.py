@@ -200,6 +200,23 @@ with col3:
     st.write("- Recommandation")
 
 # ---------------------------------------------------------------------
+# SESSION STATE POUR STOCKER LES HISTORIQUES
+# ---------------------------------------------------------------------
+if 'pricesA' not in st.session_state or st.session_state.get('tokenA') != tokenA:
+    try:
+        data = get_market_chart(COINGECKO_IDS[tokenA])
+        st.session_state.pricesA = [p[1] for p in data["prices"]]
+        st.session_state.tokenA = tokenA
+        st.session_state.vol_30d = compute_volatility(st.session_state.pricesA)
+    except:
+        st.error("Erreur de chargement API Coingecko")
+        st.session_state.pricesA = [priceA]*30
+        st.session_state.vol_30d = 0.0
+
+pricesA = st.session_state.pricesA
+vol_30d = st.session_state.vol_30d
+
+# ---------------------------------------------------------------------
 # ONGLETS
 # ---------------------------------------------------------------------
 tab1, tab2, tab3, tab4 = st.tabs(["Backtest 30j", "Impermanent Loss", "Simulation future", "Analyse stratégie"])
@@ -207,9 +224,6 @@ tab1, tab2, tab3, tab4 = st.tabs(["Backtest 30j", "Impermanent Loss", "Simulatio
 # ===== TAB 1 : BACKTEST 30J =====
 with tab1:
     st.subheader("Analyse sur 30 jours")
-    data = get_market_chart(COINGECKO_IDS[tokenA])
-    pricesA = [p[1] for p in data["prices"]]
-    vol_30d = compute_volatility(pricesA)
     st.write(f"Volatilité annualisée : {vol_30d:.2%}")
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
     st.write(f"Rebalances détectés : {rebalances}")
