@@ -11,30 +11,30 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------
-# THEME NOIR ET BLANC LISIBLE + INPUTS COMPACT
+# THEME BLANC ET NOIR LISIBLE + INPUTS COMPACT
 # ---------------------------------------------------------------------
 st.markdown(
     """
     <style>
     .stApp {
-        background-color: #000000 !important;
-        color: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
         font-weight: 500 !important;
     }
     h1, h2, h3, h4 {
-        color: #FFFFFF !important;
+        color: #000000 !important;
         font-weight: 700 !important;
     }
     p, span, div, label {
-        color: #FFFFFF !important;
+        color: #000000 !important;
         font-weight: 500 !important;
     }
     /* INPUTS PLUS COMPACT */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input {
-        background-color: #111111 !important;
-        color: #FFFFFF !important;
-        border: 1px solid #FFFFFF !important;
+        background-color: #F0F0F0 !important;
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
         border-radius: 6px !important;
         font-weight: 600 !important;
         height: 28px !important;
@@ -42,24 +42,24 @@ st.markdown(
         font-size: 14px !important;
     }
     .stButton > button {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
         font-weight: 700 !important;
-        border: 1px solid #FFFFFF !important;
+        border: 1px solid #000000 !important;
         padding: 0.4rem 1rem !important;
         border-radius: 6px !important;
     }
     .stTabs [role="tab"] {
-        color: #FFFFFF !important;
-        border: 1px solid #FFFFFF !important;
-        background-color: #111111 !important;
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
+        background-color: #E0E0E0 !important;
         border-radius: 6px !important;
         font-weight: 600 !important;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border-bottom: 2px solid #FFFFFF !important;
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
+        border-bottom: 2px solid #000000 !important;
     }
     </style>
     """,
@@ -117,7 +117,7 @@ def compute_volatility(prices):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP Backtest Engine — Noir & Blanc")
+st.title("LP Backtest Engine — Blanc & Noir")
 st.write("Analyse AMM complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
