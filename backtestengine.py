@@ -114,7 +114,7 @@ def get_current_price(asset_id):
         ).json()
         return response[asset_id]["usd"], True
     except (KeyError, requests.exceptions.RequestException):
-        return 1.0, False  # False signifie que l’API a échoué
+        return 1.0, False  # False = échec API
 
 def compute_volatility(prices):
     returns = np.diff(prices) / prices[:-1]
@@ -160,15 +160,16 @@ with col2:
     if not success:
         priceA = st.number_input(f"Prix manuel pour {tokenA} (USD)", value=1.0)
     
-    # Calcul dynamique du range en fonction de la stratégie
+    # Calcul dynamique du range en fonction de la stratégie et prix actuel
     half_range = range_pct / 2 / 100
     range_low = priceA * (1 - half_range)
     range_high = priceA * (1 + half_range)
     
     st.write(f"Prix actuel {tokenA} : {priceA:.2f} USD")
-    st.write(f"Limite basse : {range_low:.2f}")
-    st.write(f"Limite haute : {range_high:.2f}")
+    st.write(f"Limite basse : {range_low:.2f} USD")
+    st.write(f"Limite haute : {range_high:.2f} USD")
     
+    # Répartition du capital selon la stratégie
     st.write("Répartition du capital selon la stratégie :")
     st.write(f"{tokenA} : {capital * ratioA:.2f} USD")
     st.write(f"{tokenB} : {capital * ratioB:.2f} USD")
@@ -183,7 +184,7 @@ with col3:
     st.write("- Recommandation")
 
 # ---------------------------------------------------------------------
-# SESSION STATE POUR STOCKER LES HISTORIQUES
+# SESSION STATE POUR HISTORIQUES
 # ---------------------------------------------------------------------
 if 'pricesA' not in st.session_state or st.session_state.get('tokenA') != tokenA:
     st.session_state.pricesA = get_market_chart(COINGECKO_IDS[tokenA])
