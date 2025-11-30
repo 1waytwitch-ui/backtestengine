@@ -6,7 +6,7 @@ import numpy as np
 # CONFIG PAGE (wide mode)
 # ---------------------------------------------------------------------
 st.set_page_config(
-    page_title="LP stratégies Backtest Engine",
+    page_title="LP stratégie Backtest Engine",
     layout="wide"
 )
 
@@ -16,12 +16,14 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    /* Fond général */
     .stApp {
         background: linear-gradient(135deg, #0a0024 0%, #12002c 40%, #1d003d 100%) !important;
         color: #FFFFFF !important;
         font-weight: 500 !important;
     }
 
+    /* TITRES : cyan néon + contour noir */
     h1, h2, h3, h4 {
         color: #00E8FF !important;
         text-shadow:
@@ -32,12 +34,14 @@ st.markdown(
         font-weight: 700 !important;
     }
 
+    /* TEXTE NORMAL : blanc + ombre */
     p, span, div, label {
         color: #FFFFFF !important;
         text-shadow: 0px 0px 2px #000000aa !important;
         font-weight: 500 !important;
     }
 
+    /* INPUT, NUMBER, SELECT */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input,
     .stSelectbox > div > div {
@@ -49,11 +53,30 @@ st.markdown(
         text-shadow: 0px 0px 2px #000;
     }
 
-    .css-1n76uvr, .css-q8sbsg, .css-1wa3eu0-placeholder {
-        color: #FFFFFF !important;
+    /* MENU DEROULE / OPTIONS SELECTBOX */
+    .stSelectbox > div > div, 
+    .stSelectbox > div > div > div {
         background-color: #1C0036 !important;
+        color: #00FFFF !important;
+        font-weight: 600 !important;
     }
 
+    .stSelectbox > div > div > div > span {
+        color: #FFFFFF !important;
+    }
+
+    div[role="option"] {
+        background-color: #1C0036 !important;
+        color: #00FFFF !important;
+        font-weight: 600 !important;
+    }
+
+    div[role="option"][aria-selected="true"] {
+        background-color: #6400ff33 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Onglets néon lisibles */
     .stTabs [role="tab"] {
         color: #FFFFFF !important;
         border: 1px solid #8d4dff !important;
@@ -69,6 +92,7 @@ st.markdown(
         color: #FFFFFF !important;
     }
 
+    /* Boutons rétro néon lisibles */
     .stButton > button {
         background: linear-gradient(90deg, #6400ff, #8a00ff) !important;
         color: #FFFFFF !important;
@@ -106,7 +130,7 @@ COINGECKO_IDS = {
 }
 
 # ---------------------------------------------------------------------
-# FONCTIONS UTILES
+# FONCTIONS
 # ---------------------------------------------------------------------
 def get_market_chart(asset_id):
     url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
@@ -124,7 +148,7 @@ def impermanent_loss(old, new):
 # TITRE
 # ---------------------------------------------------------------------
 st.title("LP stratégies Backtest Engine")
-st.write("Analyse stratégie complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
+st.write("Analyse de stratégie complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 3 COLONNES
@@ -133,7 +157,7 @@ col1, col2, col3 = st.columns([1.2, 1, 1])
 
 # --------- COLONNE 1 ---------
 with col1:
-    st.subheader("Configuration de la Pool")
+    st.subheader("Configuration du Pool")
     pairs = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC"), ("VIRTUAL", "WETH"), ("AERO", "WETH")]
     tokenA, tokenB = st.selectbox("Paire :", pairs)
     
