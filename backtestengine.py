@@ -1,22 +1,49 @@
 import streamlit as st
 import requests
-import pandas as pd
 import numpy as np
 
-# -----------------------------
-# Config stratégies
-# -----------------------------
+# -----------------------------------------
+# Configuration des stratégies
+# -----------------------------------------
 STRATEGIES = {
-    "Neutre": (0.5, 0.5),
-    "Coup de pouce": (0.2, 0.8),
-    "Mini-doux": (0.1, 0.9),
-    "Side-line Up": (0.95, 0.05),
-    "Side-line Down": (0.05, 0.95),
-    "DCA-in": (1.0, 0.0),
-    "DCA-out": (0.0, 1.0),
+    "Neutre": {
+        "ratio": (0.5, 0.5),
+        "objectif": "Rester dans le range",
+        "contexte": "Incertitude"
+    },
+    "Coup de pouce": {
+        "ratio": (0.2, 0.8),
+        "objectif": "Range efficace",
+        "contexte": "Faible volatilité"
+    },
+    "Mini-doux": {
+        "ratio": (0.1, 0.9),
+        "objectif": "Nouveau régime prix",
+        "contexte": "Changement de tendance"
+    },
+    "Side-line Up": {
+        "ratio": (0.95, 0.05),
+        "objectif": "Accumulation",
+        "contexte": "Dump"
+    },
+    "Side-line Below": {
+        "ratio": (0.05, 0.95),
+        "objectif": "Attente avant pump",
+        "contexte": "Marché haussier"
+    },
+    "DCA-in": {
+        "ratio": (1.0, 0.0),
+        "objectif": "Entrée progressive",
+        "contexte": "Incertitude"
+    },
+    "DCA-out": {
+        "ratio": (0.0, 1.0),
+        "objectif": "Sortie progressive",
+        "contexte": "Tendance haussière"
+    }
 }
 
-# Mapping CoinGecko IDs
+# Correspondance avec CoinGecko
 COINGECKO_IDS = {
     "WETH": "weth",
     "USDC": "usd-coin",
@@ -25,29 +52,34 @@ COINGECKO_IDS = {
     "AERO": "aerodrome-finance"
 }
 
-# -----------------------------
-# Helper API CoinGecko
-# -----------------------------
+
+# -----------------------------------------
+# Fonctions utilitaires
+# -----------------------------------------
 def get_market_chart(asset_id):
     url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
     return requests.get(url).json()
 
+
 def compute_volatility(prices):
     returns = np.diff(prices) / prices[:-1]
-    return np.std(returns) * np.sqrt(365)  # annualized vol
+    return np.std(returns) * np.sqrt(365)
 
-# Impermanent Loss formula
+
 def impermanent_loss(p_old, p_new):
     ratio = p_new / p_old
-    IL = 1 - (2 * np.sqrt(ratio) / (1 + ratio))
-    return IL
+    return 1 - (2 * np.sqrt(ratio) / (1 + ratio))
 
-# -----------------------------
-# App Streamlit
-# -----------------------------
-st.title("📊 LP Backtest Engine – Stratégies AMM")
 
-# Choix des paires
+# -----------------------------------------
+# Interface Streamlit
+# -----------------------------------------
+st.title("LP Backtest Engine")
+st.write("Cet outil vous permet d'analyser une stratégie AMM, d'estimer les rebalances passés et futurs, et d'évaluer l’impact potentiel sur votre capital.")
+
+# -----------------------------------------
+# Choix des paires (affichage sans guillemets)
+# -----------------------------------------
 pairs = [
     ("WETH", "USDC"),
     ("CBBTC", "USDC"),
@@ -56,90 +88,146 @@ pairs = [
     ("AERO", "WETH"),
 ]
 
-pair_choice = st.selectbox("Choisir une paire :", pairs)
+pair_choice = st.selectbox("Sélectionnez une paire :", pairs)
 tokenA, tokenB = pair_choice
 
-# Choix stratégie
-strategy_choice = st.selectbox("Stratégie :", list(STRATEGIES.keys()))
-ratioA, ratioB = STRATEGIES[strategy_choice]
+# -----------------------------------------
+# Choix de la stratégie
+# -----------------------------------------
+strategy_choice = st.selectbox("Sélectionnez une stratégie :", list(STRATEGIES.keys()))
+info = STRATEGIES[strategy_choice]
 
-# Capital
-capital = st.number_input("Capital total ($)", value=1000)
+ratioA, ratioB = info["ratio"]
 
-# Range
-range_pct = st.slider("Range (%)", 1, 50, 20)
+st.subheader("Informations sur la stratégie sélectionnée")
+st.write(f"Ratio Token A / Token B : {int(ratioA*100)}/{int(ratioB*100)}")
+st.write(f"Objectif : {info['objectif']}")
+st.write(f"Contexte idéal : {info['contexte']}")
+
+# -----------------------------------------
+# Saisie du capital
+# -----------------------------------------
+capital = st.number_input("Capital total en USD :", value=1000)
+
+# -----------------------------------------
+# Range manuel (%)
+# -----------------------------------------
+range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
 half_range = range_pct / 2 / 100
 
-# Prix market
-st.subheader("📈 Données marché en temps réel")
-priceA = requests.get(f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[tokenA]}&vs_currencies=usd").json()[COINGECKO_IDS[tokenA]]["usd"]
+# -----------------------------------------
+# Prix du Token A
+# -----------------------------------------
+priceA = requests.get(
+    f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[tokenA]}&vs_currencies=usd"
+).json()[COINGECKO_IDS[tokenA]]["usd"]
 
-st.write(f"**Prix actuel de {tokenA} : ${priceA:.2f}**")
+st.subheader("Prix du marché")
+st.write(f"Prix actuel de {tokenA} : {priceA:.2f} USD")
 
-# Compute range
 range_low = priceA * (1 - half_range)
 range_high = priceA * (1 + half_range)
 
-st.write(f"📌 **Range Low : ${range_low:.2f}**")
-st.write(f"📌 **Range High : ${range_high:.2f}**")
+st.write(f"Limite basse du range : {range_low:.2f} USD")
+st.write(f"Limite haute du range : {range_high:.2f} USD")
 
-# Ratio capital
+# -----------------------------------------
+# Répartition du capital selon la stratégie
+# -----------------------------------------
 amountA = capital * ratioA
 amountB = capital * ratioB
-st.subheader("💰 Répartition du capital")
-st.write(f"- {tokenA}: **${amountA:.2f}** ({ratioA*100:.0f}%)")
-st.write(f"- {tokenB}: **${amountB:.2f}** ({ratioB*100:.0f}%)")
 
-# -----------------------------
-# Récupération des prix 30 jours pour backtest
-# -----------------------------
-st.subheader("📊 Analyse 30 jours & Rebalance")
+st.subheader("Répartition du capital selon la stratégie")
+st.write(f"{tokenA} : {amountA:.2f} USD")
+st.write(f"{tokenB} : {amountB:.2f} USD")
+
+# -----------------------------------------
+# Analyse sur 30 jours
+# -----------------------------------------
+st.subheader("Analyse historique sur 30 jours")
 
 dataA = get_market_chart(COINGECKO_IDS[tokenA])
 pricesA = [p[1] for p in dataA["prices"]]
 
 vol_30d = compute_volatility(pricesA)
-st.write(f"📌 **Volatilité 30j : {vol_30d:.2%}**")
+st.write(f"Volatilité annualisée sur 30 jours : {vol_30d:.2%}")
 
-# estimation très simple rebalance : nombre de touches hors range
 rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
-st.write(f"🔄 **Rebalances estimés sur 30j : {rebalances}**")
+st.write(f"Nombre de rebalances détectés sur 30 jours : {rebalances}")
 
-# -----------------------------
-# Suggestion stratégie (volatilité 7 jours)
-# -----------------------------
-st.subheader("🤖 Suggestion automatique de stratégie")
-
+# -----------------------------------------
+# Suggestion automatique de stratégie
+# -----------------------------------------
 prices7 = pricesA[-7:]
 vol_7d = compute_volatility(prices7)
 
 if vol_7d > 0.8:
     suggestion = "Neutre"
-elif 0.4 < vol_7d <= 0.8:
+elif vol_7d > 0.4:
     suggestion = "Coup de pouce"
-elif vol_7d <= 0.4:
-    suggestion = "Mini-doux"
 else:
-    suggestion = "Neutre"
+    suggestion = "Mini-doux"
 
-st.write(f"📌 **Volatilité 7j : {vol_7d:.2%}**")
-st.write(f"👉 Stratégie recommandée : **{suggestion}**")
+st.subheader("Suggestion automatique")
+st.write(f"Volatilité annualisée sur 7 jours : {vol_7d:.2%}")
+st.write(f"Stratégie recommandée : {suggestion}")
 
-# -----------------------------
-# Impermanent Loss estimation
-# -----------------------------
-st.subheader("⚠️ Impermanent Loss (IL)")
+# -----------------------------------------
+# Impermanent Loss
+# -----------------------------------------
+st.subheader("Impermanent Loss théorique")
 
 price_old = pricesA[0]
 price_now = pricesA[-1]
 IL = impermanent_loss(price_old, price_now)
 
-st.write(f"📉 Variation prix 30j : {price_now/price_old - 1:.2%}")
-st.write(f"⚠️ Impermanent Loss estimé : **{IL:.2%}**")
+st.write(f"Variation du prix sur 30 jours : {(price_now/price_old - 1):.2%}")
+st.write(f"Impermanent Loss estimé : {IL:.2%}")
+st.write(f"Perte potentielle sur capital : {capital * IL:.2f} USD")
 
-# Impact sur ton capital
-loss_value = capital * IL
-st.write(f"💸 Perte potentielle : **${loss_value:.2f}**")
+# -----------------------------------------
+# Simulation des futurs rebalances
+# -----------------------------------------
+st.subheader("Simulation des rebalances futurs")
 
-st.info("L’IL augmente fortement lors des stratégies 50/50 si le prix sort du range → une stratégie Side-line Up/Down peut limiter l’impact.")
+future_days = st.number_input("Nombre de jours à simuler :", value=30, min_value=1, max_value=90)
 
+vol_sim = vol_7d / np.sqrt(365)   # volatilité journalière
+
+current_price = price_now
+simulated_prices = [current_price]
+
+for _ in range(future_days):
+    shock = np.random.normal(0, vol_sim)
+    next_price = simulated_prices[-1] * (1 + shock)
+    simulated_prices.append(next_price)
+
+future_rebalances = sum((p < range_low) or (p > range_high) for p in simulated_prices)
+
+st.write(f"Rebalances simulés sur {future_days} jours : {future_rebalances}")
+
+# -----------------------------------------
+# Analyse qualitative selon stratégie
+# -----------------------------------------
+st.subheader("Analyse de cohérence de la stratégie")
+
+if strategy_choice in ["Neutre", "Coup de pouce", "Mini-doux"]:
+    if future_rebalances > future_days * 0.30:
+        st.write("La simulation indique un nombre élevé de rebalances. Une stratégie asymétrique pourrait être plus adaptée.")
+    else:
+        st.write("La stratégie semble compatible avec les conditions simulées.")
+elif strategy_choice in ["Side-line Up", "Side-line Below"]:
+    if future_rebalances < future_days * 0.10:
+        st.write("La simulation montre peu de rebalances. Une stratégie plus neutre pourrait permettre de capter davantage de frais.")
+    else:
+        st.write("La stratégie asymétrique semble cohérente avec la volatilité projetée.")
+elif strategy_choice == "DCA-in":
+    if simulated_prices[-1] < simulated_prices[0]:
+        st.write("La tendance simulée est baissière. DCA-in reste cohérent.")
+    else:
+        st.write("Le prix simulé augmente. Une stratégie Neutre ou DCA-out pourrait être plus pertinente.")
+elif strategy_choice == "DCA-out":
+    if simulated_prices[-1] > simulated_prices[0]:
+        st.write("La tendance simulée est haussière. DCA-out est approprié.")
+    else:
+        st.write("Une tendance baissière simulée suggère de revenir vers une stratégie plus neutre.")
