@@ -235,7 +235,7 @@ with tab1:
     st.subheader("Analyse sur 30 jours")
     st.write(f"Volatilité annualisée : {vol_30d:.2%}")
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
-    st.write(f"Rebalances détectés : {rebalances}")
+    st.write(f"Hors de ranges détectés : {rebalances}")
 
 # ===== TAB 2 : SIMULATION FUTURE =====
 with tab2:
@@ -249,7 +249,7 @@ with tab2:
         simulated.append(next_price)
 
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
-    st.write(f"Rebalances simulés : {future_reb}")
+    st.write(f"Hors de ranges : {future_reb}")
 
 # ===== TAB 3 : SUGGESTION STRATEGIE =====
 with tab3:
