@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 import numpy as np
-import datetime
 
 # ---------------------------------------------------------------------
 # CONFIG PAGE (wide mode)
@@ -94,19 +93,21 @@ PAIRS = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC"), ("VIRTUAL", "WE
 # ---------------------------------------------------------------------
 # FONCTIONS
 # ---------------------------------------------------------------------
+
+@st.cache_data(ttl=3600, show_spinner=False)
 def get_market_chart(asset_id):
+    """Récupération API + cache 1h + fallback sécurisé"""
     try:
         url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
         data = requests.get(url).json()
         prices = [p[1] for p in data.get("prices", [])]
 
         if not prices:
-            return [1.0] * 30
+            return [1.0]*30
 
         return prices
-
     except:
-        return [1.0] * 30
+        return [1.0]*30
 
 
 def get_current_price(asset_id):
@@ -120,9 +121,10 @@ def get_current_price(asset_id):
 
 
 def compute_volatility(prices):
+    if len(prices) < 2:
+        return 0.0
     returns = np.diff(prices) / prices[:-1]
     return np.std(returns) * np.sqrt(365)
-
 
 # ---------------------------------------------------------------------
 # TITRE
@@ -138,14 +140,21 @@ col1, col2 = st.columns([1.3, 1])
 # --------- COLONNE 1 : CONFIGURATION ---------
 with col1:
     st.subheader("Configuration du Pool")
-    
-    # Sélection de la paire
-    pair_labels = [f"{a}/{b}" for a, b in PAIRS]
-    selected_pair = st.radio("Paire :", pair_labels)
+
+    # ---------------------------------------------------
+    # PAIRE + STRATEGIE SUR LA MÊME LIGNE
+    # ---------------------------------------------------
+    pcol, scol = st.columns([1, 1])
+
+    with pcol:
+        pair_labels = [f"{a}/{b}" for a,b in PAIRS]
+        selected_pair = st.radio("Paire :", pair_labels)
+
+    with scol:
+        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
+
     tokenA, tokenB = selected_pair.split("/")
 
-    # Sélection stratégie (déplacée à droite initialement mais conservée ici pour cohérence UI)
-    strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
     st.write(f"Ratio : {int(ratioA*100)}/{int(ratioB*100)}")
@@ -181,32 +190,19 @@ with col2:
     st.write(f"{tokenB} : {capitalB:.2f} USD")
 
 # ---------------------------------------------------------------------
-# HISTORIQUE 30J AVEC SAUVEGARDE QUOTIDIENNE
+# HISTORIQUES 30 JOURS EN MÉMOIRE
 # ---------------------------------------------------------------------
-
-today = str(datetime.date.today())
-cache_key = f"{tokenA}_prices_{today}"
-
-# Si déjà dans la session → aucune API
-if cache_key in st.session_state:
-    pricesA = st.session_state[cache_key]
-
-else:
+if 'pricesA' not in st.session_state or st.session_state.get('tokenA') != tokenA:
     prices = get_market_chart(COINGECKO_IDS[tokenA])
-
     if not prices:
-        old_keys = [k for k in st.session_state if k.startswith(f"{tokenA}_prices_")]
-        if old_keys:
-            last_key = sorted(old_keys)[-1]
-            prices = st.session_state[last_key]
-        else:
-            cp, _ = get_current_price(COINGECKO_IDS[tokenA])
-            prices = [cp] * 30
+        prices = [priceA] * 30
 
-    st.session_state[cache_key] = prices
-    pricesA = prices
+    st.session_state.pricesA = prices
+    st.session_state.tokenA = tokenA
+    st.session_state.vol_30d = compute_volatility(prices)
 
-vol_30d = compute_volatility(pricesA)
+pricesA = st.session_state.pricesA
+vol_30d = st.session_state.vol_30d
 
 # ---------------------------------------------------------------------
 # ONGLETS
@@ -224,10 +220,9 @@ with tab1:
 with tab2:
     st.subheader("Simulation des rebalances futurs")
     future_days = st.number_input("Jours à simuler :", min_value=1, max_value=120, value=30)
-
     vol_sim = vol_30d / np.sqrt(365)
-    simulated = [pricesA[-1]]
 
+    simulated = [pricesA[-1]]
     for _ in range(future_days):
         next_price = simulated[-1] * (1 + np.random.normal(0, vol_sim))
         simulated.append(next_price)
