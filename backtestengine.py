@@ -131,7 +131,7 @@ st.write("Analyse AMM complète : ratio, range, volatilité, rebalances historiq
 # ---------------------------------------------------------------------
 col1, col2, col3 = st.columns([1.2, 1, 1])
 
-# --------- COLONNE 1 ---------
+# --------- COLONNE 1 : CONFIGURATION ---------
 with col1:
     st.subheader("Configuration du Pool")
     
@@ -149,32 +149,34 @@ with col1:
     st.write(f"Contexte idéal : {info['contexte']}")
     
     capital = st.number_input("Capital (USD)", value=1000)
-
-# --------- COLONNE 2 ---------
-with col2:
-    st.subheader("Range et Prix")
-    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
     
-    # Prix en temps réel sécurisé
+    # Prix actif
     priceA, success = get_current_price(COINGECKO_IDS[tokenA])
     if not success:
         priceA = st.number_input(f"Prix manuel pour {tokenA} (USD)", value=1.0)
     
-    # Calcul dynamique du range en fonction de la stratégie et prix actuel
+    # Range
+    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
     half_range = range_pct / 2 / 100
     range_low = priceA * (1 - half_range)
     range_high = priceA * (1 + half_range)
     
+    # Répartition du capital
+    capitalA = capital * ratioA
+    capitalB = capital * ratioB
+
+# --------- COLONNE 2 : AFFICHAGE ---------
+with col2:
+    st.subheader("Range et Prix")
     st.write(f"Prix actuel {tokenA} : {priceA:.2f} USD")
     st.write(f"Limite basse : {range_low:.2f} USD")
     st.write(f"Limite haute : {range_high:.2f} USD")
     
-    # Répartition du capital selon la stratégie
     st.write("Répartition du capital selon la stratégie :")
-    st.write(f"{tokenA} : {capital * ratioA:.2f} USD")
-    st.write(f"{tokenB} : {capital * ratioB:.2f} USD")
+    st.write(f"{tokenA} : {capitalA:.2f} USD")
+    st.write(f"{tokenB} : {capitalB:.2f} USD")
 
-# --------- COLONNE 3 ---------
+# --------- COLONNE 3 : RÉSUMÉ ---------
 with col3:
     st.subheader("Résumé rapide")
     st.write("Accéder aux analyses complètes dans les onglets ci-dessous :")
@@ -184,7 +186,7 @@ with col3:
     st.write("- Recommandation")
 
 # ---------------------------------------------------------------------
-# SESSION STATE POUR HISTORIQUES
+# HISTORIQUES 30 JOURS EN MÉMOIRE
 # ---------------------------------------------------------------------
 if 'pricesA' not in st.session_state or st.session_state.get('tokenA') != tokenA:
     st.session_state.pricesA = get_market_chart(COINGECKO_IDS[tokenA])
