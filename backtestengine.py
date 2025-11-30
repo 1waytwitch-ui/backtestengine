@@ -2,48 +2,54 @@ import streamlit as st
 import requests
 import numpy as np
 
-# -----------------------------------------
-# Configuration des stratégies
-# -----------------------------------------
+# ---------------------------------------------------------------------
+# CONFIGURATION PAGE + MODE LARGE
+# ---------------------------------------------------------------------
+st.set_page_config(
+    page_title="LP Backtest Engine",
+    layout="wide"
+)
+
+# ---------------------------------------------------------------------
+# MODE SOMBRE / CLAIR (thème CSS custom)
+# ---------------------------------------------------------------------
+theme = st.sidebar.radio("Thème", ["Clair", "Sombre"])
+
+if theme == "Sombre":
+    st.markdown(
+        """
+        <style>
+        body { background-color: #111 !important; color: #EEE !important; }
+        .stApp { background-color: #111 !important; }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    st.markdown(
+        """
+        <style>
+        body { background-color: #FFFFFF !important; color: #000000 !important; }
+        .stApp { background-color: #FFFFFF !important; }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ---------------------------------------------------------------------
+# STRATÉGIES
+# ---------------------------------------------------------------------
 STRATEGIES = {
-    "Neutre": {
-        "ratio": (0.5, 0.5),
-        "objectif": "Rester dans le range",
-        "contexte": "Incertitude"
-    },
-    "Coup de pouce": {
-        "ratio": (0.2, 0.8),
-        "objectif": "Range efficace",
-        "contexte": "Faible volatilité"
-    },
-    "Mini-doux": {
-        "ratio": (0.1, 0.9),
-        "objectif": "Nouveau régime prix",
-        "contexte": "Changement de tendance"
-    },
-    "Side-line Up": {
-        "ratio": (0.95, 0.05),
-        "objectif": "Accumulation",
-        "contexte": "Dump"
-    },
-    "Side-line Below": {
-        "ratio": (0.05, 0.95),
-        "objectif": "Attente avant pump",
-        "contexte": "Marché haussier"
-    },
-    "DCA-in": {
-        "ratio": (1.0, 0.0),
-        "objectif": "Entrée progressive",
-        "contexte": "Incertitude"
-    },
-    "DCA-out": {
-        "ratio": (0.0, 1.0),
-        "objectif": "Sortie progressive",
-        "contexte": "Tendance haussière"
-    }
+    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
+    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité"},
+    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance"},
+    "Side-line Up": {"ratio": (0.95, 0.05), "objectif": "Accumulation", "contexte": "Dump"},
+    "Side-line Below": {"ratio": (0.05, 0.95), "objectif": "Attente avant pump", "contexte": "Marché haussier"},
+    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Incertitude"},
+    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Tendance haussière"},
 }
 
-# Correspondance avec CoinGecko
+# CoinGecko mapping
 COINGECKO_IDS = {
     "WETH": "weth",
     "USDC": "usd-coin",
@@ -52,182 +58,159 @@ COINGECKO_IDS = {
     "AERO": "aerodrome-finance"
 }
 
-
-# -----------------------------------------
-# Fonctions utilitaires
-# -----------------------------------------
+# ---------------------------------------------------------------------
+# FONCTIONS
+# ---------------------------------------------------------------------
 def get_market_chart(asset_id):
     url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
     return requests.get(url).json()
-
 
 def compute_volatility(prices):
     returns = np.diff(prices) / prices[:-1]
     return np.std(returns) * np.sqrt(365)
 
-
-def impermanent_loss(p_old, p_new):
-    ratio = p_new / p_old
+def impermanent_loss(old, new):
+    ratio = new / old
     return 1 - (2 * np.sqrt(ratio) / (1 + ratio))
 
 
-# -----------------------------------------
-# Interface Streamlit
-# -----------------------------------------
+# ---------------------------------------------------------------------
+# TITRE
+# ---------------------------------------------------------------------
 st.title("LP Backtest Engine")
-st.write("Cet outil vous permet d'analyser une stratégie AMM, d'estimer les rebalances passés et futurs, et d'évaluer l’impact potentiel sur votre capital.")
+st.write("Analyse complète d'une stratégie AMM : ratios, range, backtest, IL et projection future.")
 
-# -----------------------------------------
-# Choix des paires (affichage sans guillemets)
-# -----------------------------------------
-pairs = [
-    ("WETH", "USDC"),
-    ("CBBTC", "USDC"),
-    ("WETH", "CBBTC"),
-    ("VIRTUAL", "WETH"),
-    ("AERO", "WETH"),
-]
+# ---------------------------------------------------------------------
+# LAYOUT EN 3 COLONNES (réduction scroll)
+# ---------------------------------------------------------------------
+col1, col2, col3 = st.columns([1.2, 1, 1])
 
-pair_choice = st.selectbox("Sélectionnez une paire :", pairs)
-tokenA, tokenB = pair_choice
+# ---------------------------------------------------------------------
+# COLONNE 1 : Pair + Stratégie + Capital
+# ---------------------------------------------------------------------
+with col1:
+    st.subheader("Configuration du pool")
 
-# -----------------------------------------
-# Choix de la stratégie
-# -----------------------------------------
-strategy_choice = st.selectbox("Sélectionnez une stratégie :", list(STRATEGIES.keys()))
-info = STRATEGIES[strategy_choice]
+    pairs = [
+        ("WETH", "USDC"),
+        ("CBBTC", "USDC"),
+        ("WETH", "CBBTC"),
+        ("VIRTUAL", "WETH"),
+        ("AERO", "WETH"),
+    ]
 
-ratioA, ratioB = info["ratio"]
+    tokenA, tokenB = st.selectbox("Paire :", pairs)
 
-st.subheader("Informations sur la stratégie sélectionnée")
-st.write(f"Ratio Token A / Token B : {int(ratioA*100)}/{int(ratioB*100)}")
-st.write(f"Objectif : {info['objectif']}")
-st.write(f"Contexte idéal : {info['contexte']}")
+    strategy_choice = st.selectbox("Stratégie :", list(STRATEGIES.keys()))
+    info = STRATEGIES[strategy_choice]
+    ratioA, ratioB = info["ratio"]
 
-# -----------------------------------------
-# Saisie du capital
-# -----------------------------------------
-capital = st.number_input("Capital total en USD :", value=1000)
+    st.write(f"Ratio : {int(ratioA*100)}/{int(ratioB*100)}")
+    st.write(f"Objectif : {info['objectif']}")
+    st.write(f"Contexte idéal : {info['contexte']}")
 
-# -----------------------------------------
-# Range manuel (%)
-# -----------------------------------------
-range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
-half_range = range_pct / 2 / 100
+    capital = st.number_input("Capital (USD)", value=1000)
 
-# -----------------------------------------
-# Prix du Token A
-# -----------------------------------------
-priceA = requests.get(
-    f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[tokenA]}&vs_currencies=usd"
-).json()[COINGECKO_IDS[tokenA]]["usd"]
 
-st.subheader("Prix du marché")
-st.write(f"Prix actuel de {tokenA} : {priceA:.2f} USD")
+# ---------------------------------------------------------------------
+# COLONNE 2 : Range + Prix
+# ---------------------------------------------------------------------
+with col2:
+    st.subheader("Paramètres du range")
 
-range_low = priceA * (1 - half_range)
-range_high = priceA * (1 + half_range)
+    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
+    half_range = range_pct / 2 / 100
 
-st.write(f"Limite basse du range : {range_low:.2f} USD")
-st.write(f"Limite haute du range : {range_high:.2f} USD")
+    priceA = requests.get(
+        f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[tokenA]}&vs_currencies=usd"
+    ).json()[COINGECKO_IDS[tokenA]]["usd"]
 
-# -----------------------------------------
-# Répartition du capital selon la stratégie
-# -----------------------------------------
-amountA = capital * ratioA
-amountB = capital * ratioB
+    st.write(f"Prix actuel {tokenA} : {priceA:.2f} USD")
 
-st.subheader("Répartition du capital selon la stratégie")
-st.write(f"{tokenA} : {amountA:.2f} USD")
-st.write(f"{tokenB} : {amountB:.2f} USD")
+    range_low = priceA * (1 - half_range)
+    range_high = priceA * (1 + half_range)
 
-# -----------------------------------------
-# Analyse sur 30 jours
-# -----------------------------------------
-st.subheader("Analyse historique sur 30 jours")
+    st.write(f"Limite basse : {range_low:.2f}")
+    st.write(f"Limite haute : {range_high:.2f}")
 
-dataA = get_market_chart(COINGECKO_IDS[tokenA])
-pricesA = [p[1] for p in dataA["prices"]]
+    st.write("Répartition du capital :")
+    st.write(f"{tokenA} : {capital * ratioA:.2f} USD")
+    st.write(f"{tokenB} : {capital * ratioB:.2f} USD")
 
-vol_30d = compute_volatility(pricesA)
-st.write(f"Volatilité annualisée sur 30 jours : {vol_30d:.2%}")
 
-rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
-st.write(f"Nombre de rebalances détectés sur 30 jours : {rebalances}")
+# ---------------------------------------------------------------------
+# COLONNE 3 : Résumé
+# ---------------------------------------------------------------------
+with col3:
+    st.subheader("Résumé des analyses")
+    st.write("Les résultats détaillés sont disponibles dans les onglets ci-dessous.")
+    st.write("- Volatilité 30j")
+    st.write("- Rebalances")
+    st.write("- IL")
+    st.write("- Simulation future")
+    st.write("- Recommandation")
 
-# -----------------------------------------
-# Suggestion automatique de stratégie
-# -----------------------------------------
-prices7 = pricesA[-7:]
-vol_7d = compute_volatility(prices7)
 
-if vol_7d > 0.8:
-    suggestion = "Neutre"
-elif vol_7d > 0.4:
-    suggestion = "Coup de pouce"
-else:
-    suggestion = "Mini-doux"
+# ---------------------------------------------------------------------
+# TABS — Limitation du scroll
+# ---------------------------------------------------------------------
+tab1, tab2, tab3, tab4 = st.tabs(["Backtest 30j", "Impermanent Loss", "Simulation future", "Analyse stratégie"])
 
-st.subheader("Suggestion automatique")
-st.write(f"Volatilité annualisée sur 7 jours : {vol_7d:.2%}")
-st.write(f"Stratégie recommandée : {suggestion}")
+# ======== TAB 1 : Backtest ========
+with tab1:
+    st.subheader("Analyse historique (30 jours)")
 
-# -----------------------------------------
-# Impermanent Loss
-# -----------------------------------------
-st.subheader("Impermanent Loss théorique")
+    data = get_market_chart(COINGECKO_IDS[tokenA])
+    pricesA = [p[1] for p in data["prices"]]
 
-price_old = pricesA[0]
-price_now = pricesA[-1]
-IL = impermanent_loss(price_old, price_now)
+    vol_30d = compute_volatility(pricesA)
+    st.write(f"Volatilité annualisée : {vol_30d:.2%}")
 
-st.write(f"Variation du prix sur 30 jours : {(price_now/price_old - 1):.2%}")
-st.write(f"Impermanent Loss estimé : {IL:.2%}")
-st.write(f"Perte potentielle sur capital : {capital * IL:.2f} USD")
+    rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
+    st.write(f"Rebalances détectés : {rebalances}")
 
-# -----------------------------------------
-# Simulation des futurs rebalances
-# -----------------------------------------
-st.subheader("Simulation des rebalances futurs")
 
-future_days = st.number_input("Nombre de jours à simuler :", value=30, min_value=1, max_value=90)
+# ======== TAB 2 : Impermanent Loss ========
+with tab2:
+    st.subheader("Impermanent Loss")
 
-vol_sim = vol_7d / np.sqrt(365)   # volatilité journalière
+    price_old = pricesA[0]
+    price_now = pricesA[-1]
+    IL = impermanent_loss(price_old, price_now)
 
-current_price = price_now
-simulated_prices = [current_price]
+    st.write(f"Variation prix : {(price_now / price_old - 1):.2%}")
+    st.write(f"IL estimé : {IL:.2%}")
+    st.write(f"Impact sur capital : {capital * IL:.2f} USD")
 
-for _ in range(future_days):
-    shock = np.random.normal(0, vol_sim)
-    next_price = simulated_prices[-1] * (1 + shock)
-    simulated_prices.append(next_price)
 
-future_rebalances = sum((p < range_low) or (p > range_high) for p in simulated_prices)
+# ======== TAB 3 : Simulation future ========
+with tab3:
+    st.subheader("Simulation des rebalances futurs")
 
-st.write(f"Rebalances simulés sur {future_days} jours : {future_rebalances}")
+    future_days = st.number_input("Jours à simuler :", min_value=1, max_value=120, value=30)
 
-# -----------------------------------------
-# Analyse qualitative selon stratégie
-# -----------------------------------------
-st.subheader("Analyse de cohérence de la stratégie")
+    vol_sim = vol_30d / np.sqrt(365)
+    simulated = [price_now]
 
-if strategy_choice in ["Neutre", "Coup de pouce", "Mini-doux"]:
-    if future_rebalances > future_days * 0.30:
-        st.write("La simulation indique un nombre élevé de rebalances. Une stratégie asymétrique pourrait être plus adaptée.")
+    for _ in range(future_days):
+        next_price = simulated[-1] * (1 + np.random.normal(0, vol_sim))
+        simulated.append(next_price)
+
+    future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
+
+    st.write(f"Rebalances simulés : {future_reb}")
+
+
+# ======== TAB 4 : Analyse ========
+with tab4:
+    st.subheader("Analyse de cohérence de la stratégie")
+
+    vol_7d = compute_volatility(pricesA[-7:])
+    st.write(f"Volatilité annualisée 7j : {vol_7d:.2%}")
+
+    if vol_7d > 0.8:
+        st.write("Suggestion : Neutre")
+    elif vol_7d > 0.4:
+        st.write("Suggestion : Coup de pouce")
     else:
-        st.write("La stratégie semble compatible avec les conditions simulées.")
-elif strategy_choice in ["Side-line Up", "Side-line Below"]:
-    if future_rebalances < future_days * 0.10:
-        st.write("La simulation montre peu de rebalances. Une stratégie plus neutre pourrait permettre de capter davantage de frais.")
-    else:
-        st.write("La stratégie asymétrique semble cohérente avec la volatilité projetée.")
-elif strategy_choice == "DCA-in":
-    if simulated_prices[-1] < simulated_prices[0]:
-        st.write("La tendance simulée est baissière. DCA-in reste cohérent.")
-    else:
-        st.write("Le prix simulé augmente. Une stratégie Neutre ou DCA-out pourrait être plus pertinente.")
-elif strategy_choice == "DCA-out":
-    if simulated_prices[-1] > simulated_prices[0]:
-        st.write("La tendance simulée est haussière. DCA-out est approprié.")
-    else:
-        st.write("Une tendance baissière simulée suggère de revenir vers une stratégie plus neutre.")
+        st.write("Suggestion : Mini-doux")
