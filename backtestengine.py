@@ -105,7 +105,7 @@ def get_market_chart(asset_id):
         return [p[1] for p in data.get("prices", [])]
     except:
         st.warning(f"Impossible de récupérer l'historique pour {asset_id}")
-        return [1.0]*30  # fallback
+        return [1.0]*30
 
 def get_current_price(asset_id):
     try:
@@ -113,8 +113,8 @@ def get_current_price(asset_id):
             f"https://api.coingecko.com/api/v3/simple/price?ids={asset_id}&vs_currencies=usd"
         ).json()
         return response[asset_id]["usd"], True
-    except (KeyError, requests.exceptions.RequestException):
-        return 1.0, False  # False = échec API
+    except:
+        return 1.0, False
 
 def compute_volatility(prices):
     returns = np.diff(prices) / prices[:-1]
@@ -127,20 +127,20 @@ st.title("LP Backtest Engine — DeFi Retro Flashy")
 st.write("Analyse AMM complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
-# LAYOUT 3 COLONNES
+# LAYOUT 2 COLONNES
 # ---------------------------------------------------------------------
-col1, col2, col3 = st.columns([1.2, 1, 1])
+col1, col2 = st.columns([1.3, 1])
 
 # --------- COLONNE 1 : CONFIGURATION ---------
 with col1:
     st.subheader("Configuration du Pool")
     
-    # Sélection de la paire via radio
+    # Sélection de la paire
     pair_labels = [f"{a}/{b}" for a,b in PAIRS]
     selected_pair = st.radio("Paire :", pair_labels)
     tokenA, tokenB = selected_pair.split("/")
     
-    # Sélection stratégie via radio
+    # Sélection stratégie
     strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
@@ -155,14 +155,12 @@ with col1:
     if not success:
         priceA = st.number_input(f"Prix manuel pour {tokenA} (USD)", value=1.0)
     
-    # Range
+    # Range proportionnel au ratio
     range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
-    
-    # ---- CALCUL DU RANGE PROPORTIONNEL AU RATIO ----
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     
-    # Répartition du capital
+    # Répartition capital
     capitalA = capital * ratioA
     capitalB = capital * ratioB
 
@@ -176,15 +174,6 @@ with col2:
     st.write("Répartition du capital selon la stratégie :")
     st.write(f"{tokenA} : {capitalA:.2f} USD")
     st.write(f"{tokenB} : {capitalB:.2f} USD")
-
-# --------- COLONNE 3 : RÉSUMÉ ---------
-with col3:
-    st.subheader("Résumé rapide")
-    st.write("Accéder aux analyses complètes dans les onglets ci-dessous :")
-    st.write("- Volatilité")
-    st.write("- Rebalances")
-    st.write("- Simulation future")
-    st.write("- Recommandation")
 
 # ---------------------------------------------------------------------
 # HISTORIQUES 30 JOURS EN MÉMOIRE
