@@ -140,15 +140,11 @@ def compute_volatility(prices):
     returns = np.diff(prices) / prices[:-1]
     return np.std(returns) * np.sqrt(365)
 
-def impermanent_loss(old, new):
-    ratio = new / old
-    return 1 - (2 * np.sqrt(ratio) / (1 + ratio))
-
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
 st.title("LP Backtest Engine — DeFi Retro Flashy")
-st.write("Analyse AMM complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
+st.write("Analyse AMM complète : ratio, range, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 3 COLONNES
@@ -195,7 +191,6 @@ with col3:
     st.write("Accéder aux analyses complètes dans les onglets ci-dessous :")
     st.write("- Volatilité")
     st.write("- Rebalances")
-    st.write("- Impermanent Loss")
     st.write("- Simulation future")
     st.write("- Recommandation")
 
@@ -219,7 +214,7 @@ vol_30d = st.session_state.vol_30d
 # ---------------------------------------------------------------------
 # ONGLETS
 # ---------------------------------------------------------------------
-tab1, tab2, tab3, tab4 = st.tabs(["Backtest 30j", "Impermanent Loss", "Simulation future", "Analyse stratégie"])
+tab1, tab2, tab3 = st.tabs(["Backtest 30j", "Simulation future", "Analyse stratégie"])
 
 # ===== TAB 1 : BACKTEST 30J =====
 with tab1:
@@ -228,30 +223,20 @@ with tab1:
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
     st.write(f"Rebalances détectés : {rebalances}")
 
-# ===== TAB 2 : IMPERMANENT LOSS =====
+# ===== TAB 2 : SIMULATION FUTURE =====
 with tab2:
-    st.subheader("Impermanent Loss")
-    price_old = pricesA[0]
-    price_now = pricesA[-1]
-    IL = impermanent_loss(price_old, price_now)
-    st.write(f"Variation 30j : {(price_now/price_old - 1):.2%}")
-    st.write(f"IL estimé : {IL:.2%}")
-    st.write(f"Impact sur capital : {capital * IL:.2f} USD")
-
-# ===== TAB 3 : SIMULATION FUTURE =====
-with tab3:
     st.subheader("Simulation des rebalances futurs")
     future_days = st.number_input("Jours à simuler :", min_value=1, max_value=120, value=30)
     vol_sim = vol_30d / np.sqrt(365)
-    simulated = [price_now]
+    simulated = [pricesA[-1]]
     for _ in range(future_days):
         next_price = simulated[-1] * (1 + np.random.normal(0, vol_sim))
         simulated.append(next_price)
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Rebalances simulés : {future_reb}")
 
-# ===== TAB 4 : SUGGESTION STRATEGIE =====
-with tab4:
+# ===== TAB 3 : SUGGESTION STRATEGIE =====
+with tab3:
     st.subheader("Analyse automatique")
     vol_7d = compute_volatility(pricesA[-7:])
     st.write(f"Volatilité annualisée 7j : {vol_7d:.2%}")
