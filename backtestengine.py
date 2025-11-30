@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------
-# THEME BLANC ET NOIR LISIBLE + INPUTS COMPACT + BOUTONS LISIBLE
+# THEME + CSS COMPACT
 # ---------------------------------------------------------------------
 st.markdown(
     """
@@ -29,6 +29,7 @@ st.markdown(
         color: #000000 !important;
         font-weight: 500 !important;
     }
+
     /* INPUTS PLUS COMPACT */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input {
@@ -41,6 +42,17 @@ st.markdown(
         padding: 0 8px !important;
         font-size: 14px !important;
     }
+
+    /* COMPACTER largeur */
+    .compact-input input {
+        max-width: 120px !important;
+    }
+
+    .stNumberInput {
+        padding: 0 !important;
+        margin-top: -10px !important;
+    }
+
     .stButton > button {
         background-color: #000000 !important;
         color: #FFFFFF !important;
@@ -48,19 +60,6 @@ st.markdown(
         border: 1px solid #000000 !important;
         padding: 0.4rem 1rem !important;
         border-radius: 6px !important;
-    }
-    .stTabs [role="tab"] {
-        color: #000000 !important;
-        border: 1px solid #000000 !important;
-        background-color: #E0E0E0 !important;
-        border-radius: 6px !important;
-        font-weight: 600 !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border-bottom: 2px solid #000000 !important;
-        font-weight: 700 !important;
     }
     </style>
     """,
@@ -130,33 +129,49 @@ col1, col2 = st.columns([1.3, 1])
 with col1:
     st.subheader("Configuration du Pool")
     
-    # Sélection de la paire
-    pair_labels = [f"{a}/{b}" for a,b in PAIRS]
-    selected_pair = st.radio("Paire :", pair_labels)
-    tokenA, tokenB = selected_pair.split("/")
+    # Paire + Stratégie côte à côte
+    left_choice, right_choice = st.columns([1, 1])
+
+    with left_choice:
+        pair_labels = [f"{a}/{b}" for a,b in PAIRS]
+        selected_pair = st.radio("Paire :", pair_labels)
+
+    with right_choice:
+        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
     
-    # Sélection stratégie
-    strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
+    tokenA, tokenB = selected_pair.split("/")
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
     st.write(f"Ratio : {int(ratioA*100)}/{int(ratioB*100)}")
     st.write(f"Objectif : {info['objectif']}")
     st.write(f"Contexte idéal : {info['contexte']}")
-    
-    # Capital
-    capital = st.number_input("Capital (USD)", value=1000, step=50)
-    
+
+    # Capital compact
+    capital = st.number_input(
+        "Capital (USD)", 
+        value=1000, 
+        step=50,
+        container_class="compact-input"
+    )
+
     # Prix actif
     priceA, success = get_current_price(COINGECKO_IDS[tokenA])
     if not success:
         priceA = st.number_input(f"Prix manuel pour {tokenA} (USD)", value=1.0, step=0.01)
-    
-    # Range proportionnel au ratio
-    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0, step=1.0)
+
+    # Range compact
+    range_pct = st.number_input(
+        "Range (%)", 
+        min_value=1.0, 
+        max_value=100.0, 
+        value=20.0, 
+        step=1.0,
+        container_class="compact-input"
+    )
+
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
-    
-    # Répartition capital
+
     capitalA = capital * ratioA
     capitalB = capital * ratioB
 
@@ -166,13 +181,13 @@ with col2:
     st.write(f"Prix actuel {tokenA} : {priceA:.2f} USD")
     st.write(f"Limite basse : {range_low:.2f} USD")
     st.write(f"Limite haute : {range_high:.2f} USD")
-    
+
     st.write("Répartition du capital selon la stratégie :")
     st.write(f"{tokenA} : {capitalA:.2f} USD")
     st.write(f"{tokenB} : {capitalB:.2f} USD")
 
 # ---------------------------------------------------------------------
-# HISTORIQUES 30 JOURS EN MÉMOIRE
+# HISTORIQUES 30 JOURS
 # ---------------------------------------------------------------------
 if 'pricesA' not in st.session_state or st.session_state.get('tokenA') != tokenA:
     st.session_state.pricesA = get_market_chart(COINGECKO_IDS[tokenA])
