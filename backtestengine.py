@@ -11,65 +11,55 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------
-# THEME DEFI RETRO FLASHY + INPUTS COMPACT
+# THEME NOIR ET BLANC LISIBLE + INPUTS COMPACT
 # ---------------------------------------------------------------------
 st.markdown(
     """
     <style>
     .stApp {
-        background: linear-gradient(135deg, #0a0024 0%, #12002c 40%, #1d003d 100%) !important;
+        background-color: #000000 !important;
         color: #FFFFFF !important;
         font-weight: 500 !important;
     }
     h1, h2, h3, h4 {
-        color: #00E8FF !important;
-        text-shadow:
-            -1px -1px 2px #000,
-            1px -1px 2px #000,
-            -1px 1px 2px #000,
-            1px 1px 2px #000;
+        color: #FFFFFF !important;
         font-weight: 700 !important;
     }
     p, span, div, label {
         color: #FFFFFF !important;
-        text-shadow: 0px 0px 2px #000000aa !important;
         font-weight: 500 !important;
     }
     /* INPUTS PLUS COMPACT */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input {
-        background-color: #1C0036 !important;
+        background-color: #111111 !important;
         color: #FFFFFF !important;
-        border: 1px solid #8d4dff !important;
+        border: 1px solid #FFFFFF !important;
         border-radius: 6px !important;
         font-weight: 600 !important;
-        text-shadow: 0px 0px 2px #000;
         height: 28px !important;
         padding: 0 8px !important;
         font-size: 14px !important;
     }
     .stButton > button {
-        background: linear-gradient(90deg, #6400ff, #8a00ff) !important;
-        color: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
         font-weight: 700 !important;
-        border: 1px solid #000 !important;
+        border: 1px solid #FFFFFF !important;
         padding: 0.4rem 1rem !important;
         border-radius: 6px !important;
-        text-shadow: 0px 0px 3px #000;
-        box-shadow: 0 0 12px #6400ff;
     }
     .stTabs [role="tab"] {
         color: #FFFFFF !important;
-        border: 1px solid #8d4dff !important;
-        background-color: #24004d !important;
+        border: 1px solid #FFFFFF !important;
+        background-color: #111111 !important;
         border-radius: 6px !important;
         font-weight: 600 !important;
-        text-shadow: 0px 0px 3px #000;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #6400ff66 !important;
-        border-bottom: 2px solid #00E8FF !important;
-        color: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+        border-bottom: 2px solid #FFFFFF !important;
     }
     </style>
     """,
@@ -127,7 +117,7 @@ def compute_volatility(prices):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP Backtest Engine — DeFi Retro Flashy")
+st.title("LP Backtest Engine — Noir & Blanc")
 st.write("Analyse AMM complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
