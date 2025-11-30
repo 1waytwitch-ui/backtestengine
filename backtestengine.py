@@ -3,7 +3,7 @@ import requests
 import numpy as np
 
 # ---------------------------------------------------------------------
-# CONFIGURATION PAGE + MODE LARGE
+# CONFIG PAGE (wide mode)
 # ---------------------------------------------------------------------
 st.set_page_config(
     page_title="LP Backtest Engine",
@@ -11,33 +11,82 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------
-# MODE SOMBRE / CLAIR (thème CSS custom)
+# THEME CRYPTO DEFI – STYLE RETRO FLASHY
 # ---------------------------------------------------------------------
-theme = st.sidebar.radio("Thème", ["Clair", "Sombre"])
+st.markdown(
+    """
+    <style>
 
-if theme == "Sombre":
-    st.markdown(
-        """
-        <style>
-        body { background-color: #111 !important; color: #EEE !important; }
-        .stApp { background-color: #111 !important; }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-else:
-    st.markdown(
-        """
-        <style>
-        body { background-color: #FFFFFF !important; color: #000000 !important; }
-        .stApp { background-color: #FFFFFF !important; }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    /* Fond général rétro */
+    .stApp {
+        background: linear-gradient(135deg, #0a0024 0%, #12002c 40%, #1d003d 100%) !important;
+        color: #E6E6E6 !important;
+    }
+
+    /* Titres néon cyan */
+    h1, h2, h3, h4 {
+        color: #00E8FF !important;
+        text-shadow: 0px 0px 6px #00E8FFaa;
+    }
+
+    /* Encadrés style DeFi */
+    .block-container {
+        padding-top: 1rem;
+    }
+
+    section.main > div {
+        border-radius: 12px !important;
+    }
+
+    /* Champs d'entrée avec glow */
+    .stTextInput > div > div > input,
+    .stNumberInput > div > div > input {
+        background-color: #1C0036 !important;
+        color: #FFFFFF !important;
+        border-radius: 6px !important;
+        border: 1px solid #6400ff !important;
+    }
+
+    /* Selectbox dédiée */
+    .stSelectbox > div > div {
+        background-color: #1C0036 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #6400ff !important;
+        border-radius: 6px !important;
+    }
+
+    /* Onglets néon */
+    .stTabs [role="tab"] {
+        color: #EEE !important;
+        border: 1px solid #6400ff;
+        padding: 8px 14px;
+        border-radius: 6px;
+        background-color: #1C0036aa;
+        margin-right: 8px;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background-color: #6400ff33 !important;
+        border-bottom: 2px solid #00E8FF !important;
+    }
+
+    /* Boutons futuristes */
+    .stButton > button {
+        background: linear-gradient(90deg, #6400ff, #8a00ff) !important;
+        color: white !important;
+        border: 0px !important;
+        border-radius: 6px !important;
+        padding: 0.6rem 1.2rem !important;
+        box-shadow: 0 0 10px #6400ff;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # ---------------------------------------------------------------------
-# STRATÉGIES
+# STRATEGIES
 # ---------------------------------------------------------------------
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
@@ -77,19 +126,19 @@ def impermanent_loss(old, new):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP Backtest Engine")
-st.write("Analyse complète d'une stratégie AMM : ratios, range, backtest, IL et projection future.")
+st.title("LP Backtest Engine — Version DeFi Rétro Flashy")
+st.write("Analyse AMM complète : ratio, range, volatilité, IL, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
-# LAYOUT EN 3 COLONNES (réduction scroll)
+# LAYOUT EN 3 COLONNES
 # ---------------------------------------------------------------------
 col1, col2, col3 = st.columns([1.2, 1, 1])
 
 # ---------------------------------------------------------------------
-# COLONNE 1 : Pair + Stratégie + Capital
+# COLONNE 1 : Paire + stratégie
 # ---------------------------------------------------------------------
 with col1:
-    st.subheader("Configuration du pool")
+    st.subheader("Configuration du Pool")
 
     pairs = [
         ("WETH", "USDC"),
@@ -113,10 +162,10 @@ with col1:
 
 
 # ---------------------------------------------------------------------
-# COLONNE 2 : Range + Prix
+# COLONNE 2 : Range + prix
 # ---------------------------------------------------------------------
 with col2:
-    st.subheader("Paramètres du range")
+    st.subheader("Range et Prix")
 
     range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
     half_range = range_pct / 2 / 100
@@ -139,26 +188,26 @@ with col2:
 
 
 # ---------------------------------------------------------------------
-# COLONNE 3 : Résumé
+# COLONNE 3 : Résumé rapide
 # ---------------------------------------------------------------------
 with col3:
-    st.subheader("Résumé des analyses")
-    st.write("Les résultats détaillés sont disponibles dans les onglets ci-dessous.")
-    st.write("- Volatilité 30j")
+    st.subheader("Résumé rapide")
+    st.write("Les analyses complètes sont accessibles dans les onglets ci-dessous.")
+    st.write("- Volatilité")
     st.write("- Rebalances")
-    st.write("- IL")
+    st.write("- Impermanent Loss")
     st.write("- Simulation future")
     st.write("- Recommandation")
 
 
 # ---------------------------------------------------------------------
-# TABS — Limitation du scroll
+# TABS — réduction scroll
 # ---------------------------------------------------------------------
 tab1, tab2, tab3, tab4 = st.tabs(["Backtest 30j", "Impermanent Loss", "Simulation future", "Analyse stratégie"])
 
-# ======== TAB 1 : Backtest ========
+# ======== BACKTEST ========
 with tab1:
-    st.subheader("Analyse historique (30 jours)")
+    st.subheader("Analyse sur 30 jours")
 
     data = get_market_chart(COINGECKO_IDS[tokenA])
     pricesA = [p[1] for p in data["prices"]]
@@ -169,8 +218,7 @@ with tab1:
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
     st.write(f"Rebalances détectés : {rebalances}")
 
-
-# ======== TAB 2 : Impermanent Loss ========
+# ======== IL ========
 with tab2:
     st.subheader("Impermanent Loss")
 
@@ -178,12 +226,11 @@ with tab2:
     price_now = pricesA[-1]
     IL = impermanent_loss(price_old, price_now)
 
-    st.write(f"Variation prix : {(price_now / price_old - 1):.2%}")
+    st.write(f"Variation 30j : {(price_now/price_old - 1):.2%}")
     st.write(f"IL estimé : {IL:.2%}")
     st.write(f"Impact sur capital : {capital * IL:.2f} USD")
 
-
-# ======== TAB 3 : Simulation future ========
+# ======== SIMULATION ========
 with tab3:
     st.subheader("Simulation des rebalances futurs")
 
@@ -200,17 +247,18 @@ with tab3:
 
     st.write(f"Rebalances simulés : {future_reb}")
 
-
-# ======== TAB 4 : Analyse ========
+# ======== ANALYSE STRATÉGIQUE ========
 with tab4:
-    st.subheader("Analyse de cohérence de la stratégie")
+    st.subheader("Analyse automatique")
 
     vol_7d = compute_volatility(pricesA[-7:])
     st.write(f"Volatilité annualisée 7j : {vol_7d:.2%}")
 
     if vol_7d > 0.8:
-        st.write("Suggestion : Neutre")
+        suggestion = "Neutre"
     elif vol_7d > 0.4:
-        st.write("Suggestion : Coup de pouce")
+        suggestion = "Coup de pouce"
     else:
-        st.write("Suggestion : Mini-doux")
+        suggestion = "Mini-doux"
+
+    st.write(f"Stratégie suggérée : {suggestion}")
