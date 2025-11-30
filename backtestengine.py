@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------
-# THEME DEFI RETRO FLASHY LISIBLE
+# THEME DEFI RETRO FLASHY + INPUTS COMPACT
 # ---------------------------------------------------------------------
 st.markdown(
     """
@@ -35,6 +35,7 @@ st.markdown(
         text-shadow: 0px 0px 2px #000000aa !important;
         font-weight: 500 !important;
     }
+    /* INPUTS PLUS COMPACT */
     .stTextInput > div > div > input,
     .stNumberInput > div > div > input {
         background-color: #1C0036 !important;
@@ -43,13 +44,16 @@ st.markdown(
         border-radius: 6px !important;
         font-weight: 600 !important;
         text-shadow: 0px 0px 2px #000;
+        height: 28px !important;
+        padding: 0 8px !important;
+        font-size: 14px !important;
     }
     .stButton > button {
         background: linear-gradient(90deg, #6400ff, #8a00ff) !important;
         color: #FFFFFF !important;
         font-weight: 700 !important;
         border: 1px solid #000 !important;
-        padding: 0.6rem 1.2rem !important;
+        padding: 0.4rem 1rem !important;
         border-radius: 6px !important;
         text-shadow: 0px 0px 3px #000;
         box-shadow: 0 0 12px #6400ff;
@@ -148,15 +152,16 @@ with col1:
     st.write(f"Objectif : {info['objectif']}")
     st.write(f"Contexte idéal : {info['contexte']}")
     
-    capital = st.number_input("Capital (USD)", value=1000)
+    # Capital
+    capital = st.number_input("Capital (USD)", value=1000, step=50)
     
     # Prix actif
     priceA, success = get_current_price(COINGECKO_IDS[tokenA])
     if not success:
-        priceA = st.number_input(f"Prix manuel pour {tokenA} (USD)", value=1.0)
+        priceA = st.number_input(f"Prix manuel pour {tokenA} (USD)", value=1.0, step=0.01)
     
     # Range proportionnel au ratio
-    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
+    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0, step=1.0)
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     
