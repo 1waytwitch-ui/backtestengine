@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------
-# THEME BLANC ET NOIR LISIBLE + INPUTS COMPACT
+# THEME BLANC ET NOIR LISIBLE + INPUTS COMPACT + BOUTONS LISIBLE
 # ---------------------------------------------------------------------
 st.markdown(
     """
@@ -57,9 +57,10 @@ st.markdown(
         font-weight: 600 !important;
     }
     .stTabs [aria-selected="true"] {
-        background-color: #000000 !important;
-        color: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
         border-bottom: 2px solid #000000 !important;
+        font-weight: 700 !important;
     }
     </style>
     """,
