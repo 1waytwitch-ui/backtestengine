@@ -99,8 +99,26 @@ PAIRS = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC"), ("VIRTUAL", "WE
 # FONCTIONS
 # ---------------------------------------------------------------------
 def get_market_chart(asset_id):
-    url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
-    return requests.get(url).json()
+    try:
+        url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
+        data = requests.get(url).json()
+        return [p[1] for p in data.get("prices", [])]
+    except:
+        st.warning(f"Impossible de récupérer l'historique pour {asset_id}")
+        return [1.0]*30  # fallback
+
+def get_current_price(asset_id):
+    try:
+        response = requests.get(
+            f"https://api.coingecko.com/api/v3/simple/price?ids={asset_id}&vs_currencies=usd"
+        ).json()
+        return response[asset_id]["usd"]
+    except KeyError:
+        st.error(f"Impossible de récupérer le prix pour {asset_id}.")
+        return 1.0
+    except requests.exceptions.RequestException:
+        st.error("Erreur réseau lors de la récupération du prix.")
+        return 1.0
 
 def compute_volatility(prices):
     returns = np.diff(prices) / prices[:-1]
@@ -141,10 +159,8 @@ with col2:
     st.subheader("Range et Prix")
     range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
     
-    # Prix en temps réel
-    priceA = requests.get(
-        f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[tokenA]}&vs_currencies=usd"
-    ).json()[COINGECKO_IDS[tokenA]]["usd"]
+    # Prix en temps réel sécurisé
+    priceA = get_current_price(COINGECKO_IDS[tokenA])
     
     # Calcul dynamique du range en fonction de la stratégie
     half_range = range_pct / 2 / 100
@@ -172,15 +188,9 @@ with col3:
 # SESSION STATE POUR STOCKER LES HISTORIQUES
 # ---------------------------------------------------------------------
 if 'pricesA' not in st.session_state or st.session_state.get('tokenA') != tokenA:
-    try:
-        data = get_market_chart(COINGECKO_IDS[tokenA])
-        st.session_state.pricesA = [p[1] for p in data["prices"]]
-        st.session_state.tokenA = tokenA
-        st.session_state.vol_30d = compute_volatility(st.session_state.pricesA)
-    except:
-        st.error("Erreur de chargement API Coingecko")
-        st.session_state.pricesA = [priceA]*30
-        st.session_state.vol_30d = 0.0
+    st.session_state.pricesA = get_market_chart(COINGECKO_IDS[tokenA])
+    st.session_state.tokenA = tokenA
+    st.session_state.vol_30d = compute_volatility(st.session_state.pricesA)
 
 pricesA = st.session_state.pricesA
 vol_30d = st.session_state.vol_30d
