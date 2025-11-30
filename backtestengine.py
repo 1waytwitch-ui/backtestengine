@@ -124,7 +124,7 @@ def compute_volatility(prices):
 # TITRE
 # ---------------------------------------------------------------------
 st.title("LP Backtest Engine — DeFi Retro Flashy")
-st.write("Analyse AMM complète : ratio, range, volatilité, rebalances historiques et simulation future.")
+st.write("Analyse AMM complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 3 COLONNES
@@ -157,9 +157,10 @@ with col1:
     
     # Range
     range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0)
-    half_range = range_pct / 2 / 100
-    range_low = priceA * (1 - half_range)
-    range_high = priceA * (1 + half_range)
+    
+    # ---- CALCUL DU RANGE PROPORTIONNEL AU RATIO ----
+    range_low = priceA * (1 - ratioA * range_pct / 100)
+    range_high = priceA * (1 + ratioB * range_pct / 100)
     
     # Répartition du capital
     capitalA = capital * ratioA
