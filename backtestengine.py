@@ -6,12 +6,12 @@ import numpy as np
 # CONFIG PAGE (wide mode)
 # ---------------------------------------------------------------------
 st.set_page_config(
-    page_title="LP Backtest Engine",
+    page_title="LP Stratégies Backtest Engine",
     layout="wide"
 )
 
 # ---------------------------------------------------------------------
-# THEME BLANC ET NOIR LISIBLE + INPUTS COMPACT + BOUTONS LISIBLE
+# THEME BLANC ET NOIR
 # ---------------------------------------------------------------------
 st.markdown(
     """
@@ -129,8 +129,8 @@ def compute_volatility(prices):
 # ---------------------------------------------------------------------
 # TITRE
 # ---------------------------------------------------------------------
-st.title("LP Backtest Engine — Blanc & Noir")
-st.write("Analyse AMM complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
+st.title("LP Stratégies Backtest Engine")
+st.write("Analyse complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 2 COLONNES
@@ -139,7 +139,7 @@ col1, col2 = st.columns([1.3, 1])
 
 # --------- COLONNE 1 : CONFIGURATION ---------
 with col1:
-    st.subheader("Configuration du Pool")
+    st.subheader("Configuration de la Pool")
 
     # ---------------------------------------------------
     # PAIRE + STRATEGIE SUR LA MÊME LIGNE
