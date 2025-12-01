@@ -286,7 +286,7 @@ with tab3:
     st.write(f"Stratégie suggérée : {suggestion}")
 
 # ---------------------------------------------------------------------
-# 🔥 4ᵉ ONGLETS : GRAPHIQUE AVEC RANGE
+# 🔥 4ᵉ ONGLETS : GRAPHIQUE AVEC RANGE + COULEURS
 # ---------------------------------------------------------------------
 with tab4:
     st.subheader("Graphique du prix sur 30 jours + Range")
@@ -294,11 +294,15 @@ with tab4:
     fig, ax = plt.subplots(figsize=(10, 4))
 
     # Courbe du prix
-    ax.plot(pricesA, label="Prix 30j")
+    ax.plot(pricesA, label="Prix 30j", linewidth=2)
 
-    # 🔥 Lignes horizontales du range
-    ax.axhline(range_low, linestyle="--", label=f"Range Low ({range_low:.4f})")
-    ax.axhline(range_high, linestyle="--", label=f"Range High ({range_high:.4f})")
+    # 🔥 Range Low en ROUGE
+    ax.axhline(range_low, linestyle="--", color="red", linewidth=1.5,
+               label=f"Range Low ({range_low:.4f})")
+
+    # 🔥 Range High en VERT
+    ax.axhline(range_high, linestyle="--", color="green", linewidth=1.5,
+               label=f"Range High ({range_high:.4f})")
 
     ax.set_title(f"Prix de {tokenA} sur 30 jours")
     ax.set_xlabel("Jours")
