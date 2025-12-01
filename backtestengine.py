@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import numpy as np
 import datetime
-import plotly.graph_objects as go   # ← AJOUT POUR LE GRAPHE
+import matplotlib.pyplot as plt
 
 # ---------------------------------------------------------------------
 # CONFIG PAGE (wide mode)
@@ -162,9 +162,7 @@ with col1:
 
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
-    # ---------------------------------------------------------------------
-    # LOGIQUE PRIX
-    # ---------------------------------------------------------------------
+    # LOGIQUE DES PRIX
     def get_price_usd(token):
         try:
             p = requests.get(
@@ -181,7 +179,6 @@ with col1:
                 f"Prix manuel de {tokenA} (USD)", value=1.0, step=0.01
             )
         priceA = priceA_usd
-
     else:
         priceA_usd, okA = get_price_usd(tokenA)
         priceB_usd, okB = get_price_usd(tokenB)
@@ -201,9 +198,7 @@ with col1:
         priceB_usd = max(priceB_usd, 0.0000001)
         priceA = priceA_usd / priceB_usd
 
-    # ---------------------------------------------------------------------
     # RANGE
-    # ---------------------------------------------------------------------
     range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0, step=1.0)
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
@@ -216,7 +211,6 @@ with col2:
     st.subheader("Range et Prix")
 
     st.write(f"Prix actuel {tokenA}/{tokenB} : {priceA:.6f}")
-
     st.write(f"Limite basse : {range_low:.6f}")
     st.write(f"Limite haute : {range_high:.6f}")
 
@@ -225,7 +219,7 @@ with col2:
     st.write(f"{tokenB} : {capitalB:.2f} USD")
 
 # ---------------------------------------------------------------------
-# HISTORIQUE 30J AVEC CACHE
+# HISTORIQUE 30J
 # ---------------------------------------------------------------------
 today = str(datetime.date.today())
 cache_key = f"{tokenA}_prices_{today}"
@@ -249,13 +243,13 @@ else:
 vol_30d = compute_volatility(pricesA)
 
 # ---------------------------------------------------------------------
-# ONGLET 1 / 2 / 3 + AJOUT 4
+# ONGLET
 # ---------------------------------------------------------------------
 tab1, tab2, tab3, tab4 = st.tabs([
     "Backtest 30j",
     "Simulation future",
     "Analyse stratégie",
-    "Graphique prix A/B"   # ← AJOUT
+    "Graphique"
 ])
 
 with tab1:
@@ -292,31 +286,23 @@ with tab3:
     st.write(f"Stratégie suggérée : {suggestion}")
 
 # ---------------------------------------------------------------------
-# 🔥 🔥 🔥 4ème ONGLET — GRAPHIQUE PRIX A/B
+# 🔥 4ᵉ ONGLETS : GRAPHIQUE AVEC RANGE
 # ---------------------------------------------------------------------
 with tab4:
-    st.subheader(f"Graphique {tokenA}/{tokenB} — 30 jours")
+    st.subheader("Graphique du prix sur 30 jours + Range")
 
-    pricesA = get_market_chart(COINGECKO_IDS[tokenA])
-    pricesB = get_market_chart(COINGECKO_IDS[tokenB])
+    fig, ax = plt.subplots(figsize=(10, 4))
 
-    if pricesA and pricesB:
-        ratio = [a / max(b, 1e-12) for a, b in zip(pricesA, pricesB)]
+    # Courbe du prix
+    ax.plot(pricesA, label="Prix 30j")
 
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            y=ratio,
-            mode="lines",
-            name=f"{tokenA}/{tokenB}"
-        ))
+    # 🔥 Lignes horizontales du range
+    ax.axhline(range_low, linestyle="--", label=f"Range Low ({range_low:.4f})")
+    ax.axhline(range_high, linestyle="--", label=f"Range High ({range_high:.4f})")
 
-        fig.update_layout(
-            title=f"Évolution du prix {tokenA}/{tokenB} (30 jours)",
-            xaxis_title="Jours",
-            yaxis_title=f"Prix en {tokenB}",
-            showlegend=False
-        )
+    ax.set_title(f"Prix de {tokenA} sur 30 jours")
+    ax.set_xlabel("Jours")
+    ax.set_ylabel("Prix")
+    ax.legend()
 
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.error("Impossible de charger les données pour le graphique.")
+    st.pyplot(fig)
