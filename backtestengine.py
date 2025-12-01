@@ -286,27 +286,61 @@ with tab3:
     st.write(f"Stratégie suggérée : {suggestion}")
 
 # ---------------------------------------------------------------------
-# 🔥 4ᵉ ONGLETS : GRAPHIQUE AVEC RANGE + COULEURS
+# 🔥 4ᵉ ONGLETS : GRAPHIQUE AVEC RANGE (HISTORIQUES RATIO POUR PAIRES VOLATILES)
 # ---------------------------------------------------------------------
 with tab4:
     st.subheader("Graphique du prix sur 30 jours + Range")
 
-    fig, ax = plt.subplots(figsize=(10, 4))
+    # Récupère les historiques USD des deux actifs
+    pricesA_hist = get_market_chart(COINGECKO_IDS[tokenA])
+    pricesB_hist = get_market_chart(COINGECKO_IDS[tokenB])
 
-    # Courbe du prix
-    ax.plot(pricesA, label="Prix 30j", linewidth=2)
+    # Si paire USDC, on affiche l'historique USD de tokenA
+    if tokenB == "USDC":
+        series = pricesA_hist
+        ylabel = f"Prix {tokenA} (USD)"
+    else:
+        # paires volatiles : construire ratio historique A/B
+        # s'assurer que les listes ont la même longueur
+        n = min(len(pricesA_hist), len(pricesB_hist))
+        if n == 0:
+            series = []
+        else:
+            series = []
+            for i in range(n):
+                a = pricesA_hist[i]
+                b = pricesB_hist[i] if pricesB_hist[i] is not None else 0.0
+                series.append(a / max(b, 1e-12))
+        ylabel = f"Prix {tokenA}/{tokenB}"
 
-    # 🔥 Range Low en ROUGE
-    ax.axhline(range_low, linestyle="--", color="red", linewidth=1.5,
-               label=f"Range Low ({range_low:.4f})")
+    if not series:
+        st.error("Impossible de charger suffisamment de données historiques pour tracer le graphique.")
+    else:
+        fig, ax = plt.subplots(figsize=(10, 4))
 
-    # 🔥 Range High en VERT
-    ax.axhline(range_high, linestyle="--", color="green", linewidth=1.5,
-               label=f"Range High ({range_high:.4f})")
+        # Courbe du prix (historique)
+        ax.plot(series, label="Prix 30j", linewidth=2)
 
-    ax.set_title(f"Prix de {tokenA} sur 30 jours")
-    ax.set_xlabel("Jours")
-    ax.set_ylabel("Prix")
-    ax.legend()
+        # Lignes range : utiliser range_low / range_high calculés précédemment (ils sont dans la même unité)
+        # On trace seulement si range_low/high sont numériques
+        try:
+            low = float(range_low)
+            high = float(range_high)
 
-    st.pyplot(fig)
+            # Range Low en rouge
+            ax.axhline(low, linestyle="--", color="red", linewidth=1.5,
+                       label=f"Range Low ({low:.4f})")
+
+            # Range High en vert
+            ax.axhline(high, linestyle="--", color="green", linewidth=1.5,
+                       label=f"Range High ({high:.4f})")
+        except Exception:
+            # si conversion impossible on ignore les lignes
+            pass
+
+        ax.set_title(f"{ylabel} — 30 jours")
+        ax.set_xlabel("Jours (ancien → récent)")
+        ax.set_ylabel(ylabel)
+        ax.legend()
+
+        st.pyplot(fig)
