@@ -283,7 +283,7 @@ with tab2:
     st.altair_chart(chart, use_container_width=True)
 
 # ---------------------------------------------------------------------
-# TAB 3 — SIMULATION
+# TAB 3 — SIMULATION DES REBALANCES FUTURS
 # ---------------------------------------------------------------------
 with tab3:
     st.subheader("Simulation des rebalances futurs")
@@ -297,3 +297,21 @@ with tab3:
 
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Hors de range : {future_reb}")
+
+# ---------------------------------------------------------------------
+# TAB 4 — ANALYSE AUTO
+# ---------------------------------------------------------------------
+with tab4:
+    st.subheader("Analyse automatique")
+    vol_7d = compute_volatility(pricesA[-7:])
+    st.write(f"Volatilité annualisée 7j : {vol_7d:.2%}")
+
+    if vol_7d > 0.8:
+        suggestion = "Neutre"
+    elif vol_7d > 0.4:
+        suggestion = "Coup de pouce"
+    else:
+        suggestion = "Mini-doux"
+
+    st.write(f"Stratégie suggérée : {suggestion}")
+
