@@ -2,6 +2,8 @@ import streamlit as st
 import requests
 import numpy as np
 import datetime
+import pandas as pd
+import altair as alt
 
 # ---------------------------------------------------------------------
 # CONFIG PAGE (wide mode)
@@ -97,7 +99,7 @@ PAIRS = [
 ]
 
 # ---------------------------------------------------------------------
-# FONCTIONS
+# FONCTIONS API & VOL
 # ---------------------------------------------------------------------
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_market_chart(asset_id):
@@ -110,12 +112,12 @@ def get_market_chart(asset_id):
         return [1.0] * 30
 
 
-def get_current_price(asset_id):
+def get_price_usd(token):
     try:
-        response = requests.get(
-            f"https://api.coingecko.com/api/v3/simple/price?ids={asset_id}&vs_currencies=usd"
+        p = requests.get(
+            f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[token]}&vs_currencies=usd"
         ).json()
-        return response[asset_id]["usd"], True
+        return p[COINGECKO_IDS[token]]["usd"], True
     except:
         return 0.0, False
 
@@ -134,11 +136,13 @@ st.title("LP Stratégies Backtest Engine")
 st.write("Analyse complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
 
 # ---------------------------------------------------------------------
-# LAYOUT 2 COLONNES
+# LAYOUT
 # ---------------------------------------------------------------------
 col1, col2 = st.columns([1.3, 1])
 
-# --------- COLONNE 1 : CONFIGURATION ---------
+# ---------------------------------------------------------------------
+# COLONNE 1 : CONFIG
+# ---------------------------------------------------------------------
 with col1:
     st.subheader("Configuration de la Pool")
 
@@ -162,27 +166,14 @@ with col1:
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
     # ---------------------------------------------------------------------
-    # 🔥 LOGIQUE COMPLETE DE PRIX (Paires USDC / Paires volatiles)
+    # PRIX : LOGIQUE COMPLETE USDC / VOLATILE
     # ---------------------------------------------------------------------
-    def get_price_usd(token):
-        try:
-            p = requests.get(
-                f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[token]}&vs_currencies=usd"
-            ).json()
-            return p[COINGECKO_IDS[token]]["usd"], True
-        except:
-            return 0.0, False
-
-    # --- CAS 1 : Paires avec USDC → un seul champ
     if tokenB == "USDC":
         priceA_usd, okA = get_price_usd(tokenA)
         if not okA:
-            priceA_usd = st.number_input(
-                f"Prix manuel de {tokenA} (USD)", value=1.0, step=0.01
-            )
+            priceA_usd = st.number_input(f"Prix manuel de {tokenA} (USD)", value=1.0, step=0.01)
         priceA = priceA_usd
 
-    # --- CAS 2 : Paires volatiles → ratio tokenA/tokenB
     else:
         priceA_usd, okA = get_price_usd(tokenA)
         priceB_usd, okB = get_price_usd(tokenB)
@@ -190,36 +181,34 @@ with col1:
         colA, colB = st.columns(2)
         with colA:
             if not okA:
-                priceA_usd = st.number_input(
-                    f"Prix manuel {tokenA} (USD)", value=1.0, step=0.01
-                )
+                priceA_usd = st.number_input(f"Prix manuel {tokenA} (USD)", value=1.0, step=0.01)
 
         with colB:
             if not okB:
-                priceB_usd = st.number_input(
-                    f"Prix manuel {tokenB} (USD)", value=1.0, step=0.01
-                )
+                priceB_usd = st.number_input(f"Prix manuel {tokenB} (USD)", value=1.0, step=0.01)
 
-        priceB_usd = max(priceB_usd, 0.0000001)
-        priceA = priceA_usd / priceB_usd
+        priceB_usd = max(priceB_usd, 0.00001)
+        priceA = priceA_usd / priceB_usd  # prix relatif tokenA/tokenB
 
     # ---------------------------------------------------------------------
     # RANGE
     # ---------------------------------------------------------------------
-    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0, step=1.0)
+    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0,
+                                value=20.0, step=1.0)
+
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
 
-    # Répartition capital
     capitalA = capital * ratioA
     capitalB = capital * ratioB
 
-# --------- COLONNE 2 : AFFICHAGE ---------
+# ---------------------------------------------------------------------
+# COLONNE 2 : AFFICHAGE
+# ---------------------------------------------------------------------
 with col2:
     st.subheader("Range et Prix")
 
     st.write(f"Prix actuel {tokenA}/{tokenB} : {priceA:.6f}")
-
     st.write(f"Limite basse : {range_low:.6f}")
     st.write(f"Limite haute : {range_high:.6f}")
 
@@ -227,66 +216,84 @@ with col2:
     st.write(f"{tokenA} : {capitalA:.2f} USD")
     st.write(f"{tokenB} : {capitalB:.2f} USD")
 
-
 # ---------------------------------------------------------------------
-# HISTORIQUE 30J AVEC SAUVEGARDE CACHE
+# HISTORIQUE 30J AVEC CACHE JOURNALIER
 # ---------------------------------------------------------------------
 today = str(datetime.date.today())
 cache_key = f"{tokenA}_prices_{today}"
 
 if cache_key in st.session_state:
-    pricesA = st.session_state[cache_key]
+    pricesA_usd = st.session_state[cache_key]
 else:
     prices = get_market_chart(COINGECKO_IDS[tokenA])
     if not prices:
         old_keys = [k for k in st.session_state.keys() if k.startswith(f"{tokenA}_prices_")]
         if old_keys:
-            last_key = sorted(old_keys)[-1]
-            prices = st.session_state[last_key]
+            prices = st.session_state[sorted(old_keys)[-1]]
         else:
-            p, _ = get_current_price(COINGECKO_IDS[tokenA])
+            p, _ = get_price_usd(tokenA)
             prices = [p] * 30
 
     st.session_state[cache_key] = prices
-    pricesA = prices
+    pricesA_usd = prices
 
-vol_30d = compute_volatility(pricesA)
+vol_30d = compute_volatility(pricesA_usd)
 
+# ---------------------------------------------------------------------
+# CONVERSION SI PAIRE VOLATILE (prix relatif tokenA/tokenB via historique)
+# ---------------------------------------------------------------------
+if tokenB != "USDC":
+    pricesB_usd = get_market_chart(COINGECKO_IDS[tokenB])
+    pricesB_usd = [max(p, 0.00001) for p in pricesB_usd]
+    prices_relative = [a / b for a, b in zip(pricesA_usd, pricesB_usd)]
+else:
+    prices_relative = pricesA_usd
 
 # ---------------------------------------------------------------------
 # ONGLETS
 # ---------------------------------------------------------------------
-tab1, tab2, tab3 = st.tabs(["Backtest 30j", "Simulation future", "Analyse stratégie"])
+tab1, tab2, tab3 = st.tabs(["Backtest 30j", "Graphique prix", "Simulation future"])
 
+# ---------------------------------------------------------------------
+# TAB 1 — BACKTEST
+# ---------------------------------------------------------------------
 with tab1:
     st.subheader("Analyse sur 30 jours")
     st.write(f"Volatilité annualisée : {vol_30d:.2%}")
-    rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
+    rebalances = sum((p < range_low) or (p > range_high) for p in prices_relative)
     st.write(f"Hors de range détectés : {rebalances}")
 
+# ---------------------------------------------------------------------
+# TAB 2 — GRAPH
+# ---------------------------------------------------------------------
 with tab2:
+    st.subheader(f"Graphique du prix : {tokenA}/{tokenB}")
+
+    df = pd.DataFrame({
+        "Jour": list(range(len(prices_relative))),
+        "Prix": prices_relative
+    })
+
+    chart = alt.Chart(df).mark_line().encode(
+        x="Jour",
+        y=alt.Y("Prix", scale=alt.Scale(zero=False)),
+        tooltip=["Jour", "Prix"]
+    ).properties(height=400)
+
+    st.altair_chart(chart, use_container_width=True)
+
+# ---------------------------------------------------------------------
+# TAB 3 — SIMULATION
+# ---------------------------------------------------------------------
+with tab3:
     st.subheader("Simulation des rebalances futurs")
     future_days = st.number_input("Jours à simuler :", min_value=1, max_value=120, value=30)
     vol_sim = vol_30d / np.sqrt(365)
 
-    simulated = [pricesA[-1]]
+    simulated = [prices_relative[-1]]
     for _ in range(future_days):
         next_price = simulated[-1] * (1 + np.random.normal(0, vol_sim))
         simulated.append(next_price)
 
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Hors de range : {future_reb}")
-
-with tab3:
-    st.subheader("Analyse automatique")
-    vol_7d = compute_volatility(pricesA[-7:])
-    st.write(f"Volatilité annualisée 7j : {vol_7d:.2%}")
-
-    if vol_7d > 0.8:
-        suggestion = "Neutre"
-    elif vol_7d > 0.4:
-        suggestion = "Coup de pouce"
-    else:
-        suggestion = "Mini-doux"
-
-    st.write(f"Stratégie suggérée : {suggestion}")
