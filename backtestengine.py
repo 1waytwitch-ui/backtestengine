@@ -268,10 +268,10 @@ vol_30d = compute_volatility(pricesA)
 # ONGLET
 # ---------------------------------------------------------------------
 tab1, tab2, tab3, tab4 = st.tabs([
-    " Backtest 30j ",
-    " Simulation future ",
-    " Analyse stratégie ",
-    " Automation "
+    "Backtest 30j",
+    "Simulation future",
+    "Analyse stratégie",
+    "Automation"
 ])
 
 with tab1:
@@ -371,7 +371,7 @@ with tab4:
 
     st.divider()
 
-st.header("Récapitulatif Automation")
+    st.header("Récapitulatif Automation")
 
 # Gestion du marché
 market_trend = st.radio("Tendance du marché :", ["Baissier", "Haussier"])
@@ -389,7 +389,7 @@ else:
     range_low_pct_actual = (final_low - priceA) / priceA * 100
     range_high_pct_actual = (final_high - priceA) / priceA * 100
 
-st.json({
+    st.json({
     "Range total (%)": range_percent,
     "Range Low (%)": f"{range_low_pct_actual:.2f}%",
     "Range High (%)": f"{range_high_pct_actual:.2f}%",
