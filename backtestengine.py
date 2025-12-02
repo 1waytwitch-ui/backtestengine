@@ -241,8 +241,7 @@ with tab4:
     if invert_market:
         final_low, final_high = final_high, final_low
 
-    st.write(f"Range Low : **{final_low:.6f}** ({low_offset_pct:.2f}%)")
-    st.write(f"Range High : **{final_high:.6f}** (+{high_offset_pct:.2f}%)")
+    
     st.divider()
 
     # Trigger
