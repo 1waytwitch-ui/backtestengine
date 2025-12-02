@@ -138,7 +138,7 @@ with col_title:
     st.write("Analyse complète : ratio, range, volatilité, rebalances, simulation future et automations.")
 
 with col_telegram:
-    # Affiche l'image de profil Telegram (lien direct, peut ne pas fonctionner pour comptes privés)
+    # Affiche l'image de profil Telegram
     st.image("https://t.me/i/userpic/320/Pigeonchanceux.jpg", width=80)
     st.markdown("[Mon Telegram](https://t.me/Pigeonchanceux)")
 
