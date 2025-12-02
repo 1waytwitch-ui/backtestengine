@@ -268,10 +268,10 @@ vol_30d = compute_volatility(pricesA)
 # ONGLET
 # ---------------------------------------------------------------------
 tab1, tab2, tab3, tab4 = st.tabs([
-    "Backtest 30j",
-    "Simulation future",
-    "Analyse stratégie",
-    "Automation"
+    " Backtest 30j ",
+    " Simulation future ",
+    " Analyse stratégie ",
+    " Automation "
 ])
 
 with tab1:
