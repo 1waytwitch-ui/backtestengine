@@ -231,7 +231,6 @@ with tab4:
     st.subheader("Automation intelligente des ranges et triggers")
 
     # Range et trigger
-    range_percent = st.slider("Range total (%)", 1.0, 50.0, 20.0, 0.5)
     range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, 0.5)
     ratio_low = 20
     ratio_high = 80
