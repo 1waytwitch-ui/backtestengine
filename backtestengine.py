@@ -7,10 +7,23 @@ import matplotlib.pyplot as plt
 # ---------------------------------------------------------------------
 # CONFIG PAGE (wide mode)
 # ---------------------------------------------------------------------
-st.set_page_config(
-    page_title="LP Stratégies Backtest Engine",
-    layout="wide"
-)
+from PIL import Image
+import streamlit as st
+
+# Charge ta photo locale
+image = Image.open("pigeonchanceux.jpg")  # Remplace par le nom de ton fichier
+
+# Crée deux colonnes : gauche pour le titre, droite pour Telegram
+col_title, col_telegram = st.columns([3, 1])
+
+with col_title:
+    st.title("LP Stratégies Backtest Engine")
+    st.write("Analyse complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
+
+with col_telegram:
+    st.image(image, width=80)
+    st.markdown("[Mon Telegram](https://t.me/Pigeonchanceux)")
+
 
 # ---------------------------------------------------------------------
 # THEME 1WAY W&B
