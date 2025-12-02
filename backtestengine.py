@@ -363,7 +363,7 @@ with tab4:
     st.divider()
 
     st.header("Récapitulatif Automation")
-    st.json(
+    st.json({
         "Range total (%)": range_percent,
         "Range Low (price)": final_low,
         "Range High (price)": final_high,
@@ -372,4 +372,4 @@ with tab4:
         "Trigger Low (price)": trigger_low_price,
         "Trigger High (%)": trigger_high_pct,
         "Trigger High (price)": trigger_high_price
-    )
+    })
