@@ -129,7 +129,7 @@ def compute_volatility(prices):
 
 
 # ---------------------------------------------------------------------
-# TITRE
+# TITRE + TELEGRAM
 # ---------------------------------------------------------------------
 col_title, col_telegram = st.columns([3, 1])
 
@@ -313,6 +313,7 @@ with tab3:
 with tab4:
     st.subheader("Automation intelligente des ranges et triggers")
 
+    # --- Range et offsets ---
     range_percent = st.slider("Range total (%)", 1.0, 50.0, 20.0, 0.5)
 
     ratio_low = 20
@@ -324,16 +325,26 @@ with tab4:
     final_low = priceA * (1 + low_offset_pct/100.0)
     final_high = priceA * (1 + high_offset_pct/100.0)
 
-    # Inversion bull/bear appliquée aussi à l’automation
-    if invert_market:
-        final_low, final_high = final_high, final_low
+    # --- Inversion bull/bear appliquée à l’automation ---
+    market_trend_auto = st.radio("Tendance du marché (Automation) :", ["Baissier", "Haussier"])
 
-    st.write(f"Range Low : **{final_low:.6f}** ({low_offset_pct:.2f}%)")
-    st.write(f"Range High : **{final_high:.6f}** (+{high_offset_pct:.2f}%)")
+    if strategy_choice in ["Mini-doux", "Coup de pouce"]:
+        if market_trend_auto == "Baissier":
+            range_low_pct_actual = -4.0
+            range_high_pct_actual = 16.0
+        else:  # Haussier
+            range_low_pct_actual = -16.0
+            range_high_pct_actual = 4.0
+    else:
+        range_low_pct_actual = (final_low - priceA) / priceA * 100
+        range_high_pct_actual = (final_high - priceA) / priceA * 100
+
+    st.write(f"Range Low : **{range_low_pct_actual:.2f}%**")
+    st.write(f"Range High : **{range_high_pct_actual:.2f}%**")
 
     st.divider()
 
-    # Time buffer
+    # --- Time buffer ---
     st.subheader("Suggestion du time-buffer (volatilité)")
     vola = vol_30d * 100
 
@@ -348,9 +359,8 @@ with tab4:
 
     st.divider()
 
-    # TRIGGER
+    # --- Trigger ---
     st.subheader("Trigger d’anticipation (position dans le range)")
-
     col_t1, col_t2 = st.columns(2)
     with col_t1:
         trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 15)
@@ -371,34 +381,14 @@ with tab4:
 
     st.divider()
 
-st.header("Récapitulatif Automation")
-
-# Sélection de la tendance du marché
-market_trend = st.radio("Tendance du marché :", ["Baissier", "Haussier"])
-
-# Définition fixe des ranges pour Mini-doux et Coup de pouce
-if strategy_choice in ["Mini-doux", "Coup de pouce"]:
-    if market_trend == "Baissier":
-        range_low_pct_actual = -4.0
-        range_high_pct_actual = 16.0
-    else:  # Haussier
-        range_low_pct_actual = -16.0
-        range_high_pct_actual = 4.0
-else:
-    # Pour les autres stratégies, calcul automatique par rapport à priceA
-    range_low_pct_actual = (final_low - priceA) / priceA * 100
-    range_high_pct_actual = (final_high - priceA) / priceA * 100
-
-# Affichage JSON du récapitulatif
-st.json({
-    "Range total (%)": range_percent,
-    "Range Low (%)": f"{range_low_pct_actual:.2f}%",
-    "Range High (%)": f"{range_high_pct_actual:.2f}%",
-    "Trigger Low (%)": trigger_low_pct,
-    "Trigger Low (price)": trigger_low_price,
-    "Trigger High (%)": trigger_high_pct,
-    "Trigger High (price)": trigger_high_price
-})
-
-
-
+    # --- Récap JSON ---
+    st.header("Récapitulatif Automation")
+    st.json({
+        "Range total (%)": range_percent,
+        "Range Low (%)": f"{range_low_pct_actual:.2f}%",
+        "Range High (%)": f"{range_high_pct_actual:.2f}%",
+        "Trigger Low (%)": trigger_low_pct,
+        "Trigger Low (price)": trigger_low_price,
+        "Trigger High (%)": trigger_high_pct,
+        "Trigger High (price)": trigger_high_price
+    })
