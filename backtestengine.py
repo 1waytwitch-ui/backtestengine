@@ -231,7 +231,7 @@ with tab4:
     st.subheader("Automation intelligente des ranges et triggers")
 
     # Range et trigger
-    range_percent = st.slider("Range total (%)", 1.0, 50.0, 20.0, 0.5)
+    range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, 0.5)
     ratio_low = 20
     ratio_high = 80
     low_offset_pct = -range_percent * ratio_low / 100.0
@@ -249,9 +249,9 @@ with tab4:
     st.subheader("Trigger d’anticipation (position dans le range)")
     col_t1, col_t2 = st.columns(2)
     with col_t1:
-        trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 15)
+        trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 10)
     with col_t2:
-        trigger_high_pct = st.slider("Trigger High (%)", 0, 100, 85)
+        trigger_high_pct = st.slider("Trigger High (%)", 0, 100, 90)
     range_width = final_high - final_low
     trigger_low_price = final_low + (trigger_low_pct / 100.0) * range_width if range_width!=0 else final_low
     trigger_high_price = final_low + (trigger_high_pct / 100.0) * range_width if range_width!=0 else final_high
