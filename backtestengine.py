@@ -13,56 +13,19 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------
-# THEME 1WAY W&B
+# THEME
 # ---------------------------------------------------------------------
 st.markdown(
     """
     <style>
-    .stApp {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        font-weight: 500 !important;
-    }
-    h1, h2, h3, h4 {
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    p, span, div, label {
-        color: #000000 !important;
-        font-weight: 500 !important;
-    }
+    .stApp {background-color: #FFFFFF !important; color: #000000 !important; font-weight: 500 !important;}
+    h1, h2, h3, h4 {color: #000000 !important; font-weight: 700 !important;}
+    p, span, div, label {color: #000000 !important; font-weight: 500 !important;}
     .stTextInput > div > div > input,
-    .stNumberInput > div > div > input {
-        background-color: #F0F0F0 !important;
-        color: #000000 !important;
-        border: 1px solid #000000 !important;
-        border-radius: 6px !important;
-        font-weight: 600 !important;
-        height: 28px !important;
-        padding: 0 8px !important;
-        font-size: 14px !important;
-    }
-    .stButton > button {
-        background-color: #000000 !important;
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-        border: 1px solid #000000 !important;
-        padding: 0.4rem 1rem !important;
-        border-radius: 6px !important;
-    }
-    .stTabs [role="tab"] {
-        color: #000000 !important;
-        border: 1px solid #000000 !important;
-        background-color: #E0E0E0 !important;
-        border-radius: 6px !important;
-        font-weight: 600 !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border-bottom: 2px solid #000000 !important;
-        font-weight: 700 !important;
-    }
+    .stNumberInput > div > div > input {background-color: #F0F0F0 !important; color: #000000 !important; border: 1px solid #000000 !important; border-radius: 6px !important; font-weight: 600 !important; height: 28px !important; padding: 0 8px !important; font-size: 14px !important;}
+    .stButton > button {background-color: #000000 !important; color: #FFFFFF !important; font-weight: 700 !important; border: 1px solid #000000 !important; padding: 0.4rem 1rem !important; border-radius: 6px !important;}
+    .stTabs [role="tab"] {color: #000000 !important; border: 1px solid #000000 !important; background-color: #E0E0E0 !important; border-radius: 6px !important; font-weight: 600 !important;}
+    .stTabs [aria-selected="true"] {background-color: #FFFFFF !important; color: #000000 !important; border-bottom: 2px solid #000000 !important; font-weight: 700 !important;}
     </style>
     """,
     unsafe_allow_html=True
@@ -110,7 +73,6 @@ def get_market_chart(asset_id):
     except:
         return [1.0] * 30
 
-
 def get_current_price(asset_id):
     try:
         response = requests.get(
@@ -120,43 +82,33 @@ def get_current_price(asset_id):
     except:
         return 0.0, False
 
-
 def compute_volatility(prices):
     if len(prices) < 2:
         return 0.0
     returns = np.diff(prices) / prices[:-1]
     return np.std(returns) * np.sqrt(365)
 
-
 # ---------------------------------------------------------------------
 # TITRE + TELEGRAM
 # ---------------------------------------------------------------------
 col_title, col_telegram = st.columns([3, 1])
-
 with col_title:
     st.title("LP Stratégies Backtest Engine")
     st.write("Analyse complète : ratio, range, volatilité, rebalances, simulation future et automations.")
-
 with col_telegram:
     st.image("https://t.me/i/userpic/320/Pigeonchanceux.jpg", width=80)
     st.markdown("[Mon Telegram](https://t.me/Pigeonchanceux)")
-
 
 # ---------------------------------------------------------------------
 # LAYOUT 2 COLONNES
 # ---------------------------------------------------------------------
 col1, col2 = st.columns([1.3, 1])
-
-# --------- COLONNE 1 : CONFIGURATION ---------
 with col1:
     st.subheader("Configuration de la Pool")
-
     pcol, scol = st.columns([1, 1])
-
     with pcol:
         pair_labels = [f"{a}/{b}" for a, b in PAIRS]
         selected_pair = st.radio("Paire :", pair_labels)
-
     with scol:
         strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
@@ -164,9 +116,7 @@ with col1:
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
 
-    # ------------------------------------------------------
-    # OPTION : INVERSION MARCHÉ BULL → BEAR
-    # ------------------------------------------------------
+    # Inversion marché bull/bear
     invert_market = st.checkbox("Inversion marché (bull → bear)")
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
@@ -174,7 +124,6 @@ with col1:
     st.write(f"Ratio : {int(ratioA*100)}/{int(ratioB*100)}")
     st.write(f"Objectif : {info['objectif']}")
     st.write(f"Contexte idéal : {info['contexte']}")
-
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
     def get_price_usd(token):
@@ -190,49 +139,36 @@ with col1:
     if tokenB == "USDC":
         priceA_usd, okA = get_price_usd(tokenA)
         if not okA:
-            priceA_usd = st.number_input(
-                f"Prix manuel de {tokenA} (USD)", value=1.0, step=0.01
-            )
+            priceA_usd = st.number_input(f"Prix manuel de {tokenA} (USD)", value=1.0, step=0.01)
         priceA = priceA_usd
     else:
         priceA_usd, okA = get_price_usd(tokenA)
         priceB_usd, okB = get_price_usd(tokenB)
-
         colA, colB = st.columns(2)
         with colA:
             if not okA:
-                priceA_usd = st.number_input(
-                    f"Prix manuel {tokenA} (USD)", value=1.0, step=0.01
-                )
+                priceA_usd = st.number_input(f"Prix manuel {tokenA} (USD)", value=1.0, step=0.01)
         with colB:
             if not okB:
-                priceB_usd = st.number_input(
-                    f"Prix manuel {tokenB} (USD)", value=1.0, step=0.01
-                )
-
+                priceB_usd = st.number_input(f"Prix manuel {tokenB} (USD)", value=1.0, step=0.01)
         priceB_usd = max(priceB_usd, 0.0000001)
         priceA = priceA_usd / priceB_usd
 
     # Range dynamique
     range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0, step=1.0)
-
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
-
-    # Si inversion → range inversé
     if invert_market:
         range_low, range_high = range_high, range_low
 
     capitalA = capital * ratioA
     capitalB = capital * ratioB
 
-# --------- COLONNE 2 : AFFICHAGE ---------
 with col2:
     st.subheader("Range et Prix")
     st.write(f"Prix actuel {tokenA}/{tokenB} : {priceA:.6f}")
     st.write(f"Limite basse : {range_low:.6f}")
     st.write(f"Limite haute : {range_high:.6f}")
-    st.write("Répartition du capital :")
     st.write(f"{tokenA} : {capitalA:.2f} USD")
     st.write(f"{tokenB} : {capitalB:.2f} USD")
 
@@ -241,7 +177,6 @@ with col2:
 # ---------------------------------------------------------------------
 today = str(datetime.date.today())
 cache_key = f"{tokenA}_prices_{today}"
-
 if cache_key in st.session_state:
     pricesA = st.session_state[cache_key]
 else:
@@ -254,53 +189,39 @@ else:
         else:
             p, _ = get_current_price(COINGECKO_IDS[tokenA])
             prices = [p] * 30
-
     st.session_state[cache_key] = prices
     pricesA = prices
-
 vol_30d = compute_volatility(pricesA)
 
 # ---------------------------------------------------------------------
 # ONGLET
 # ---------------------------------------------------------------------
-tab1, tab2, tab3, tab4 = st.tabs([
-    "Backtest 30j",
-    "Simulation future",
-    "Analyse stratégie",
-    "Automation"
-])
-
+tab1, tab2, tab3, tab4 = st.tabs(["Backtest 30j","Simulation future","Analyse stratégie","Automation"])
 with tab1:
     st.subheader("Analyse sur 30 jours")
     st.write(f"Volatilité annualisée : {vol_30d:.2%}")
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
     st.write(f"Hors de range détectés : {rebalances}")
-
 with tab2:
     st.subheader("Simulation des rebalances futurs")
     future_days = st.number_input("Jours à simuler :", min_value=1, max_value=120, value=30)
     vol_sim = vol_30d / np.sqrt(365)
-
     simulated = [pricesA[-1]]
     for _ in range(future_days):
         next_price = simulated[-1] * (1 + np.random.normal(0, vol_sim))
         simulated.append(next_price)
-
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Hors de range : {future_reb}")
-
 with tab3:
     st.subheader("Analyse automatique")
     vol_7d = compute_volatility(pricesA[-7:])
     st.write(f"Volatilité annualisée 7j : {vol_7d:.2%}")
-
     if vol_7d > 0.8:
         suggestion = "Neutre"
     elif vol_7d > 0.4:
         suggestion = "Coup de pouce"
     else:
         suggestion = "Mini-doux"
-
     st.write(f"Stratégie suggérée : {suggestion}")
 
 # ---------------------------------------------------------------------
@@ -309,27 +230,19 @@ with tab3:
 with tab4:
     st.subheader("Automation intelligente des ranges et triggers")
 
-    # Bouton Baissier/Haussier
-    market_trend_auto = st.radio("Tendance du marché :", ["Baissier", "Haussier"])
-
     # Range et trigger
     range_percent = st.slider("Range total (%)", 1.0, 50.0, 20.0, 0.5)
     ratio_low = 20
     ratio_high = 80
-
     low_offset_pct = -range_percent * ratio_low / 100.0
     high_offset_pct = range_percent * ratio_high / 100.0
-
     final_low = priceA * (1 + low_offset_pct/100.0)
     final_high = priceA * (1 + high_offset_pct/100.0)
-
-    # Inversion bull/bear appliquée aussi à l’automation
     if invert_market:
         final_low, final_high = final_high, final_low
 
     st.write(f"Range Low : **{final_low:.6f}** ({low_offset_pct:.2f}%)")
     st.write(f"Range High : **{final_high:.6f}** (+{high_offset_pct:.2f}%)")
-
     st.divider()
 
     # Trigger
@@ -339,40 +252,38 @@ with tab4:
         trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 15)
     with col_t2:
         trigger_high_pct = st.slider("Trigger High (%)", 0, 100, 85)
-
     range_width = final_high - final_low
-    if range_width == 0:
-        trigger_low_price = final_low
-        trigger_high_price = final_high
-    else:
-        trigger_low_price = final_low + (trigger_low_pct / 100.0) * range_width
-        trigger_high_price = final_low + (trigger_high_pct / 100.0) * range_width
-
+    trigger_low_price = final_low + (trigger_low_pct / 100.0) * range_width if range_width!=0 else final_low
+    trigger_high_price = final_low + (trigger_high_pct / 100.0) * range_width if range_width!=0 else final_high
     st.write(f"Trigger Low : **{trigger_low_price:.6f}**")
     st.write(f"Trigger High : **{trigger_high_price:.6f}**")
-
     st.divider()
+
+    # Rebalance avancée
+    st.subheader("Rebalance avancée (futur range marché)")
+    col_b1, col_b2 = st.columns(2)
+    with col_b1:
+        st.markdown("**Marché Baissier**")
+        rb_low_bear = priceA * (1 - 0.04)
+        rb_high_bear = priceA * (1 + 0.16)
+        st.write(f"Range Low : {rb_low_bear:.6f} (-4%)")
+        st.write(f"Range High : {rb_high_bear:.6f} (+16%)")
+    with col_b2:
+        st.markdown("**Marché Haussier**")
+        rb_low_bull = priceA * (1 - 0.16)
+        rb_high_bull = priceA * (1 + 0.04)
+        st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
+        st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
 
     # Récap Automation
     st.header("Récapitulatif Automation")
-
-    # Calcul Range selon stratégie et marché
     if strategy_choice in ["Mini-doux","Coup de pouce"]:
-        if market_trend_auto=="Baissier":
-            range_low_pct_actual = -4.0
-            range_high_pct_actual = 16.0
-        else:
-            range_low_pct_actual = -16.0
-            range_high_pct_actual = 4.0
+        range_low_pct_actual = -4.0
+        range_high_pct_actual = 16.0
     else:
-        if priceA > 0:
-            range_low_pct_actual = (final_low - priceA)/priceA*100
-            range_high_pct_actual = (final_high - priceA)/priceA*100
-        else:
-            range_low_pct_actual = 0.0
-            range_high_pct_actual = 0.0
+        range_low_pct_actual = (final_low-priceA)/priceA*100 if priceA!=0 else 0.0
+        range_high_pct_actual = (final_high-priceA)/priceA*100 if priceA!=0 else 0.0
 
-    # Affichage JSON du récapitulatif
     st.json({
         "Range total (%)": range_percent,
         "Range Low (%)": f"{range_low_pct_actual:.2f}%",
