@@ -371,7 +371,7 @@ with tab4:
 
     st.divider()
 
-  st.header("Récapitulatif Automation")
+st.header("Récapitulatif Automation")
 
 # Calcul des offsets en % par rapport au prix actuel
 range_low_pct_actual = (final_low - priceA) / priceA * 100
@@ -392,4 +392,5 @@ st.json({
     "Trigger High (%)": trigger_high_pct,
     "Trigger High (price)": trigger_high_price
 })
+
 
