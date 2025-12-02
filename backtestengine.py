@@ -384,7 +384,7 @@ if strategy_choice in ["Mini-doux", "Coup de pouce"]:
     else:  # Haussier
         range_low_pct_actual = -12.0
         range_high_pct_actual = 3.0
-    else:
+else:
     # Pour les autres stratégies, calcul automatique par rapport à priceA
     range_low_pct_actual = (final_low - priceA) / priceA * 100
     range_high_pct_actual = (final_high - priceA) / priceA * 100
@@ -397,6 +397,6 @@ if strategy_choice in ["Mini-doux", "Coup de pouce"]:
     "Trigger Low (price)": trigger_low_price,
     "Trigger High (%)": trigger_high_pct,
     "Trigger High (price)": trigger_high_price
-    })
+})
 
 
