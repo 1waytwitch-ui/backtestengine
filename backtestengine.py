@@ -377,7 +377,7 @@ with tab4:
     market_trend = st.radio("Tendance du marché :", ["Mini-doux", "Coup de pouce"])
 
     # Définition fixe des ranges selon marché et stratégie
-if strategy_choice in ["Mini-doux", "Coup de pouce"]:
+if strategy_choice in ["Baissier", "Haussier"]:
     if market_trend == "Baissier":
         range_low_pct_actual = -3.0
         range_high_pct_actual = 12.0
