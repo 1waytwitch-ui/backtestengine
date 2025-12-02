@@ -286,7 +286,7 @@ with tab3:
     st.write(f"Stratégie suggérée : {suggestion}")
 
 # ---------------------------------------------------------------------
-# 🔥 NOUVEL ONGLET : AUTOMATION
+# 🔥 NOUVEL ONGLET : AUTOMATION (LOGIQUE TRIGGER CORRIGÉE)
 # ---------------------------------------------------------------------
 with tab4:
     st.subheader("Automation intelligente des ranges")
@@ -298,15 +298,16 @@ with tab4:
     ratio_low = 20
     ratio_high = 80
 
-    # Low = -range * ratio_low%
-    low_offset = -range_percent * ratio_low / 100
-    high_offset = range_percent * ratio_high / 100
+    # On calcule les offsets relatifs (%) : low_offset et high_offset en pourcentage du prix
+    # low_offset ici est négatif (ex: -4%), high_offset positif (ex: +16%) quand range_percent=20 et ratio 20/80
+    low_offset_pct = -range_percent * ratio_low / 100.0
+    high_offset_pct = range_percent * ratio_high / 100.0
 
-    final_low = priceA * (1 + low_offset/100)
-    final_high = priceA * (1 + high_offset/100)
+    final_low = priceA * (1 + low_offset_pct/100.0)
+    final_high = priceA * (1 + high_offset_pct/100.0)
 
-    st.write(f"Range Low : **{final_low:.6f}** ({low_offset:.2f}%)")
-    st.write(f"Range High : **{final_high:.6f}** (+{high_offset:.2f}%)")
+    st.write(f"Range Low : **{final_low:.6f}** ({low_offset_pct:.2f}%)")
+    st.write(f"Range High : **{final_high:.6f}** (+{high_offset_pct:.2f}%)")
 
     st.divider()
 
@@ -325,17 +326,59 @@ with tab4:
 
     st.divider()
 
-    # Trigger d’anticipation
-    st.subheader("Trigger d’anticipation")
-    trigger_low_ratio = st.slider("Anticipation Low (%)", 0, 50, 10)
-    trigger_high_ratio = st.slider("Anticipation High (%)", 0, 50, 10)
+    # -------------------------
+    # TRIGGER D'ANTICIPATION
+    # -------------------------
+    st.subheader("Trigger d’anticipation (position dans le range)")
 
-    trigger_low = final_low * (1 - trigger_low_ratio/100)
-    trigger_high = final_high * (1 + trigger_high_ratio/100)
+    st.markdown(
+        "Le trigger est exprimé en **% du range** :\n\n"
+        "- 0% = position exactement à la limite basse (`range_low`)\n"
+        "- 100% = position exactement à la limite haute (`range_high`)\n\n"
+        "Ex : **15 / 85** → trigger bas = 15% du chemin entre `range_low` et `range_high`; "
+        "trigger haut = 85% du chemin entre `range_low` et `range_high`."
+    )
 
-    st.write(f"Trigger Low anticipé : **{trigger_low:.6f}**")
-    st.write(f"Trigger High anticipé : **{trigger_high:.6f}**")
+    col_t1, col_t2 = st.columns(2)
+    with col_t1:
+        trigger_low_pct = st.slider("Trigger Low (%) le long du range", 0, 100, 10)
+    with col_t2:
+        trigger_high_pct = st.slider("Trigger High (%) le long du range", 0, 100, 90)
 
-    st.info("Exemple : 10% → déclenche 10% avant d’atteindre le range low/high.")
+    # Calcul du trigger en prix : on se place sur l'axe allant de final_low -> final_high
+    range_width = final_high - final_low
+    # sécurité si range_width est nul ou négatif
+    if range_width == 0:
+        st.error("Range width = 0, impossible de calculer les triggers.")
+        trigger_low_price = final_low
+        trigger_high_price = final_high
+    else:
+        # position le long du range (final_low + pct * largeur)
+        trigger_low_price = final_low + (trigger_low_pct / 100.0) * range_width
+        trigger_high_price = final_low + (trigger_high_pct / 100.0) * range_width
 
+    st.write(f"Trigger Low (à {trigger_low_pct}% du range) : **{trigger_low_price:.6f}**")
+    st.write(f"Trigger High (à {trigger_high_pct}% du range) : **{trigger_high_price:.6f}**")
 
+    st.info(
+        "Interprétation : si tu veux déclencher par anticipation x% avant la fin d'un côté, "
+        "choisis la position en % le long du range. Par ex. 15 → 15% du chemin range_low→range_high."
+    )
+
+    st.divider()
+
+    # Récapitulatif automation
+    st.header("Récapitulatif Automation")
+    st.json({
+        "Range total (%)": range_percent,
+        "Range Low (price)": final_low,
+        "Range High (price)": final_high,
+        "Range Low (pct offset)": low_offset_pct,
+        "Range High (pct offset)": high_offset_pct,
+        "Volatilité annualisée 30j (%)": vol_30d * 100,
+        "Time buffer suggestion": suggestion,
+        "Trigger Low (%)": trigger_low_pct,
+        "Trigger Low (price)": trigger_low_price,
+        "Trigger High (%)": trigger_high_pct,
+        "Trigger High (price)": trigger_high_price
+    })
