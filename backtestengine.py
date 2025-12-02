@@ -275,21 +275,4 @@ with tab4:
         st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
         st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
 
-    # Récap Automation
-    st.header("Récapitulatif Automation")
-    if strategy_choice in ["Mini-doux","Coup de pouce"]:
-        range_low_pct_actual = -4.0
-        range_high_pct_actual = 16.0
-    else:
-        range_low_pct_actual = (final_low-priceA)/priceA*100 if priceA!=0 else 0.0
-        range_high_pct_actual = (final_high-priceA)/priceA*100 if priceA!=0 else 0.0
-
-    st.json({
-        "Range total (%)": range_percent,
-        "Range Low (%)": f"{range_low_pct_actual:.2f}%",
-        "Range High (%)": f"{range_high_pct_actual:.2f}%",
-        "Trigger Low (%)": trigger_low_pct,
-        "Trigger Low (price)": trigger_low_price,
-        "Trigger High (%)": trigger_high_pct,
-        "Trigger High (price)": trigger_high_price
-    })
+    
