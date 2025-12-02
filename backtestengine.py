@@ -374,7 +374,7 @@ with tab4:
     st.header("Récapitulatif Automation")
 
     # Gestion du marché
-    market_trend = st.radio("Tendance du marché :", ["Mini-doux", "Coup de pouce"])
+    market_trend = st.radio("Tendance du marché :", ["Baissier", "Haussier"])
 
     # Définition fixe des ranges selon marché et stratégie
 if strategy_choice in ["Baissier", "Haussier"]:
