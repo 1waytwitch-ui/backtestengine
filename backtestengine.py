@@ -371,14 +371,25 @@ with tab4:
 
     st.divider()
 
-    st.header("Récapitulatif Automation")
-    st.json({
-        "Range total (%)": range_percent,
-        "Range Low (price)": final_low,
-        "Range High (price)": final_high,
-        "Volatilité annualisée 30j (%)": vol_30d * 100,
-        "Trigger Low (%)": trigger_low_pct,
-        "Trigger Low (price)": trigger_low_price,
-        "Trigger High (%)": trigger_high_pct,
-        "Trigger High (price)": trigger_high_price
-    })
+  st.header("Récapitulatif Automation")
+
+# Calcul des offsets en % par rapport au prix actuel
+range_low_pct_actual = (final_low - priceA) / priceA * 100
+range_high_pct_actual = (final_high - priceA) / priceA * 100
+
+# Gestion rebalance inversé si marché haussier
+market_trend = st.radio("Tendance du marché :", ["Baissier", "Haussier"])
+if market_trend == "Haussier" and strategy_choice in ["Mini-doux", "Coup de pouce"]:
+    # Inverse les offsets
+    range_low_pct_actual, range_high_pct_actual = -range_high_pct_actual, -range_low_pct_actual
+
+st.json({
+    "Range total (%)": range_percent,
+    "Range Low (%)": f"{range_low_pct_actual:.2f}%",
+    "Range High (%)": f"{range_high_pct_actual:.2f}%",
+    "Trigger Low (%)": trigger_low_pct,
+    "Trigger Low (price)": trigger_low_price,
+    "Trigger High (%)": trigger_high_pct,
+    "Trigger High (price)": trigger_high_price
+})
+
