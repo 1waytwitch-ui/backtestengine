@@ -249,10 +249,8 @@ with tab4:
     st.subheader("Trigger d’anticipation (position dans le range)")
     col_t1, col_t2 = st.columns(2)
     with col_t1:
-        trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 15)
         trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 10)
     with col_t2:
-        trigger_high_pct = st.slider("Trigger High (%)", 0, 100, 85)
         trigger_high_pct = st.slider("Trigger High (%)", 0, 100, 90)
     range_width = final_high - final_low
     trigger_low_price = final_low + (trigger_low_pct / 100.0) * range_width if range_width!=0 else final_low
