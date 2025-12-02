@@ -373,17 +373,17 @@ with tab4:
 
 st.header("Récapitulatif Automation")
 
-# Gestion du marché
+# Sélection de la tendance du marché
 market_trend = st.radio("Tendance du marché :", ["Baissier", "Haussier"])
 
 # Définition fixe des ranges pour Mini-doux et Coup de pouce
 if strategy_choice in ["Mini-doux", "Coup de pouce"]:
     if market_trend == "Baissier":
-        range_low_pct_actual = -3.0
-        range_high_pct_actual = 12.0
+        range_low_pct_actual = -4.0
+        range_high_pct_actual = 16.0
     else:  # Haussier
-        range_low_pct_actual = -12.0
-        range_high_pct_actual = 3.0
+        range_low_pct_actual = -16.0
+        range_high_pct_actual = 4.0
 else:
     # Pour les autres stratégies, calcul automatique par rapport à priceA
     range_low_pct_actual = (final_low - priceA) / priceA * 100
