@@ -202,7 +202,6 @@ with tab1:
     st.write(f"Volatilité annualisée : {vol_30d:.2%}")
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
     st.write(f"Hors de range détectés : {rebalances}")
-
 with tab2:
     st.subheader("Simulation des rebalances futurs")
     future_days = st.number_input("Jours à simuler :", min_value=1, max_value=120, value=30)
@@ -213,7 +212,6 @@ with tab2:
         simulated.append(next_price)
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Hors de range : {future_reb}")
-
 with tab3:
     st.subheader("Analyse automatique")
     vol_7d = compute_volatility(pricesA[-7:])
@@ -232,20 +230,8 @@ with tab3:
 with tab4:
     st.subheader("Automation intelligente des ranges et triggers")
 
-    # -------------------------------
-    # TIME BUFFER (PLACÉ AVANT LES TRIGGERS)
-    # -------------------------------
-    st.markdown("### Time-Buffer dynamique ⏳ (adapté à la volatilité)")
-
-    vol_norm = min(max(vol_30d, 0.05), 1.5)  # clamp 5% – 150%
-    time_buffer_hours = int(12 + (vol_norm * 48))  # de 12 h → 60 h max
-
-    st.write(f"Volatilité : **{vol_30d:.2%}**")
-    st.write(f"Time-buffer recommandé : **{time_buffer_hours} heures**")
-
-    st.divider()
-
     # Range et trigger
+    range_percent = st.slider("Range total (%)", 1.0, 50.0, 20.0, 0.5)
     range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, 0.5)
     ratio_low = 20
     ratio_high = 80
@@ -264,8 +250,10 @@ with tab4:
     st.subheader("Trigger d’anticipation (position dans le range)")
     col_t1, col_t2 = st.columns(2)
     with col_t1:
+        trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 15)
         trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 10)
     with col_t2:
+        trigger_high_pct = st.slider("Trigger High (%)", 0, 100, 85)
         trigger_high_pct = st.slider("Trigger High (%)", 0, 100, 90)
     range_width = final_high - final_low
     trigger_low_price = final_low + (trigger_low_pct / 100.0) * range_width if range_width!=0 else final_low
@@ -273,6 +261,20 @@ with tab4:
     st.write(f"Trigger Low : **{trigger_low_price:.6f}**")
     st.write(f"Trigger High : **{trigger_high_price:.6f}**")
     st.divider()
+
+     # --- Time buffer ---
+    st.subheader("Suggestion du time-buffer (volatilité)")
+    vola = vol_30d*100
+    if vola<1:
+        suggestion = "10-30 minutes (volatilité faible)"
+    elif vola<3:
+        suggestion = "30-60 minutes (volatilité moyenne)"
+    else:
+        suggestion = "60 minutes et +++ (volatilité forte)"
+    st.success(f"Recommandation automatique : **{suggestion}**")
+
+    st.divider()
+
 
     # Rebalance avancée
     st.subheader("Rebalance avancée (futur range marché)")
