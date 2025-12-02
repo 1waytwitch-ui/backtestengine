@@ -371,13 +371,13 @@ with tab4:
 
     st.divider()
 
-    st.header("Récapitulatif Automation")
+st.header("Récapitulatif Automation")
 
-    # Gestion du marché
-    market_trend = st.radio("Tendance du marché :", ["Baissier", "Haussier"])
+# Gestion du marché
+market_trend = st.radio("Tendance du marché :", ["Baissier", "Haussier"])
 
-    # Définition fixe des ranges selon marché et stratégie
-if strategy_choice in ["Baissier", "Haussier"]:
+# Définition fixe des ranges pour Mini-doux et Coup de pouce
+if strategy_choice in ["Mini-doux", "Coup de pouce"]:
     if market_trend == "Baissier":
         range_low_pct_actual = -3.0
         range_high_pct_actual = 12.0
@@ -389,7 +389,8 @@ else:
     range_low_pct_actual = (final_low - priceA) / priceA * 100
     range_high_pct_actual = (final_high - priceA) / priceA * 100
 
-    st.json({
+# Affichage JSON du récapitulatif
+st.json({
     "Range total (%)": range_percent,
     "Range Low (%)": f"{range_low_pct_actual:.2f}%",
     "Range High (%)": f"{range_high_pct_actual:.2f}%",
@@ -398,5 +399,6 @@ else:
     "Trigger High (%)": trigger_high_pct,
     "Trigger High (price)": trigger_high_price
 })
+
 
 
