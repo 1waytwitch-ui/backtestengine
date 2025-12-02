@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------
-# THEME BLANC ET NOIR
+# THEME 1WAY W&B
 # ---------------------------------------------------------------------
 st.markdown(
     """
@@ -69,7 +69,7 @@ st.markdown(
 )
 
 # ---------------------------------------------------------------------
-# STRATEGIES ET COINS
+# STRATEGIES ET TOKENS
 # ---------------------------------------------------------------------
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
@@ -132,7 +132,7 @@ def compute_volatility(prices):
 # TITRE
 # ---------------------------------------------------------------------
 st.title("LP Stratégies Backtest Engine")
-st.write("Analyse complète : ratio, range proportionnel, volatilité, rebalances historiques et simulation future.")
+st.write("Analyse complète : ratio, range, volatilité, rebalances, simulation future et automations.")
 
 # ---------------------------------------------------------------------
 # LAYOUT 2 COLONNES
@@ -157,9 +157,9 @@ with col1:
     ratioA, ratioB = info["ratio"]
 
     # ------------------------------------------------------
-    # 🔥 NOUVELLE OPTION : INVERSION MARCHÉ BEAR → BULL
+    # OPTION : INVERSION MARCHÉ BULL → BEAR
     # ------------------------------------------------------
-    invert_market = st.checkbox("Inversion marché (bear → bull)")
+    invert_market = st.checkbox("Inversion marché (bull → bear)")
 
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
@@ -299,10 +299,10 @@ with tab3:
     st.write(f"Stratégie suggérée : {suggestion}")
 
 # ---------------------------------------------------------------------
-# 🔥 ONGLET AUTOMATION — version corrigée
+# AUTOMATION
 # ---------------------------------------------------------------------
 with tab4:
-    st.subheader("Automation intelligente des ranges")
+    st.subheader("Automation intelligente des ranges et triggers")
 
     range_percent = st.slider("Range total (%)", 1.0, 50.0, 20.0, 0.5)
 
@@ -315,7 +315,7 @@ with tab4:
     final_low = priceA * (1 + low_offset_pct/100.0)
     final_high = priceA * (1 + high_offset_pct/100.0)
 
-    # Inversion bear/bull appliquée aussi à l’automation
+    # Inversion bull/bear appliquée aussi à l’automation
     if invert_market:
         final_low, final_high = final_high, final_low
 
@@ -329,17 +329,17 @@ with tab4:
     vola = vol_30d * 100
 
     if vola < 1:
-        suggestion = "30–60 minutes (volatilité faible)"
+        suggestion = "10-30 minutes (volatilité faible)"
     elif vola < 3:
-        suggestion = "10–30 minutes (volatilité moyenne)"
+        suggestion = "30-60 minutes (volatilité moyenne)"
     else:
-        suggestion = "1–10 minutes (volatilité forte)"
+        suggestion = "60 minutes et +++ (volatilité forte)"
 
     st.success(f"Recommandation automatique : **{suggestion}**")
 
     st.divider()
 
-    # TRIGGER CORRIGÉ
+    # TRIGGER
     st.subheader("Trigger d’anticipation (position dans le range)")
 
     col_t1, col_t2 = st.columns(2)
@@ -363,7 +363,7 @@ with tab4:
     st.divider()
 
     st.header("Récapitulatif Automation")
-    st.json({
+    st.json(
         "Range total (%)": range_percent,
         "Range Low (price)": final_low,
         "Range High (price)": final_high,
@@ -372,4 +372,4 @@ with tab4:
         "Trigger Low (price)": trigger_low_price,
         "Trigger High (%)": trigger_high_pct,
         "Trigger High (price)": trigger_high_price
-    })
+    )
