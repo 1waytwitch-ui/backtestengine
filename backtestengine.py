@@ -189,7 +189,7 @@ with col2:
 
 # ------------------- AUTOMATION -------------------
 st.write("---")
-st.header("Stratégie d'Automation")
+st.header("Réglages Automation")
 
 st.subheader("Range future")
 range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0)
