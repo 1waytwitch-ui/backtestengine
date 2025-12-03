@@ -169,9 +169,7 @@ with col2:
     st.subheader("Analyse stratégie")
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
 
-# -------------------------------
-# AUTOMATION
-# -------------------------------
+# ------------------- AUTOMATION -------------------
 st.write("---")
 st.header("Automation")
 
@@ -179,21 +177,22 @@ st.subheader("Range automatique")
 range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0)
 
 ratio_low, ratio_high = 20, 80
-low_off = -range_percent * ratio_low / 100
-high_off = range_percent * ratio_high / 100
+low_offset_pct = -range_percent * ratio_low / 100
+high_offset_pct = range_percent * ratio_high / 100
 
-final_low = priceA * (1 + low_off/100)
-final_high = priceA * (1 + high_off/100)
-
+final_low = priceA * (1 + low_offset_pct/100)
+final_high = priceA * (1 + high_offset_pct/100)
 if invert_market:
     final_low, final_high = final_high, final_low
 
-st.write(f"Range auto : {final_low:.6f} – {final_high:.6f}")
+st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
 
-st.subheader("Triggers")
+st.subheader("Trigger d’anticipation")
 t1, t2 = st.columns(2)
-with t1: trig_low = st.number_input("Trigger Low (%)", 0, 100, 10)
-with t2: trig_high = st.number_input("Trigger High (%)", 0, 100, 90)
+with t1:
+    trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
+with t2:
+    trig_high = st.slider("Trigger High (%)", 0, 100, 90)
 
 rw = final_high - final_low
 trigger_low_price = final_low + (trig_low/100)*rw
@@ -204,19 +203,26 @@ st.write(f"Trigger High : {trigger_high_price:.6f}")
 
 st.subheader("Time-buffer")
 vola = vol_30d * 100
-if vola < 1: recomand = "10-30 min"
-elif vola < 3: recomand = "30-60 min"
-else: recomand = "60+ min"
-
+if vola < 1:
+    recomand = "10-30 minutes"
+elif vola < 3:
+    recomand = "30-60 minutes"
+else:
+    recomand = "60+ minutes"
 st.write(f"Recommandation : {recomand}")
 
-st.subheader("Rebalance avancée")
-c1, c2 = st.columns(2)
-with c1:
-    st.write("Marché baissier")
-    st.write(f"Low : {priceA*0.96:.6f}")
-    st.write(f"High : {priceA*1.16:.6f}")
-with c2:
-    st.write("Marché haussier")
-    st.write(f"Low : {priceA*0.84:.6f}")
-    st.write(f"High : {priceA*1.04:.6f}")
+# Rebalance avancée
+    st.subheader("Rebalance avancée (futur range marché)")
+    col_b1, col_b2 = st.columns(2)
+    with col_b1:
+        st.markdown("**Marché Baissier**")
+        rb_low_bear = priceA * (1 - 0.04)
+        rb_high_bear = priceA * (1 + 0.16)
+        st.write(f"Range Low : {rb_low_bear:.6f} (-4%)")
+        st.write(f"Range High : {rb_high_bear:.6f} (+16%)")
+    with col_b2:
+        st.markdown("**Marché Haussier**")
+        rb_low_bull = priceA * (1 - 0.16)
+        rb_high_bull = priceA * (1 + 0.04)
+        st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
+        st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
