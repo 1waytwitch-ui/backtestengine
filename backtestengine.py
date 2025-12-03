@@ -192,7 +192,7 @@ with col2:
     st.subheader("Range et Prix")
     st.write(f"Prix actuel : {priceA:.6f} $")
     st.write(f"Range ($) : {range_low:.6f} ↔ {range_high:.6f}")
-    st.write(f"Range (%) : ⇤ {pct_low:.1f}% +{pct_high:.1f}% ⇥")
+    st.write(f"Range (%) : ⇤ {pct_low:.1f}% | +{pct_high:.1f}% ⇥")
     st.write(f"Répartitions : {capitalA:.2f} USD {tokenA} ◄ ► {capitalB:.2f} USD {tokenB}")
 
     today = str(datetime.date.today())
