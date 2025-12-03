@@ -129,10 +129,15 @@ with col1:
 
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
+    # Calcul des limites
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
         range_low, range_high = range_high, range_low
+
+    # Pourcentage exact utilisé
+    pct_low = -ratioA * range_pct
+    pct_high = ratioB * range_pct
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
@@ -142,6 +147,10 @@ with col2:
     st.subheader("Range et Prix")
     st.write(f"Prix actuel : {priceA:.6f}")
     st.write(f"Limite : {range_low:.6f} ↔ {range_high:.6f}")
+
+    # 🔥 Ajout demandé :
+    st.write(f"Δ range appliqué : {pct_low:.1f}% / +{pct_high:.1f}%")
+
     st.write(f"Allocations : {capitalA:.2f} USD {tokenA} ◄ ► {capitalB:.2f} USD {tokenB}")
 
     today = str(datetime.date.today())
