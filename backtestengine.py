@@ -11,7 +11,7 @@ st.markdown("""
 <style>
 .stApp {background-color: #FFFFFF !important; color: #000000 !important;}
 h1, h2, h3, h4 {color: #000000 !important;}
-.stTextInput input, .stNumberInput input, .stRadio input, .stRadio label {
+.stTextInput input, .stNumberInput input {
     background-color: #F0F0F0 !important; 
     color: #000000 !important;
     border: 1px solid #000000 !important;
@@ -224,11 +224,11 @@ with col2:
     st.subheader("Analyse stratégie")
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
 
-# ---- AUTOMATION ----
+# ---- TITRE AUTOMATION ----
 st.markdown("""
 <style>
 .automation-banner {
-    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+    background: linear-gradient(135deg, #8e2de2 0%, #4fac66 100%);
     padding: 20px 25px;
     border-radius: 12px;
     display: flex;
@@ -248,58 +248,3 @@ st.markdown("""
     <div class="automation-title-text">Réglages Automation</div>
 </div>
 """, unsafe_allow_html=True)
-
-# Range future
-range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
-ratio_low, ratio_high = 20, 80
-
-low_offset_pct = -range_percent * ratio_low / 100
-high_offset_pct = range_percent * ratio_high / 100
-final_low = priceA * (1 + low_offset_pct/100)
-final_high = priceA * (1 + high_offset_pct/100)
-if invert_market:
-    final_low, final_high = final_high, final_low
-
-st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
-
-# Trigger
-t1, t2 = st.columns(2)
-with t1:
-    trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
-with t2:
-    trig_high = st.slider("Trigger High (%)", 0, 100, 90)
-rw = final_high - final_low
-trigger_low_price = final_low + (trig_low/100)*rw
-trigger_high_price = final_low + (trig_high/100)*rw
-st.write(f"Trigger Low : {trigger_low_price:.6f}")
-st.write(f"Trigger High : {trigger_high_price:.6f}")
-
-# Time-buffer
-vola = vol_30d * 100
-if vola < 1:
-    recomand = "6 à 12 minutes"
-elif vola < 3:
-    recomand = "18 à 48 minutes"
-else:
-    recomand = "60 minutes et plus"
-st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
-
-# ---- REBALANCE AVANCÉE ----
-st.subheader("Rebalance avancée (futur range)")
-global_range = range_percent
-off_low_pct  = -ratioA * global_range
-off_high_pct =  ratioB * global_range
-bear_low  = priceA * (1 + off_low_pct / 100)
-bear_high = priceA * (1 + off_high_pct / 100)
-bull_low  = priceA * (1 - off_high_pct / 100)
-bull_high = priceA * (1 - off_low_pct / 100)
-
-col_b1, col_b2 = st.columns(2)
-with col_b1:
-    st.markdown("**Marché Baissier (Dump)**")
-    st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
-    st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
-with col_b2:
-    st.markdown("**Marché Haussier (Pump)**")
-    st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
-    st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
