@@ -132,8 +132,8 @@ with col1:
 with col2:
     st.subheader("Range et Prix")
     st.write(f"Prix actuel : {priceA:.6f}")
-    st.write(f"Limite : {range_low:.6f} → {range_high:.6f}")
-    st.write(f"Allocations : {capitalA:.2f} USD {tokenA} / {capitalB:.2f} USD {tokenB}")
+    st.write(f"Limite : {range_low:.6f} ↔ {range_high:.6f}")
+    st.write(f"Allocations : {capitalA:.2f} USD {tokenA} ◄ ► {capitalB:.2f} USD {tokenB}")
 
     today = str(datetime.date.today())
     key = f"{tokenA}_prices_{today}"
