@@ -1,11 +1,11 @@
 # =====================================================================
-# 🔐 AUTHENTIFICATION — MOT DE PASSE UNIQUE (COOKIE LOCAL)
+# AUTHENTIFICATION — MOT DE PASSE UNIQUE (COOKIE LOCAL)
 # =====================================================================
 
 from streamlit_cookies_manager import EncryptedCookieManager
 import streamlit as st
 
-PASSWORD = "MonMotDePasse123"   # <-- CHANGE LE MOT DE PASSE ICI
+PASSWORD = "1way"   # <-- EDIT MDP
 
 cookies = EncryptedCookieManager(prefix="lp_app_")
 
@@ -30,7 +30,7 @@ if saved_pwd != PASSWORD:
     st.stop()
 
 # =====================================================================
-# 🔓 L'APPLICATION DÉMARRE ICI (TON CODE ORIGINAL)
+# L'APPLICATION DÉMARRE
 # =====================================================================
 
 import requests
