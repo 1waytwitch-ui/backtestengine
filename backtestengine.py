@@ -142,14 +142,13 @@ with col1:
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
 
-# ------------------- COL 2 : COMPACT VERSION -------------------
+# ------------------- COL 2 : backtest -------------------
 with col2:
     st.subheader("Range et Prix")
     st.write(f"Prix actuel : {priceA:.6f}")
     st.write(f"Limite : {range_low:.6f} ↔ {range_high:.6f}")
 
-    # 🔥 Ajout demandé :
-    st.write(f"Δ range appliqué : {pct_low:.1f}% / +{pct_high:.1f}%")
+    st.write(f"Range appliqué : {pct_low:.1f}% ⇤⇥ +{pct_high:.1f}%")
 
     st.write(f"Allocations : {capitalA:.2f} USD {tokenA} ◄ ► {capitalB:.2f} USD {tokenB}")
 
