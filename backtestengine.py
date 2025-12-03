@@ -284,18 +284,29 @@ st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
 st.subheader("Rebalance avancée (futur range)")
 
+# On utilise le range global défini dans Automation
+global_range = range_percent  # en %
+
+# Calcul dynamique des offsets selon le ratio de la stratégie
+off_low_pct  = -ratioA * global_range     # exemple Mini-doux : -0.1 * 20 = -2%
+off_high_pct =  ratioB * global_range     # exemple Mini-doux :  0.9 * 20 = +18%
+
+# Prix bear-market (dump → asymétrie vers le haut)
+bear_low  = priceA * (1 + off_low_pct / 100)
+bear_high = priceA * (1 + off_high_pct / 100)
+
+# Prix bull-market (pump → asymétrie vers le bas)
+bull_low  = priceA * (1 - off_high_pct / 100)
+bull_high = priceA * (1 - off_low_pct / 100)
+
 col_b1, col_b2 = st.columns(2)
 
 with col_b1:
-    st.markdown("**Marché Baissier**")
-    rb_low_bear = priceA * (1 - 0.04)
-    rb_high_bear = priceA * (1 + 0.16)
-    st.write(f"Range Low : {rb_low_bear:.6f} (-4%)")
-    st.write(f"Range High : {rb_high_bear:.6f} (+16%)")
+    st.markdown("**Marché Baissier (Dump)**")
+    st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
+    st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
 
 with col_b2:
-    st.markdown("**Marché Haussier**")
-    rb_low_bull = priceA * (1 - 0.16)
-    rb_high_bull = priceA * (1 + 0.04)
-    st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
-    st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
+    st.markdown("**Marché Haussier (Pump)**")
+    st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
+    st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
