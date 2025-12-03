@@ -1,60 +1,42 @@
+# =====================================================================
+# 🔐 AUTHENTIFICATION — MOT DE PASSE UNIQUE (COOKIE LOCAL)
+# =====================================================================
+
+from streamlit_cookies_manager import EncryptedCookieManager
 import streamlit as st
-import streamlit.components.v1 as components
-import requests
-import numpy as np
-import datetime
-import matplotlib.pyplot as plt
 
-# =====================================================================
-#                           AUTHENTIFICATION LOCALE
-# =====================================================================
+PASSWORD = "MonMotDePasse123"   # <-- CHANGE LE MOT DE PASSE ICI
 
-PASSWORD = "1way"    # <-- EDITMDP
-PARAM_KEY = "pwd"
+cookies = EncryptedCookieManager(prefix="lp_app_")
 
-# Inject JS to read localStorage and push password into URL params
-components.html("""
-<script>
-    const saved = localStorage.getItem("lp_password");
-    if (saved) {
-        const url = new URL(window.parent.location);
-        url.searchParams.set("pwd", saved);
-        window.parent.location = url.toString();
-    }
-</script>
-""", height=0)
+if not cookies.ready():
+    st.stop()
 
-# Read URL parameters
-params = st.query_params
-pwd = params.get(PARAM_KEY, None)
+saved_pwd = cookies.get("password")
 
-# If password is incorrect → show login
-if pwd != PASSWORD:
+if saved_pwd != PASSWORD:
     st.title("🔐 Accès protégé")
-
     user_input = st.text_input("Mot de passe :", type="password")
 
     if st.button("Valider"):
         if user_input == PASSWORD:
-
-            # Save into browser localStorage + redirect with query param
-            components.html(f"""
-            <script>
-                localStorage.setItem("lp_password", "{user_input}");
-                const url = new URL(window.parent.location);
-                url.searchParams.set("pwd", "{user_input}");
-                window.parent.location = url.toString();
-            </script>
-            """, height=0)
-
+            cookies.set("password", user_input)
+            cookies.save()
             st.success("Mot de passe correct !")
+            st.rerun()
         else:
             st.error("❌ Mot de passe incorrect")
 
     st.stop()
-# ----------------------------------------------------------------------
-# APP
-# ----------------------------------------------------------------------
+
+# =====================================================================
+# 🔓 L'APPLICATION DÉMARRE ICI (TON CODE ORIGINAL)
+# =====================================================================
+
+import requests
+import numpy as np
+import datetime
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
@@ -67,6 +49,7 @@ h1, h2, h3, h4 {color: #000000 !important;}
 .stButton button {background-color: #000000 !important; color: #FFFFFF !important;}
 </style>
 """, unsafe_allow_html=True)
+
 
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
@@ -91,6 +74,7 @@ PAIRS = [
     ("VIRTUAL", "WETH"), ("AERO", "WETH")
 ]
 
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_market_chart(asset_id):
     try:
@@ -101,11 +85,13 @@ def get_market_chart(asset_id):
     except:
         return [1.0] * 30
 
+
 def compute_volatility(prices):
     if len(prices) < 2:
         return 0.0
     returns = np.diff(prices) / prices[:-1]
     return np.std(returns) * np.sqrt(365)
+
 
 def get_price_usd(token):
     try:
@@ -116,8 +102,8 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
-# ---- Header --------------------------------------------------------
 
+# ---- Header --------------------------------------------------------
 st.markdown("""
 <style>
 .deFi-banner {
@@ -225,6 +211,7 @@ with col1:
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
+
 # ------------------- COL 2 : backtest -------------------
 with col2:
     st.subheader("Range et Prix")
@@ -269,6 +256,7 @@ with col2:
     st.subheader("Analyse stratégie")
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
 
+
 # ------------------- AUTOMATION -------------------
 st.write("---")
 st.header("Réglages Automation")
@@ -310,6 +298,7 @@ elif vola < 3:
 else:
     recomand = "60 et plus minutes"
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
+
 
 # ------------------- REBALANCE AVANCÉE -------------------
 st.subheader("Rebalance avancée (futur range)")
