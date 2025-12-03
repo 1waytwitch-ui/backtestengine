@@ -108,7 +108,7 @@ st.markdown("""
 </style>
 
 <div class="deFi-banner">
-    <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE Engine</div>
+    <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div class="deFi-telegram-box">
         <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg">
         <a href="https://t.me/Pigeonchanceux" target="_blank">Mon Telegram</a>
