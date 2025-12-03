@@ -4,14 +4,14 @@ import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE", layout="wide")
+st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
-# ---- CSS --------------------------------------------------------
+# ---- STYLES GÉNÉRAUX ----
 st.markdown("""
 <style>
 .stApp {background-color: #FFFFFF !important; color: #000000 !important;}
 h1, h2, h3, h4 {color: #000000 !important;}
-.stTextInput input, .stNumberInput input {
+.stTextInput input, .stNumberInput input, .stRadio input, .stRadio label {
     background-color: #F0F0F0 !important; 
     color: #000000 !important;
     border: 1px solid #000000 !important;
@@ -20,16 +20,10 @@ h1, h2, h3, h4 {color: #000000 !important;}
     background-color: #000000 !important;
     color: #FFFFFF !important;
 }
-/* Forcer la couleur du texte dans radios, selectbox et checkbox pour dark mode Windows */
-.stRadio label, .stRadio div, 
-.stSelectbox label, .stSelectbox div,
-.stCheckbox label, .stCheckbox div {
-    color: #000000 !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
-# ---- Données ---------------------------------------------------
+# ---- DONNÉES ----
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
     "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité(attention à inverser en fonction du marché)"},
@@ -56,6 +50,7 @@ PAIRS = [
     ("AERO", "WETH")
 ]
 
+# ---- FONCTIONS ----
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_market_chart(asset_id):
     try:
@@ -81,7 +76,7 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
-# ---- Header --------------------------------------------------------
+# ---- HEADER ----
 st.markdown("""
 <style>
 .deFi-banner {
@@ -118,6 +113,7 @@ st.markdown("""
     font-size: 18px;
 }
 </style>
+
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div class="deFi-telegram-box">
@@ -127,25 +123,24 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---- Main Layout ---------------------------------------------------
+# ---- LAYOUT PRINCIPAL ----
 col1, col2 = st.columns([1.3, 1])
 
-# ------------------- COL 1 : CONFIG -------------------
+# ---- COL 1 : CONFIG ----
 with col1:
     st.subheader("Configuration de la Pool")
-
     left, right = st.columns(2)
     with left:
         pair_labels = [f"{a}/{b}" for a, b in PAIRS]
-        selected_pair = st.radio("Paire :", pair_labels)
+        selected_pair = st.radio("Paire :", pair_labels, index=0, key="pair_radio")
     with right:
-        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
+        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()), index=0, key="strategy_radio")
 
     tokenA, tokenB = selected_pair.split("/")
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
 
-    invert_market = st.checkbox("Inversion marché (bull → bear)")
+    invert_market = st.checkbox("Inversion marché (bull → bear)", key="invert_checkbox")
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
@@ -175,15 +170,17 @@ with col1:
         priceA = priceA_usd / priceB_usd
 
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
+
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
         range_low, range_high = range_high, range_low
+
     pct_low = -ratioA * range_pct
     pct_high = ratioB * range_pct
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
-# ------------------- COL 2 : BACKTEST -------------------
+# ---- COL 2 : BACKTEST ----
 with col2:
     st.subheader("Range et Prix")
     st.write(f"Prix actuel : {priceA:.6f} $")
@@ -206,11 +203,13 @@ with col2:
     st.subheader("Analyse 30 jours")
     st.write(f"Volatilé : {vol_30d:.2%} — Hors range : {rebalances}")
 
-    future_days = st.number_input("Jours simulés futurs", 1, 120, 30)
+    future_days = st.number_input("Jours simulés future", 1, 120, 30)
     vol_sim = vol_30d / np.sqrt(365)
+
     simulated = [pricesA[-1]]
     for _ in range(future_days):
         simulated.append(simulated[-1] * (1 + np.random.normal(0, vol_sim)))
+
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Simulation future → Hors range : {future_reb}")
 
@@ -221,25 +220,49 @@ with col2:
         suggestion = "Coup de pouce"
     else:
         suggestion = "Mini-doux"
+
     st.subheader("Analyse stratégie")
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
 
-# ------------------- AUTOMATION -------------------
-st.write("---")
-st.header("Réglages Automation")
+# ---- AUTOMATION ----
+st.markdown("""
+<style>
+.automation-banner {
+    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+    padding: 20px 25px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.25);
+    margin-bottom: 15px;
+}
+.automation-title-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: white !important;
+}
+</style>
 
-st.subheader("Range future")
+<div class="automation-banner">
+    <div class="automation-title-text">Réglages Automation</div>
+</div>
+""", unsafe_allow_html=True)
+
+# Range future
 range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
 ratio_low, ratio_high = 20, 80
+
 low_offset_pct = -range_percent * ratio_low / 100
 high_offset_pct = range_percent * ratio_high / 100
 final_low = priceA * (1 + low_offset_pct/100)
 final_high = priceA * (1 + high_offset_pct/100)
 if invert_market:
     final_low, final_high = final_high, final_low
+
 st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
 
-st.subheader("Trigger d’anticipation")
+# Trigger
 t1, t2 = st.columns(2)
 with t1:
     trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
@@ -251,7 +274,7 @@ trigger_high_price = final_low + (trig_high/100)*rw
 st.write(f"Trigger Low : {trigger_low_price:.6f}")
 st.write(f"Trigger High : {trigger_high_price:.6f}")
 
-st.subheader("Time-buffer")
+# Time-buffer
 vola = vol_30d * 100
 if vola < 1:
     recomand = "6 à 12 minutes"
@@ -261,13 +284,11 @@ else:
     recomand = "60 minutes et plus"
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-# ------------------- REBALANCE AVANCÉE -------------------
+# ---- REBALANCE AVANCÉE ----
 st.subheader("Rebalance avancée (futur range)")
-
-global_range = range_percent  # en %
+global_range = range_percent
 off_low_pct  = -ratioA * global_range
 off_high_pct =  ratioB * global_range
-
 bear_low  = priceA * (1 + off_low_pct / 100)
 bear_high = priceA * (1 + off_high_pct / 100)
 bull_low  = priceA * (1 - off_high_pct / 100)
