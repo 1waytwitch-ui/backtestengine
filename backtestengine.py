@@ -6,67 +6,16 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="LP Stratégies Backtest Engine", layout="wide")
 
-# ---------------------------- STYLE GLOBAL ----------------------------
 st.markdown("""
 <style>
-
-.stApp {
-    background-color: #FFFFFF !important;
-    color: #000000 !important;
-}
-
-/* Titre DeFi */
-.deFi-title {
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
-    padding: 25px 30px;
-    border-radius: 18px;
-    text-align: left;
-    font-size: 36px;
-    font-weight: 700;
-    color: white !important;
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
-    margin-bottom: 25px;
-}
-
-/* Cartes vitrées */
-.card {
-    background: rgba(255, 255, 255, 0.40);
-    border-radius: 16px;
-    padding: 20px 25px;
-    margin-bottom: 25px;
-    border: 1px solid rgba(0,0,0,0.15);
-    backdrop-filter: blur(9px);
-    -webkit-backdrop-filter: blur(9px);
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
-}
-
-/* Inputs */
+.stApp {background-color: #FFFFFF !important; color: #000000 !important;}
+h1, h2, h3, h4 {color: #000000 !important;}
 .stTextInput input,
-.stNumberInput input {
-    background-color: #F0F0F0 !important;
-    color: #000000 !important;
-    border: 1px solid #000000 !important;
-}
-
-/* Boutons */
-.stButton button {
-    background-color: #000000 !important;
-    color: #FFFFFF !important;
-}
-
+.stNumberInput input {background-color: #F0F0F0 !important; color: #000000 !important; border: 1px solid #000000 !important;}
+.stButton button {background-color: #000000 !important; color: #FFFFFF !important;}
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------- TITRE DEFI ----------------------------
-st.markdown("""
-<div class="deFi-title">
-    LP Stratégies Backtest Engine
-</div>
-""", unsafe_allow_html=True)
-
-
-# ---------------------------- LOGIQUE EXISTANTE ----------------------------
 
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanente loss)"},
@@ -120,12 +69,40 @@ def get_price_usd(token):
         return 0.0, False
 
 
-# ---------------------------- LAYOUT ----------------------------
+# ---- Header --------------------------------------------------------
+col_title, col_telegram = st.columns([3, 1])
+with col_title:
+    st.markdown("""
+<style>
+.deFi-title {
+    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    padding: 25px 30px;
+    border-radius: 18px;
+    text-align: left;
+    font-size: 36px;
+    font-weight: 700;
+    color: white !important;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
+    margin-bottom: 25px;
+}
+</style>
+
+<div class="deFi-title">
+    LP Stratégies Backtest Engine
+</div>
+""", unsafe_allow_html=True)
+
+with col_telegram:
+    st.image("https://t.me/i/userpic/320/Pigeonchanceux.jpg", width=80)
+    st.markdown("[Mon Telegram](https://t.me/Pigeonchanceux)")
+
+
+# ---- Main Layout ---------------------------------------------------
 col1, col2 = st.columns([1.3, 1])
 
-# ---------------------------- COL 1 (Carte vitrées) ----------------------------
+# ------------------- COL 1 : CONFIG -------------------
 with col1:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("Configuration de la Pool")
 
     left, right = st.columns(2)
@@ -172,26 +149,27 @@ with col1:
 
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
+    # Calcul des limites
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
         range_low, range_high = range_high, range_low
 
+    # Pourcentage exact utilisé
     pct_low = -ratioA * range_pct
     pct_high = ratioB * range_pct
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
-    st.markdown('</div>', unsafe_allow_html=True)
 
-
-# ---------------------------- COL 2 (cartes vitrées) ----------------------------
+# ------------------- COL 2 : backtest -------------------
 with col2:
-    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.subheader("Range et Prix")
     st.write(f"Prix actuel : {priceA:.6f} $")
     st.write(f"Range ($) : {range_low:.6f} ↔ {range_high:.6f}")
+
     st.write(f"Range (%) : {pct_low:.1f}% ⇤⇥ +{pct_high:.1f}%")
+
     st.write(f"Répartitions : {capitalA:.2f} USD {tokenA} ◄ ► {capitalB:.2f} USD {tokenB}")
 
     today = str(datetime.date.today())
@@ -227,11 +205,10 @@ with col2:
 
     st.subheader("Analyse stratégie")
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
-# ---------------------------- AUTOMATION ----------------------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# ------------------- AUTOMATION -------------------
+st.write("---")
 st.header("Réglages Automation")
 
 st.subheader("Range future")
@@ -272,10 +249,8 @@ else:
     recomand = "60 et plus minutes"
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------------------------- REBALANCE AVANCÉ ----------------------------
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# ------------------- REBALANCE AVANCÉE -------------------
 st.subheader("Rebalance avancée (futur range)")
 
 col_b1, col_b2 = st.columns(2)
@@ -293,5 +268,3 @@ with col_b2:
     rb_high_bull = priceA * (1 + 0.04)
     st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
     st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
-
-st.markdown('</div>', unsafe_allow_html=True)
