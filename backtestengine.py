@@ -5,7 +5,7 @@ import datetime
 import matplotlib.pyplot as plt
 
 # ---------------------------------------------------------------------
-# CONFIG PAGE (wide mode)
+# CONFIG PAGE
 # ---------------------------------------------------------------------
 st.set_page_config(
     page_title="LP Stratégies Backtest Engine",
@@ -18,19 +18,18 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    .stApp {background-color: #FFFFFF !important; color: #000000 !important; font-weight: 500 !important;}
-    h1, h2, h3, h4 {color: #000000 !important; font-weight: 700 !important;}
-    p, span, div, label {color: #000000 !important; font-weight: 500 !important;}
-    .stTextInput > div > div > input,
-    .stNumberInput > div > div > input {background-color: #F0F0F0 !important; color: #000000 !important; border: 1px solid #000000 !important; border-radius: 6px !important; font-weight: 600 !important; height: 28px !important; padding: 0 8px !important; font-size: 14px !important;}
-    .stButton > button {background-color: #000000 !important; color: #FFFFFF !important; font-weight: 700 !important; border: 1px solid #000000 !important; padding: 0.4rem 1rem !important; border-radius: 6px !important;}
+    .stApp {background-color: #FFFFFF !important; color: #000000 !important;}
+    h1, h2, h3, h4 {color: #000000 !important;}
+    .stTextInput input,
+    .stNumberInput input {background-color: #F0F0F0 !important; color: #000000 !important; border: 1px solid #000000 !important;}
+    .stButton button {background-color: #000000 !important; color: #FFFFFF !important;}
     </style>
     """,
     unsafe_allow_html=True
 )
 
 # ---------------------------------------------------------------------
-# STRATEGIES ET TOKENS
+# STRATEGIES
 # ---------------------------------------------------------------------
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
@@ -73,10 +72,10 @@ def get_market_chart(asset_id):
 
 def get_current_price(asset_id):
     try:
-        response = requests.get(
+        res = requests.get(
             f"https://api.coingecko.com/api/v3/simple/price?ids={asset_id}&vs_currencies=usd"
         ).json()
-        return response[asset_id]["usd"], True
+        return res[asset_id]["usd"], True
     except:
         return 0.0, False
 
@@ -87,27 +86,28 @@ def compute_volatility(prices):
     return np.std(returns) * np.sqrt(365)
 
 # ---------------------------------------------------------------------
-# TITRE + TELEGRAM
+# HEADER
 # ---------------------------------------------------------------------
 col_title, col_telegram = st.columns([3, 1])
 with col_title:
     st.title("LP Stratégies Backtest Engine")
-    st.write("Analyse complète : ratio, range, volatilité, rebalances, simulation future et automations.")
 with col_telegram:
     st.image("https://t.me/i/userpic/320/Pigeonchanceux.jpg", width=80)
     st.markdown("[Mon Telegram](https://t.me/Pigeonchanceux)")
 
 # ---------------------------------------------------------------------
-# LAYOUT 2 COLONNES
+# LAYOUT
 # ---------------------------------------------------------------------
 col1, col2 = st.columns([1.3, 1])
+
 with col1:
     st.subheader("Configuration de la Pool")
-    pcol, scol = st.columns([1, 1])
-    with pcol:
+
+    left, right = st.columns(2)
+    with left:
         pair_labels = [f"{a}/{b}" for a, b in PAIRS]
         selected_pair = st.radio("Paire :", pair_labels)
-    with scol:
+    with right:
         strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
     tokenA, tokenB = selected_pair.split("/")
@@ -118,177 +118,163 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    st.write(f"Ratio : {int(ratioA*100)}/{int(ratioB*100)}")
+    st.write(f"Ratio : {int(ratioA*100)} / {int(ratioB*100)}")
     st.write(f"Objectif : {info['objectif']}")
-    st.write(f"Contexte idéal : {info['contexte']}")
+    st.write(f"Contexte : {info['contexte']}")
+
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
     def get_price_usd(token):
         try:
-            p = requests.get(
+            res = requests.get(
                 f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[token]}&vs_currencies=usd"
             ).json()
-            return p[COINGECKO_IDS[token]]["usd"], True
+            return res[COINGECKO_IDS[token]]["usd"], True
         except:
             return 0.0, False
 
-    # Prix
     if tokenB == "USDC":
         priceA_usd, okA = get_price_usd(tokenA)
         if not okA:
-            priceA_usd = st.number_input(f"Prix manuel de {tokenA} (USD)", value=1.0, step=0.01)
+            priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
         priceA = priceA_usd
     else:
         priceA_usd, okA = get_price_usd(tokenA)
         priceB_usd, okB = get_price_usd(tokenB)
-        colA, colB = st.columns(2)
-        with colA:
+
+        la, lb = st.columns(2)
+        with la:
             if not okA:
-                priceA_usd = st.number_input(f"Prix manuel {tokenA} (USD)", value=1.0, step=0.01)
-        with colB:
+                priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
+        with lb:
             if not okB:
-                priceB_usd = st.number_input(f"Prix manuel {tokenB} (USD)", value=1.0, step=0.01)
+                priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
+
         priceB_usd = max(priceB_usd, 0.0000001)
         priceA = priceA_usd / priceB_usd
 
-    # Range dynamique
-    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=100.0, value=20.0, step=1.0)
+    range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
+
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
+
     if invert_market:
         range_low, range_high = range_high, range_low
 
     capitalA = capital * ratioA
     capitalB = capital * ratioB
 
+# ---------------------------------------------------------------------
+# COLONNE 2 : RANGE + ANALYSES INTÉGRÉES
+# ---------------------------------------------------------------------
 with col2:
     st.subheader("Range et Prix")
-    st.write(f"Prix actuel {tokenA}/{tokenB} : {priceA:.6f}")
+    st.write(f"Prix actuel : {priceA:.6f}")
     st.write(f"Limite basse : {range_low:.6f}")
     st.write(f"Limite haute : {range_high:.6f}")
     st.write(f"{tokenA} : {capitalA:.2f} USD")
     st.write(f"{tokenB} : {capitalB:.2f} USD")
 
-# ---------------------------------------------------------------------
-# HISTORIQUE 30J
-# ---------------------------------------------------------------------
-today = str(datetime.date.today())
-cache_key = f"{tokenA}_prices_{today}"
-if cache_key in st.session_state:
-    pricesA = st.session_state[cache_key]
-else:
-    prices = get_market_chart(COINGECKO_IDS[tokenA])
-    if not prices:
-        old_keys = [k for k in st.session_state.keys() if k.startswith(f"{tokenA}_prices_")]
-        if old_keys:
-            last_key = sorted(old_keys)[-1]
-            prices = st.session_state[last_key]
-        else:
-            p, _ = get_current_price(COINGECKO_IDS[tokenA])
-            prices = [p] * 30
-    st.session_state[cache_key] = prices
-    pricesA = prices
+    # 30 jours
+    today = str(datetime.date.today())
+    key = f"{tokenA}_prices_{today}"
+    if key in st.session_state:
+        pricesA = st.session_state[key]
+    else:
+        prices = get_market_chart(COINGECKO_IDS[tokenA])
+        st.session_state[key] = prices
+        pricesA = prices
 
-vol_30d = compute_volatility(pricesA)
+    vol_30d = compute_volatility(pricesA)
+    rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
 
-# ---------------------------------------------------------------------
-# BLOC : BACKTEST + SIMULATION + ANALYSE (remplace les 3 onglets)
-# ---------------------------------------------------------------------
-st.subheader("📊 Analyse 30 jours, Simulation et Stratégie")
+    st.write("---")
+    st.subheader("Analyse 30 jours")
+    st.write(f"Volatilité annualisée : {vol_30d:.2%}")
+    st.write(f"Hors de range détectés : {rebalances}")
 
-# --- Analyse 30j
-st.markdown("### 🔹 Backtest 30 jours")
-st.write(f"Volatilité annualisée : {vol_30d:.2%}")
-rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
-st.write(f"Hors de range détectés : **{rebalances}**")
+    st.write("---")
+    st.subheader("Simulation future")
+    future_days = st.number_input("Jours à simuler", 1, 120, 30)
+    vol_sim = vol_30d / np.sqrt(365)
+    simulated = [pricesA[-1]]
+    for _ in range(future_days):
+        simulated.append(simulated[-1] * (1 + np.random.normal(0, vol_sim)))
 
-# --- Simulation future
-st.markdown("### 🔹 Simulation future")
-future_days = st.number_input("Jours à simuler :", min_value=1, max_value=120, value=30)
-vol_sim = vol_30d / np.sqrt(365)
-simulated = [pricesA[-1]]
-for _ in range(future_days):
-    next_price = simulated[-1] * (1 + np.random.normal(0, vol_sim))
-    simulated.append(next_price)
-future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
-st.write(f"Hors de range (simulation) : **{future_reb}**")
+    future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
+    st.write(f"Hors de range simulés : {future_reb}")
 
-# --- Analyse stratégie auto
-st.markdown("### 🔹 Analyse stratégique automatique")
-vol_7d = compute_volatility(pricesA[-7:])
-st.write(f"Volatilité annualisée 7j : {vol_7d:.2%}")
+    st.write("---")
+    st.subheader("Analyse stratégie")
+    vol_7d = compute_volatility(pricesA[-7:])
+    st.write(f"Volatilité annualisée 7j : {vol_7d:.2%}")
 
-if vol_7d > 0.8:
-    suggestion = "Neutre"
-elif vol_7d > 0.4:
-    suggestion = "Coup de pouce"
-else:
-    suggestion = "Mini-doux"
+    if vol_7d > 0.8:
+        suggestion = "Neutre"
+    elif vol_7d > 0.4:
+        suggestion = "Coup de pouce"
+    else:
+        suggestion = "Mini-doux"
 
-st.success(f"Stratégie suggérée : **{suggestion}**")
+    st.write(f"Stratégie suggérée : {suggestion}")
 
 # ---------------------------------------------------------------------
-# AUTOMATION (déplacé en bas, sans onglet)
+# AUTOMATION TOUT EN BAS
 # ---------------------------------------------------------------------
-st.markdown("---")
-st.header("⚙️ Automation intelligente")
+st.write("---")
+st.header("Automation")
 
-# Range et trigger
-st.subheader("Range et trigger automatique")
-range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, 0.5)
+st.subheader("Range automatique")
+range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0)
+
 ratio_low = 20
 ratio_high = 80
-low_offset_pct = -range_percent * ratio_low / 100.0
-high_offset_pct = range_percent * ratio_high / 100.0
-final_low = priceA * (1 + low_offset_pct/100.0)
-final_high = priceA * (1 + high_offset_pct/100.0)
+low_offset_pct = -range_percent * ratio_low / 100
+high_offset_pct = range_percent * ratio_high / 100
+
+final_low = priceA * (1 + low_offset_pct/100)
+final_high = priceA * (1 + high_offset_pct/100)
+
 if invert_market:
     final_low, final_high = final_high, final_low
 
-st.write(f"Range automatique : **{final_low:.6f} – {final_high:.6f}**")
-st.divider()
+st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
+st.write("---")
 
-# Trigger
 st.subheader("Trigger d’anticipation")
-col_t1, col_t2 = st.columns(2)
-with col_t1:
-    trigger_low_pct = st.slider("Trigger Low (%)", 0, 100, 10)
-with col_t2:
-    trigger_high_pct = st.slider("Trigger High (%)", 0, 100, 90)
+t1, t2 = st.columns(2)
+with t1:
+    trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
+with t2:
+    trig_high = st.slider("Trigger High (%)", 0, 100, 90)
 
-range_width = final_high - final_low
-trigger_low_price = final_low + (trigger_low_pct / 100.0) * range_width if range_width!=0 else final_low
-trigger_high_price = final_low + (trigger_high_pct / 100.0) * range_width if range_width!=0 else final_high
+rw = final_high - final_low
+trigger_low_price = final_low + (trig_low/100)*rw
+trigger_high_price = final_low + (trig_high/100)*rw
 
-st.write(f"Trigger Low : **{trigger_low_price:.6f}**")
-st.write(f"Trigger High : **{trigger_high_price:.6f}**")
-st.divider()
+st.write(f"Trigger Low : {trigger_low_price:.6f}")
+st.write(f"Trigger High : {trigger_high_price:.6f}")
 
-# Time buffer
-st.subheader("Suggestion du time-buffer (volatilité)")
-vola = vol_30d*100
-if vola<1:
-    suggestion = "10-30 minutes (volatilité faible)"
-elif vola<3:
-    suggestion = "30-60 minutes (volatilité moyenne)"
+st.write("---")
+st.subheader("Time-buffer")
+vola = vol_30d * 100
+if vola < 1:
+    recomand = "10-30 minutes"
+elif vola < 3:
+    recomand = "30-60 minutes"
 else:
-    suggestion = "60 minutes et +++ (volatilité forte)"
-st.success(f"Recommandation : **{suggestion}**")
+    recomand = "60+ minutes"
 
-st.divider()
+st.write(f"Recommandation : {recomand}")
 
-# Rebalance avancée
-st.subheader("Rebalance avancée (futur range marché)")
-col_b1, col_b2 = st.columns(2)
-with col_b1:
-    st.markdown("**Marché Baissier**")
-    rb_low_bear = priceA * (1 - 0.04)
-    rb_high_bear = priceA * (1 + 0.16)
-    st.write(f"Range Low : {rb_low_bear:.6f} (-4%)")
-    st.write(f"Range High : {rb_high_bear:.6f} (+16%)")
-with col_b2:
-    st.markdown("**Marché Haussier**")
-    rb_low_bull = priceA * (1 - 0.16)
-    rb_high_bull = priceA * (1 + 0.04)
-    st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
-    st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
+st.write("---")
+st.subheader("Rebalance avancée")
+b1, b2 = st.columns(2)
+with b1:
+    st.write("Marché baissier")
+    st.write(f"Low : {priceA*0.96:.6f}")
+    st.write(f"High : {priceA*1.16:.6f}")
+with b2:
+    st.write("Marché haussier")
+    st.write(f"Low : {priceA*0.84:.6f}")
+    st.write(f"High : {priceA*1.04:.6f}")
