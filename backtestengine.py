@@ -238,7 +238,7 @@ st.write("---")
 st.header("Réglages Automation")
 
 st.subheader("Range future")
-range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0)
+range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
 ratio_low, ratio_high = 20, 80
 
 low_offset_pct = -range_percent * ratio_low / 100
