@@ -19,6 +19,10 @@ h1, h2, h3, h4 {color: #000000 !important;}
     background-color: #000000 !important;
     color: #FFFFFF !important;
 }
+/* Forcer la couleur du texte dans radios et selectbox pour dark mode Windows */
+.stRadio label, .stRadio div, .stSelectbox label, .stSelectbox div {
+    color: #000000 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -73,9 +77,7 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
-
 # ---- Header --------------------------------------------------------
-
 st.markdown("""
 <style>
 .deFi-banner {
@@ -123,7 +125,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---- Main Layout ---------------------------------------------------
-
 col1, col2 = st.columns([1.3, 1])
 
 # ------------------- COL 1 : CONFIG -------------------
@@ -187,7 +188,6 @@ with col1:
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
 # ------------------- COL 2 : backtest -------------------
-
 with col2:
     st.subheader("Range et Prix")
     st.write(f"Prix actuel : {priceA:.6f} $")
@@ -233,7 +233,6 @@ with col2:
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
 
 # ------------------- AUTOMATION -------------------
-
 st.write("---")
 st.header("Réglages Automation")
 
@@ -281,21 +280,15 @@ else:
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
 # ------------------- REBALANCE AVANCÉE -------------------
-
 st.subheader("Rebalance avancée (futur range)")
 
-# On utilise le range global défini dans Automation
 global_range = range_percent  # en %
+off_low_pct  = -ratioA * global_range
+off_high_pct =  ratioB * global_range
 
-# Calcul dynamique des offsets selon le ratio de la stratégie
-off_low_pct  = -ratioA * global_range     # exemple Mini-doux : -0.1 * 20 = -2%
-off_high_pct =  ratioB * global_range     # exemple Mini-doux :  0.9 * 20 = +18%
-
-# Prix bear-market (dump → asymétrie vers le haut)
 bear_low  = priceA * (1 + off_low_pct / 100)
 bear_high = priceA * (1 + off_high_pct / 100)
 
-# Prix bull-market (pump → asymétrie vers le bas)
 bull_low  = priceA * (1 - off_high_pct / 100)
 bull_high = priceA * (1 - off_low_pct / 100)
 
