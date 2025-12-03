@@ -1,44 +1,10 @@
-# =====================================================================
-# AUTHENTIFICATION — MOT DE PASSE UNIQUE (COOKIE LOCAL)
-# =====================================================================
-
-from streamlit_cookies_manager import EncryptedCookieManager
 import streamlit as st
-
-PASSWORD = "1way"   # <-- EDIT MDP
-
-cookies = EncryptedCookieManager(prefix="lp_app_")
-
-if not cookies.ready():
-    st.stop()
-
-saved_pwd = cookies.get("password")
-
-if saved_pwd != PASSWORD:
-    st.title("🔐 Accès protégé")
-    user_input = st.text_input("Mot de passe :", type="password")
-
-    if st.button("Valider"):
-        if user_input == PASSWORD:
-            cookies.set("password", user_input)
-            cookies.save()
-            st.success("Mot de passe correct !")
-            st.rerun()
-        else:
-            st.error("❌ Mot de passe incorrect")
-
-    st.stop()
-
-# =====================================================================
-# L'APPLICATION DÉMARRE
-# =====================================================================
-
 import requests
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
+st.set_page_config(page_title="LP Stratégies Backtest Engine", layout="wide")
 
 st.markdown("""
 <style>
@@ -52,7 +18,7 @@ h1, h2, h3, h4 {color: #000000 !important;}
 
 
 STRATEGIES = {
-    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
+    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanente loss)"},
     "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité(attention à inverser en fonction du marché)"},
     "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance (attention à inverser en fonction du marché)"},
     "Side-line Up": {"ratio": (0.95, 0.05), "objectif": "Accumulation", "contexte": "Dump"},
@@ -104,51 +70,13 @@ def get_price_usd(token):
 
 
 # ---- Header --------------------------------------------------------
-st.markdown("""
-<style>
-.deFi-banner {
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
-    padding: 25px 30px;
-    border-radius: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
-    margin-bottom: 25px;
-}
-.deFi-title-text {
-    font-size: 36px;
-    font-weight: 700;
-    color: white !important;
-}
-.deFi-telegram-box {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.deFi-telegram-box img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.4);
-}
-.deFi-telegram-box a {
-    color: #ffffff !important;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 18px;
-}
-</style>
+col_title, col_telegram = st.columns([3, 1])
+with col_title:
+    st.title("LP Stratégies Backtest Engine")
+with col_telegram:
+    st.image("https://t.me/i/userpic/320/Pigeonchanceux.jpg", width=80)
+    st.markdown("[Mon Telegram](https://t.me/Pigeonchanceux)")
 
-<div class="deFi-banner">
-    <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
-    <div class="deFi-telegram-box">
-        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg">
-        <a href="https://t.me/Pigeonchanceux" target="_blank">Mon Telegram</a>
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
 # ---- Main Layout ---------------------------------------------------
 col1, col2 = st.columns([1.3, 1])
@@ -201,11 +129,13 @@ with col1:
 
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
+    # Calcul des limites
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
         range_low, range_high = range_high, range_low
 
+    # Pourcentage exact utilisé
     pct_low = -ratioA * range_pct
     pct_high = ratioB * range_pct
 
