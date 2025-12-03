@@ -18,13 +18,13 @@ h1, h2, h3, h4 {color: #000000 !important;}
 
 
 STRATEGIES = {
-    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
-    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité"},
-    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance"},
+    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanente loss)"},
+    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité(attention à inverser en fonction du marché)"},
+    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance (attention à inverser en fonction du marché)"},
     "Side-line Up": {"ratio": (0.95, 0.05), "objectif": "Accumulation", "contexte": "Dump"},
     "Side-line Below": {"ratio": (0.05, 0.95), "objectif": "Attente avant pump", "contexte": "Marché haussier"},
-    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Incertitude"},
-    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Tendance haussière"},
+    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Accumulation de l'actif le plus volatile (Token A)"},
+    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Tendance haussière revente de l'actif le plus volatile (token A contre le token B)"},
 }
 
 COINGECKO_IDS = {
@@ -145,12 +145,12 @@ with col1:
 # ------------------- COL 2 : backtest -------------------
 with col2:
     st.subheader("Range et Prix")
-    st.write(f"Prix actuel : {priceA:.6f}")
-    st.write(f"Limite : {range_low:.6f} ↔ {range_high:.6f}")
+    st.write(f"Prix actuel : {priceA:.6f} $")
+    st.write(f"Range ($) : {range_low:.6f} ↔ {range_high:.6f}")
 
-    st.write(f"Range appliqué : {pct_low:.1f}% ⇤⇥ +{pct_high:.1f}%")
+    st.write(f"Range (%) : {pct_low:.1f}% ⇤⇥ +{pct_high:.1f}%")
 
-    st.write(f"Allocations : {capitalA:.2f} USD {tokenA} ◄ ► {capitalB:.2f} USD {tokenB}")
+    st.write(f"Répartitions : {capitalA:.2f} USD {tokenA} ◄ ► {capitalB:.2f} USD {tokenB}")
 
     today = str(datetime.date.today())
     key = f"{tokenA}_prices_{today}"
@@ -165,15 +165,15 @@ with col2:
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
 
     st.subheader("Analyse 30 jours")
-    st.write(f"Volatility : {vol_30d:.2%} — Hors range : {rebalances}")
+    st.write(f"Volatilé : {vol_30d:.2%} — Hors range : {rebalances}")
 
-    future_days = st.number_input("Jours simulés", 1, 120, 30)
+    future_days = st.number_input("Jours simulés future", 1, 120, 30)
     vol_sim = vol_30d / np.sqrt(365)
     simulated = [pricesA[-1]]
     for _ in range(future_days):
         simulated.append(simulated[-1] * (1 + np.random.normal(0, vol_sim)))
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
-    st.write(f"Simu future → Hors range : {future_reb}")
+    st.write(f"Simulation future → Hors range : {future_reb}")
 
     vol_7d = compute_volatility(pricesA[-7:])
     if vol_7d > 0.8:
@@ -189,9 +189,9 @@ with col2:
 
 # ------------------- AUTOMATION -------------------
 st.write("---")
-st.header("Automation")
+st.header("Stratégie d'Automation")
 
-st.subheader("Range automatique")
+st.subheader("Range future")
 range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0)
 
 ratio_low, ratio_high = 20, 80
@@ -222,16 +222,16 @@ st.write(f"Trigger High : {trigger_high_price:.6f}")
 st.subheader("Time-buffer")
 vola = vol_30d * 100
 if vola < 1:
-    recomand = "10-30 minutes"
+    recomand = "6 à 12 minutes"
 elif vola < 3:
-    recomand = "30-60 minutes"
+    recomand = "18 à 48 minutes"
 else:
-    recomand = "60+ minutes"
-st.write(f"Recommandation : {recomand}")
+    recomand = "60 et plus minutes"
+st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
 
 # ------------------- REBALANCE AVANCÉE -------------------
-st.subheader("Rebalance avancée (futur range marché)")
+st.subheader("Rebalance avancée (futur range)")
 
 col_b1, col_b2 = st.columns(2)
 
