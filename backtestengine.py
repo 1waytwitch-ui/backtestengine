@@ -16,6 +16,7 @@ h1, h2, h3, h4 {color: #000000 !important;}
 </style>
 """, unsafe_allow_html=True)
 
+
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
     "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité"},
@@ -39,6 +40,7 @@ PAIRS = [
     ("VIRTUAL", "WETH"), ("AERO", "WETH")
 ]
 
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_market_chart(asset_id):
     try:
@@ -49,11 +51,13 @@ def get_market_chart(asset_id):
     except:
         return [1.0] * 30
 
+
 def compute_volatility(prices):
     if len(prices) < 2:
         return 0.0
     returns = np.diff(prices) / prices[:-1]
     return np.std(returns) * np.sqrt(365)
+
 
 def get_price_usd(token):
     try:
@@ -64,6 +68,7 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
+
 # ---- Header --------------------------------------------------------
 col_title, col_telegram = st.columns([3, 1])
 with col_title:
@@ -71,6 +76,7 @@ with col_title:
 with col_telegram:
     st.image("https://t.me/i/userpic/320/Pigeonchanceux.jpg", width=80)
     st.markdown("[Mon Telegram](https://t.me/Pigeonchanceux)")
+
 
 # ---- Main Layout ---------------------------------------------------
 col1, col2 = st.columns([1.3, 1])
@@ -112,9 +118,11 @@ with col1:
 
         la, lb = st.columns(2)
         with la:
-            if not okA: priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
+            if not okA:
+                priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
         with lb:
-            if not okB: priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
+            if not okB:
+                priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
 
         priceB_usd = max(priceB_usd, 0.0000001)
         priceA = priceA_usd / priceB_usd
@@ -127,6 +135,7 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 # ------------------- COL 2 : COMPACT VERSION -------------------
 with col2:
@@ -168,6 +177,7 @@ with col2:
 
     st.subheader("Analyse stratégie")
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
+
 
 # ------------------- AUTOMATION -------------------
 st.write("---")
@@ -211,18 +221,22 @@ else:
     recomand = "60+ minutes"
 st.write(f"Recommandation : {recomand}")
 
-# Rebalance avancée
+
+# ------------------- REBALANCE AVANCÉE -------------------
 st.subheader("Rebalance avancée (futur range marché)")
-    col_b1, col_b2 = st.columns(2)
-    with col_b1:
-        st.markdown("**Marché Baissier**")
-        rb_low_bear = priceA * (1 - 0.04)
-        rb_high_bear = priceA * (1 + 0.16)
-        st.write(f"Range Low : {rb_low_bear:.6f} (-4%)")
-        st.write(f"Range High : {rb_high_bear:.6f} (+16%)")
-    with col_b2:
-        st.markdown("**Marché Haussier**")
-        rb_low_bull = priceA * (1 - 0.16)
-        rb_high_bull = priceA * (1 + 0.04)
-        st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
-        st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
+
+col_b1, col_b2 = st.columns(2)
+
+with col_b1:
+    st.markdown("**Marché Baissier**")
+    rb_low_bear = priceA * (1 - 0.04)
+    rb_high_bear = priceA * (1 + 0.16)
+    st.write(f"Range Low : {rb_low_bear:.6f} (-4%)")
+    st.write(f"Range High : {rb_high_bear:.6f} (+16%)")
+
+with col_b2:
+    st.markdown("**Marché Haussier**")
+    rb_low_bull = priceA * (1 - 0.16)
+    rb_high_bull = priceA * (1 + 0.04)
+    st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
+    st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
