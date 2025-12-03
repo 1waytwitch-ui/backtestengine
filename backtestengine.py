@@ -1,56 +1,57 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import requests
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
-import streamlit.components.v1 as components
 
-# ----------------------------- AUTH LOCAL -----------------------------
+# =====================================================================
+#                           AUTHENTIFICATION LOCALE
+# =====================================================================
 
-PASSWORD_KEY = "LP BACKTEST"
-PASSWORD_VALUE = "1way"  # <-- EDIT MDP
+PASSWORD = "1way"    # <-- EDITMDP
+PARAM_KEY = "pwd"
 
-# Récupération du mot de passe déjà stocké en localStorage
+# Inject JS to read localStorage and push password into URL params
 components.html("""
 <script>
     const saved = localStorage.getItem("lp_password");
     if (saved) {
-        window.parent.postMessage({type: "PASS", value: saved}, "*");
+        const url = new URL(window.parent.location);
+        url.searchParams.set("pwd", saved);
+        window.parent.location = url.toString();
     }
 </script>
 """, height=0)
 
-# Listener pour récupérer les messages JS
-def handle_js_event():
-    msg = st.session_state.get("js_event")
-    if msg and msg.get("type") == "PASS":
-        st.session_state[PASSWORD_KEY] = msg.get("value")
+# Read URL parameters
+params = st.query_params
+pwd = params.get(PARAM_KEY, None)
 
-st.experimental_js_listener("message", key="js_event", on_event=handle_js_event)
-
-# Vérification (si pas encore authentifié)
-if st.session_state.get(PASSWORD_KEY) != PASSWORD_VALUE:
+# If password is incorrect → show login
+if pwd != PASSWORD:
     st.title("🔐 Accès protégé")
-    pwd = st.text_input("Entrez le mot de passe :", type="password")
+
+    user_input = st.text_input("Mot de passe :", type="password")
 
     if st.button("Valider"):
-        if pwd == PASSWORD_VALUE:
-            st.session_state[PASSWORD_KEY] = pwd
+        if user_input == PASSWORD:
 
-            # On stocke dans localStorage pour les prochaines visites
+            # Save into browser localStorage + redirect with query param
             components.html(f"""
             <script>
-                localStorage.setItem("lp_password", "{pwd}");
+                localStorage.setItem("lp_password", "{user_input}");
+                const url = new URL(window.parent.location);
+                url.searchParams.set("pwd", "{user_input}");
+                window.parent.location = url.toString();
             </script>
             """, height=0)
 
-            st.success("Mot de passe correct ✔")
-            st.rerun()
+            st.success("Mot de passe correct !")
         else:
             st.error("❌ Mot de passe incorrect")
 
     st.stop()
-
 # ----------------------------------------------------------------------
 # APP
 # ----------------------------------------------------------------------
