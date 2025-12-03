@@ -212,17 +212,17 @@ else:
 st.write(f"Recommandation : {recomand}")
 
 # Rebalance avancée
-    st.subheader("Rebalance avancée (futur range marché)")
-    col_b1, col_b2 = st.columns(2)
-    with col_b1:
-        st.markdown("**Marché Baissier**")
-        rb_low_bear = priceA * (1 - 0.04)
-        rb_high_bear = priceA * (1 + 0.16)
-        st.write(f"Range Low : {rb_low_bear:.6f} (-4%)")
-        st.write(f"Range High : {rb_high_bear:.6f} (+16%)")
-    with col_b2:
-        st.markdown("**Marché Haussier**")
-        rb_low_bull = priceA * (1 - 0.16)
-        rb_high_bull = priceA * (1 + 0.04)
-        st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
-        st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
+st.subheader("Rebalance avancée (futur range marché)")
+col_b1, col_b2 = st.columns(2)
+with col_b1:
+st.markdown("**Marché Baissier**")
+rb_low_bear = priceA * (1 - 0.04)
+rb_high_bear = priceA * (1 + 0.16)
+st.write(f"Range Low : {rb_low_bear:.6f} (-4%)")
+st.write(f"Range High : {rb_high_bear:.6f} (+16%)")
+with col_b2:
+st.markdown("**Marché Haussier**")
+rb_low_bull = priceA * (1 - 0.16)
+rb_high_bull = priceA * (1 + 0.04)
+st.write(f"Range Low : {rb_low_bull:.6f} (-16%)")
+st.write(f"Range High : {rb_high_bull:.6f} (+4%)")
