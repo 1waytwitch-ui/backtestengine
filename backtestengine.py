@@ -276,7 +276,7 @@ if vola < 1:
 elif vola < 3:
     recomand = "18 à 48 minutes"
 else:
-    recomand = "60 et plus minutes"
+    recomand = "60 minutes et plus"
 
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
