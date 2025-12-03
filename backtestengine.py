@@ -3,6 +3,57 @@ import requests
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+import streamlit.components.v1 as components
+
+# ----------------------------- AUTH LOCAL -----------------------------
+
+PASSWORD_KEY = "LP BACKTEST"
+PASSWORD_VALUE = "1way"  # <-- EDIT MDP
+
+# Récupération du mot de passe déjà stocké en localStorage
+components.html("""
+<script>
+    const saved = localStorage.getItem("lp_password");
+    if (saved) {
+        window.parent.postMessage({type: "PASS", value: saved}, "*");
+    }
+</script>
+""", height=0)
+
+# Listener pour récupérer les messages JS
+def handle_js_event():
+    msg = st.session_state.get("js_event")
+    if msg and msg.get("type") == "PASS":
+        st.session_state[PASSWORD_KEY] = msg.get("value")
+
+st.experimental_js_listener("message", key="js_event", on_event=handle_js_event)
+
+# Vérification (si pas encore authentifié)
+if st.session_state.get(PASSWORD_KEY) != PASSWORD_VALUE:
+    st.title("🔐 Accès protégé")
+    pwd = st.text_input("Entrez le mot de passe :", type="password")
+
+    if st.button("Valider"):
+        if pwd == PASSWORD_VALUE:
+            st.session_state[PASSWORD_KEY] = pwd
+
+            # On stocke dans localStorage pour les prochaines visites
+            components.html(f"""
+            <script>
+                localStorage.setItem("lp_password", "{pwd}");
+            </script>
+            """, height=0)
+
+            st.success("Mot de passe correct ✔")
+            st.rerun()
+        else:
+            st.error("❌ Mot de passe incorrect")
+
+    st.stop()
+
+# ----------------------------------------------------------------------
+# APP
+# ----------------------------------------------------------------------
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
@@ -15,7 +66,6 @@ h1, h2, h3, h4 {color: #000000 !important;}
 .stButton button {background-color: #000000 !important; color: #FFFFFF !important;}
 </style>
 """, unsafe_allow_html=True)
-
 
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
@@ -40,7 +90,6 @@ PAIRS = [
     ("VIRTUAL", "WETH"), ("AERO", "WETH")
 ]
 
-
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_market_chart(asset_id):
     try:
@@ -51,13 +100,11 @@ def get_market_chart(asset_id):
     except:
         return [1.0] * 30
 
-
 def compute_volatility(prices):
     if len(prices) < 2:
         return 0.0
     returns = np.diff(prices) / prices[:-1]
     return np.std(returns) * np.sqrt(365)
-
 
 def get_price_usd(token):
     try:
@@ -68,8 +115,8 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
-
 # ---- Header --------------------------------------------------------
+
 st.markdown("""
 <style>
 .deFi-banner {
@@ -115,9 +162,6 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-
-
 
 # ---- Main Layout ---------------------------------------------------
 col1, col2 = st.columns([1.3, 1])
@@ -170,18 +214,15 @@ with col1:
 
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
-    # Calcul des limites
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
         range_low, range_high = range_high, range_low
 
-    # Pourcentage exact utilisé
     pct_low = -ratioA * range_pct
     pct_high = ratioB * range_pct
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
 
 # ------------------- COL 2 : backtest -------------------
 with col2:
@@ -227,7 +268,6 @@ with col2:
     st.subheader("Analyse stratégie")
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
 
-
 # ------------------- AUTOMATION -------------------
 st.write("---")
 st.header("Réglages Automation")
@@ -269,7 +309,6 @@ elif vola < 3:
 else:
     recomand = "60 et plus minutes"
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
-
 
 # ------------------- REBALANCE AVANCÉE -------------------
 st.subheader("Rebalance avancée (futur range)")
