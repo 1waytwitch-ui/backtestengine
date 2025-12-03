@@ -4,7 +4,7 @@ import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="LP Stratégies Backtest Engine", layout="wide")
+st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
 st.markdown("""
 <style>
