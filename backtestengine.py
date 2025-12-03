@@ -83,26 +83,22 @@ st.markdown("""
     box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
     margin-bottom: 25px;
 }
-
 .deFi-title-text {
     font-size: 36px;
     font-weight: 700;
     color: white !important;
 }
-
 .deFi-telegram-box {
     display: flex;
     align-items: center;
     gap: 12px;
 }
-
 .deFi-telegram-box img {
     width: 60px;
     height: 60px;
     border-radius: 50%;
     border: 2px solid rgba(255,255,255,0.4);
 }
-
 .deFi-telegram-box a {
     color: #ffffff !important;
     text-decoration: none;
@@ -113,13 +109,13 @@ st.markdown("""
 
 <div class="deFi-banner">
     <div class="deFi-title-text">LP Stratégies Backtest Engine</div>
-
     <div class="deFi-telegram-box">
-        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" />
+        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg">
         <a href="https://t.me/Pigeonchanceux" target="_blank">Mon Telegram</a>
     </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 
