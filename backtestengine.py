@@ -70,32 +70,57 @@ def get_price_usd(token):
 
 
 # ---- Header --------------------------------------------------------
-col_title, col_telegram = st.columns([3, 1])
-with col_title:
-    st.markdown("""
+st.markdown("""
 <style>
-.deFi-title {
+.deFi-banner {
     background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
     padding: 25px 30px;
     border-radius: 18px;
-    text-align: left;
-    font-size: 36px;
-    font-weight: 700;
-    color: white !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border: 1px solid rgba(255,255,255,0.12);
     box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
     margin-bottom: 25px;
 }
+
+.deFi-title-text {
+    font-size: 36px;
+    font-weight: 700;
+    color: white !important;
+}
+
+.deFi-telegram-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.deFi-telegram-box img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.4);
+}
+
+.deFi-telegram-box a {
+    color: #ffffff !important;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 18px;
+}
 </style>
 
-<div class="deFi-title">
-    LP Stratégies Backtest Engine
+<div class="deFi-banner">
+    <div class="deFi-title-text">LP Stratégies Backtest Engine</div>
+
+    <div class="deFi-telegram-box">
+        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" />
+        <a href="https://t.me/Pigeonchanceux" target="_blank">Mon Telegram</a>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
-with col_telegram:
-    st.image("https://t.me/i/userpic/320/Pigeonchanceux.jpg", width=80)
-    st.markdown("[Mon Telegram](https://t.me/Pigeonchanceux)")
 
 
 # ---- Main Layout ---------------------------------------------------
