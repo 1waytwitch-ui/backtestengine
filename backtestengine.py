@@ -206,7 +206,7 @@ with col2:
     st.subheader("Analyse 30 jours")
     st.write(f"Volatilé : {vol_30d:.2%} — Hors range : {rebalances}")
 
-    future_days = st.number_input("Jours simulés future", 1, 120, 30)
+    future_days = st.number_input("Jours simulés futurs", 1, 120, 30)
     vol_sim = vol_30d / np.sqrt(365)
     simulated = [pricesA[-1]]
     for _ in range(future_days):
