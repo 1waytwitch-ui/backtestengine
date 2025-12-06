@@ -154,7 +154,7 @@ col1, col2 = st.columns([1.3, 1])
 
 # =============================== COLONNE GAUCHE ===============================
 with col1:
-    st.subheader("Configuration de la Pool")
+    st.subheader("POOL SETUP")
 
     left, right = st.columns(2)
     with left:
@@ -210,7 +210,7 @@ with col1:
 
 # =============================== COLONNE DROITE ===============================
 with col2:
-    st.subheader("Range et Prix")
+    st.subheader("PRICE/RANGE")
     st.write(f"Prix actuel : {priceA:.6f} $")
     st.write(f"Range ($) : {range_low:.6f} ↔ {range_high:.6f}")
     st.write(f"Répartitions : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
