@@ -23,6 +23,18 @@ h1, h2, h3, h4 {color: #000000 !important;}
 </style>
 """, unsafe_allow_html=True)
 
+# ---- FIX DARK MODE (radios, selectbox, checkbox) ----
+st.markdown("""
+<style>
+/* Forcer la couleur du texte dans radios, selectbox et checkbox pour dark mode Windows */
+.stRadio label, .stRadio div, 
+.stSelectbox label, .stSelectbox div,
+.stCheckbox label, .stCheckbox div {
+    color: #000000 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ---- INIT SESSION STATE ----
 if "show_disclaimer" not in st.session_state:
     st.session_state.show_disclaimer = True
