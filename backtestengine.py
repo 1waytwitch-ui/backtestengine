@@ -23,10 +23,9 @@ h1, h2, h3, h4 {color: #000000 !important;}
 </style>
 """, unsafe_allow_html=True)
 
-# ---- FIX DARK MODE (radios, selectbox, checkbox) ----
+# ---- FIX DARK MODE ----
 st.markdown("""
 <style>
-/* Forcer la couleur du texte dans radios, selectbox et checkbox pour dark mode Windows */
 .stRadio label, .stRadio div, 
 .stSelectbox label, .stSelectbox div,
 .stCheckbox label, .stCheckbox div {
@@ -77,11 +76,20 @@ def get_market_chart(asset_id):
     except:
         return [1.0] * 30
 
+
+### FIX VOLATILITÉ (log-returns)
 def compute_volatility(prices):
     if len(prices) < 2:
         return 0.0
-    returns = np.diff(prices) / prices[:-1]
-    return np.std(returns) * np.sqrt(365)
+
+    prices = np.array(prices, dtype=float)
+    log_returns = np.diff(np.log(prices))
+
+    if np.all(log_returns == 0) or np.isnan(log_returns).any():
+        return 0.0
+
+    return float(np.std(log_returns) * np.sqrt(365))
+
 
 def get_price_usd(token):
     try:
@@ -91,6 +99,7 @@ def get_price_usd(token):
         return res[COINGECKO_IDS[token]]["usd"], True
     except:
         return 0.0, False
+
 
 # ---- HEADER ----
 st.markdown("""
@@ -252,18 +261,27 @@ with col2:
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Simulation future → Hors range : {future_reb}")
 
+
+    ### FIX 2 — SUGGESTION STRATÉGIE FIABLE SI API KO
     vol_7d = compute_volatility(pricesA[-7:])
-    if vol_7d > 0.8:
-        suggestion = "Neutre"
-    elif vol_7d > 0.4:
+    api_failed = pricesA == [1.0] * len(pricesA)
+
+    if api_failed or vol_7d == 0 or np.isnan(vol_7d):
         suggestion = "Coup de pouce"
     else:
-        suggestion = "Mini-doux"
+        if vol_7d > 0.8:
+            suggestion = "Neutre"
+        elif vol_7d > 0.4:
+            suggestion = "Coup de pouce"
+        else:
+            suggestion = "Mini-doux"
 
     st.subheader("Analyse stratégie")
     st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
 
-# ---- TITRE AUTOMATION ----
+
+# ---- AUTOMATION + REBALANCE ----
+
 st.markdown("""
 <style>
 .automation-banner {
