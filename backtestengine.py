@@ -356,61 +356,65 @@ with col_time:
         recomand = "60 minutes et plus"
     st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-# ---- Trigger d’anticipation ----
-st.markdown("""
-<div style="
-    background-color:#FFA700;
-    border-left:6px solid #754C00;
-    padding:15px 20px;
-    border-radius:8px;
-    margin-top:25px;
-    margin-bottom:15px;
-">
-    <h3>Trigger d’anticipation</h3>
-</div>
-""", unsafe_allow_html=True)
+# ---- Trigger d’anticipation + Rebalance avancée (2 colonnes) ----
+col_trigger, col_rebalance = st.columns(2)
 
-t1, t2 = st.columns(2)
-with t1:
-    trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
-with t2:
-    trig_high = st.slider("Trigger High (%)", 0, 100, 90)
+with col_trigger:
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-top:25px;
+        margin-bottom:15px;
+    ">
+        <h3>Trigger d’anticipation</h3>
+    </div>
+    """, unsafe_allow_html=True)
 
-rw = final_high - final_low
-trigger_low_price = final_low + (trig_low/100)*rw
-trigger_high_price = final_low + (trig_high/100)*rw
-st.write(f"Trigger Low : {trigger_low_price:.6f}")
-st.write(f"Trigger High : {trigger_high_price:.6f}")
+    t1, t2 = st.columns(2)
+    with t1:
+        trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
+    with t2:
+        trig_high = st.slider("Trigger High (%)", 0, 100, 90)
 
-# ---- Rebalance avancée (futur range) ----
-st.markdown("""
-<div style="
-    background-color:#FFA700;
-    border-left:6px solid #754C00;
-    padding:15px 20px;
-    border-radius:8px;
-    margin-top:25px;
-    margin-bottom:15px;
-">
-    <h3>Rebalance avancée (futur range)</h3>
-</div>
-""", unsafe_allow_html=True)
+    rw = final_high - final_low
+    trigger_low_price = final_low + (trig_low/100)*rw
+    trigger_high_price = final_low + (trig_high/100)*rw
+    st.write(f"Trigger Low : {trigger_low_price:.6f}")
+    st.write(f"Trigger High : {trigger_high_price:.6f}")
 
-global_range = range_percent
-off_low_pct  = -ratioA * global_range
-off_high_pct =  ratioB * global_range
-bear_low  = priceA * (1 + off_low_pct / 100)
-bear_high = priceA * (1 + off_high_pct / 100)
-bull_low  = priceA * (1 - off_high_pct / 100)
-bull_high = priceA * (1 - off_low_pct / 100)
+with col_rebalance:
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-top:25px;
+        margin-bottom:15px;
+    ">
+        <h3>Rebalance avancée (futur range)</h3>
+    </div>
+    """, unsafe_allow_html=True)
 
-col_b1, col_b2 = st.columns(2)
-with col_b1:
-    st.markdown("**Marché Baissier (Dump)**")
-    st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
-    st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
+    global_range = range_percent
+    off_low_pct  = -ratioA * global_range
+    off_high_pct =  ratioB * global_range
+    bear_low  = priceA * (1 + off_low_pct / 100)
+    bear_high = priceA * (1 + off_high_pct / 100)
+    bull_low  = priceA * (1 - off_high_pct / 100)
+    bull_high = priceA * (1 - off_low_pct / 100)
 
-with col_b2:
-    st.markdown("**Marché Haussier (Pump)**")
-    st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
-    st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
+    col_b1, col_b2 = st.columns(2)
+    with col_b1:
+        st.markdown("**Marché Baissier (Dump)**")
+        st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
+        st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
+
+    with col_b2:
+        st.markdown("**Marché Haussier (Pump)**")
+        st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
+        st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
+
