@@ -6,24 +6,6 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
-# ---- POPUP DISCLAIMER ----
-st.markdown("""
-### ⚠️ Clause d'utilisation obligatoire
-Avant d'utiliser cet outil, vous devez lire et accepter le disclaimer suivant :
-
-**Cet outil peut comporter des inexactitudes et ne constitue PAS un conseil en investissement.  
-Vous devez effectuer vos propres recherches et comprendre le mécanisme de liquidité concentrée.  
-Les prix et volatilités sont récupérés automatiquement, mais en cas de surcharge API vous devrez entrer les prix manuellement,  
-et les suggestions de rebalance deviendront alors inopérantes.**
-
-""")
-
-agree = st.checkbox("J’ai lu et j’accepte les conditions d'utilisation")
-
-if not agree:
-    st.warning("Veuillez accepter le disclaimer pour accéder à l'outil.")
-    st.stop()
-
 # ---- STYLES GÉNÉRAUX ----
 st.markdown("""
 <style>
@@ -138,6 +120,25 @@ st.markdown("""
         <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg">
         <a href="https://t.me/Pigeonchanceux" target="_blank">Mon Telegram</a>
     </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ---- DISCLAIMER FIXE SOUS LE TITRE ----
+st.markdown("""
+<div style="
+    background-color: #fff3cd;
+    border-left: 6px solid #ffca2c;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: #000;
+    margin-bottom: 25px;
+    font-size: 15px;
+">
+<b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
+Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement.  
+Veuillez effectuer vos propres recherches et comprendre le mécanisme d’apporteur de liquidité dans des pools concentrés.<br><br>
+Les prix des actifs et la volatilité sont récupérés automatiquement, mais en cas de surcharge API vous devrez entrer manuellement les prix,  
+et dans ce cas les suggestions de rebalances ne seront pas fonctionnelles.
 </div>
 """, unsafe_allow_html=True)
 
