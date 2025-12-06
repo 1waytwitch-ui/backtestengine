@@ -79,7 +79,6 @@ def get_market_chart(asset_id):
     except:
         return [1.0] * 30
 
-# ✔ volatilité NON annualisée (LP-friendly)
 def compute_volatility(prices):
     if len(prices) < 2:
         return 0.0
@@ -116,17 +115,12 @@ st.markdown("""
     font-weight: 700;
     color: white !important;
 }
-.deFi-telegram-box img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-}
 </style>
 
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
-    <div class="deFi-telegram-box">
-        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg">
+    <div>
+        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:60px;height:60px;border-radius:50%;">
         <a href="https://t.me/Pigeonchanceux" target="_blank" style="color:white;font-size:18px;font-weight:600;text-decoration:none;">Mon Telegram</a>
     </div>
 </div>
@@ -145,15 +139,16 @@ if st.session_state.show_disclaimer:
         font-size: 15px;
     ">
     <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
-    Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement. Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées.
+    Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement.
     </div>
     """, unsafe_allow_html=True)
 
-# ---- LAYOUT ----
+# ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
-# =============================== COLONNE GAUCHE ===============================
+# ============================== GAUCHE ==============================
 with col1:
+
     st.subheader("POOL SETUP")
 
     left, right = st.columns(2)
@@ -171,9 +166,20 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    st.write(f"Ratio : {int(ratioA*100)} / {int(ratioB*100)}")
-    st.write(f"Objectif : {info['objectif']}")
-    st.write(f"Contexte : {info['contexte']}")
+    # ---- RECAP DANS CADRE (même style disclaimer) ----
+    st.markdown(f"""
+    <div style="
+        background-color: #fff3cd;
+        border-left: 6px solid #ffca2c;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin: 12px 0 25px 0;
+    ">
+    <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
+    <b>Objectif :</b> {info['objectif']}<br>
+    <b>Contexte :</b> {info['contexte']}
+    </div>
+    """, unsafe_allow_html=True)
 
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
@@ -208,12 +214,27 @@ with col1:
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
-# =============================== COLONNE DROITE ===============================
+
+# ============================== DROITE ==============================
 with col2:
-    st.subheader("PRICE/RANGE")
+
+    # ---- SECTION PRICE / RANGE DANS CADRE ----
+    st.markdown("""
+    <div style="
+        background-color:#fff3cd;
+        border-left:6px solid #ffca2c;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>PRICE / RANGE</h3>
+    """, unsafe_allow_html=True)
+
     st.write(f"Prix actuel : {priceA:.6f} $")
-    st.write(f"Range ($) : {range_low:.6f} ↔ {range_high:.6f}")
-    st.write(f"Répartitions : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
+    st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
+    st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     # ---- HISTORIQUE ----
     key = f"{tokenA}_prices_{datetime.date.today()}"
@@ -221,25 +242,37 @@ with col2:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
     pricesA = st.session_state[key]
 
-    # ---- VOLATILITÉ ----
     vol_30d = compute_volatility(pricesA)
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
 
-    st.subheader("Analyse 30 jours")
+    # ---- SECTION ANALYSE 30 JOURS (cadre + suppression input jours) ----
+    st.markdown("""
+    <div style="
+        background-color:#fff3cd;
+        border-left:6px solid #ffca2c;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>Analyse 30 jours</h3>
+    """, unsafe_allow_html=True)
+
     st.write(f"Volatilité : {vol_30d*100:.2f}% — Hors range : {rebalances}")
 
-    # ---- Projection ----
-    future_days = st.number_input("Jours simulés future", 1, 120, 30)
+    # Simulation fixée à 30 jours
+    future_days = 30
     vol_sim = vol_30d
-
     simulated = [pricesA[-1]]
+
     for _ in range(future_days):
         simulated.append(simulated[-1] * (1 + np.random.normal(0, vol_sim)))
 
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
-    st.write(f"Simulation future → Hors range : {future_reb}")
+    st.write(f"Simulation future (30j) → Hors range : {future_reb}")
 
-    # ---- VOL 7J ----
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # ---- ANALYSE STRATEGIE (cadre) ----
     vol_7d = compute_volatility(pricesA[-7:])
     suggestion = "Mini-doux"
 
@@ -248,15 +281,25 @@ with col2:
             suggestion = "Coup de pouce"
         elif vol_7d > 0.02:
             suggestion = "Mini-Doux"
-        else:
-            suggestion = "Mini-doux"
     else:
         suggestion = "Coup de pouce"
 
-    st.subheader("Analyse stratégie")
+    st.markdown("""
+    <div style="
+        background-color:#fff3cd;
+        border-left:6px solid #ffca2c;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>Analyse stratégie</h3>
+    """, unsafe_allow_html=True)
+
     st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
 
-# =============================== AUTOMATION ===============================
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# =========================== AUTOMATION (inchangé) ===========================
 st.markdown("""
 <div style="background: linear-gradient(135deg,#8e2de2,#4fac66);padding:20px;border-radius:12px;margin-top:20px;">
     <span style="color:white;font-size:28px;font-weight:700;">REGLAGES AUTOMATION</span>
@@ -280,6 +323,7 @@ with t1:
     trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
 with t2:
     trig_high = st.slider("Trigger High (%)", 0, 100, 90)
+
 rw = final_high - final_low
 trigger_low_price = final_low + (trig_low/100)*rw
 trigger_high_price = final_low + (trig_high/100)*rw
@@ -296,13 +340,10 @@ else:
     recomand = "60 minutes et plus"
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-# ---- Advanced Rebalance ----
 st.subheader("Rebalance avancée (futur range)")
-
 global_range = range_percent
 off_low_pct  = -ratioA * global_range
 off_high_pct =  ratioB * global_range
-
 bear_low  = priceA * (1 + off_low_pct / 100)
 bear_high = priceA * (1 + off_high_pct / 100)
 bull_low  = priceA * (1 - off_high_pct / 100)
@@ -313,6 +354,7 @@ with col_b1:
     st.markdown("**Marché Baissier (Dump)**")
     st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
     st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
+
 with col_b2:
     st.markdown("**Marché Haussier (Pump)**")
     st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
