@@ -6,6 +6,24 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
+# ---- POPUP DISCLAIMER ----
+st.markdown("""
+### ⚠️ Clause d'utilisation obligatoire
+Avant d'utiliser cet outil, vous devez lire et accepter le disclaimer suivant :
+
+**Cet outil peut comporter des inexactitudes et ne constitue PAS un conseil en investissement.  
+Vous devez effectuer vos propres recherches et comprendre le mécanisme de liquidité concentrée.  
+Les prix et volatilités sont récupérés automatiquement, mais en cas de surcharge API vous devrez entrer les prix manuellement,  
+et les suggestions de rebalance deviendront alors inopérantes.**
+
+""")
+
+agree = st.checkbox("J’ai lu et j’accepte les conditions d'utilisation")
+
+if not agree:
+    st.warning("Veuillez accepter le disclaimer pour accéder à l'outil.")
+    st.stop()
+
 # ---- STYLES GÉNÉRAUX ----
 st.markdown("""
 <style>
@@ -150,7 +168,6 @@ with col1:
 
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
-    # Prix
     if tokenB == "USDC":
         priceA_usd, okA = get_price_usd(tokenA)
         if not okA:
@@ -285,7 +302,7 @@ st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 # ------------------- REBALANCE AVANCÉE -------------------
 st.subheader("Rebalance avancée (futur range)")
 
-global_range = range_percent  # en %
+global_range = range_percent
 off_low_pct  = -ratioA * global_range
 off_high_pct =  ratioB * global_range
 
