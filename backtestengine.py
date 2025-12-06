@@ -166,11 +166,11 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    # ---- RECAP DANS CADRE (même style disclaimer) ----
+    # ---- RECAP DANS CADRE ----
     st.markdown(f"""
     <div style="
-        background-color: #fff3cd;
-        border-left: 6px solid #ffca2c;
+        background-color: #27F5A9;
+        border-left: 6px solid #00754A;
         padding: 15px 20px;
         border-radius: 8px;
         margin: 12px 0 25px 0;
@@ -218,11 +218,11 @@ with col1:
 # ============================== DROITE ==============================
 with col2:
 
-    # ---- SECTION PRICE / RANGE DANS CADRE ----
+    # ---- Price/range ----
     st.markdown("""
     <div style="
-        background-color:#fff3cd;
-        border-left:6px solid #ffca2c;
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
         padding:15px 20px;
         border-radius:8px;
         margin-bottom:25px;
@@ -245,11 +245,11 @@ with col2:
     vol_30d = compute_volatility(pricesA)
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
 
-    # ---- SECTION ANALYSE 30 JOURS (cadre + suppression input jours) ----
+    # ---- SECTION ANALYSE 30 JOURS ----
     st.markdown("""
     <div style="
-        background-color:#fff3cd;
-        border-left:6px solid #ffca2c;
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
         padding:15px 20px;
         border-radius:8px;
         margin-bottom:25px;
@@ -272,7 +272,7 @@ with col2:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ---- ANALYSE STRATEGIE (cadre) ----
+    # ---- ANALYSE STRATEGIE ----
     vol_7d = compute_volatility(pricesA[-7:])
     suggestion = "Mini-doux"
 
@@ -286,8 +286,8 @@ with col2:
 
     st.markdown("""
     <div style="
-        background-color:#fff3cd;
-        border-left:6px solid #ffca2c;
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
         padding:15px 20px;
         border-radius:8px;
         margin-bottom:25px;
