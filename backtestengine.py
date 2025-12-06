@@ -23,6 +23,10 @@ h1, h2, h3, h4 {color: #000000 !important;}
 </style>
 """, unsafe_allow_html=True)
 
+# ---- INIT SESSION STATE ----
+if "show_disclaimer" not in st.session_state:
+    st.session_state.show_disclaimer = True
+
 # ---- DONNÉES ----
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
@@ -123,24 +127,29 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---- DISCLAIMER FIXE SOUS LE TITRE ----
-st.markdown("""
-<div style="
-    background-color: #fff3cd;
-    border-left: 6px solid #ffca2c;
-    padding: 15px 20px;
-    border-radius: 8px;
-    color: #000;
-    margin-bottom: 25px;
-    font-size: 15px;
-">
-<b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
-Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement.  
-Veuillez effectuer vos propres recherches et comprendre le mécanisme d’apporteur de liquidité dans des pools concentrés.<br><br>
-Les prix des actifs et la volatilité sont récupérés automatiquement, mais en cas de surcharge API vous devrez entrer manuellement les prix,  
-et dans ce cas les suggestions de rebalances ne seront pas fonctionnelles.
-</div>
-""", unsafe_allow_html=True)
+# ---- BOUTON MASQUER/AFFICHER ----
+if st.button("Masquer le disclaimer" if st.session_state.show_disclaimer else "Afficher le disclaimer"):
+    st.session_state.show_disclaimer = not st.session_state.show_disclaimer
+
+# ---- DISCLAIMER ----
+if st.session_state.show_disclaimer:
+    st.markdown("""
+    <div style="
+        background-color: #fff3cd;
+        border-left: 6px solid #ffca2c;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: #000;
+        margin-bottom: 25px;
+        font-size: 15px;
+    ">
+    <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
+    Cet outil peut comporter des approximations ou des inexactitudes.  
+    Il ne s’agit en aucun cas d’un conseil en investissement.  
+    Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé.<br><br>
+    Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées.
+    </div>
+    """, unsafe_allow_html=True)
 
 # ---- LAYOUT PRINCIPAL ----
 col1, col2 = st.columns([1.3, 1])
