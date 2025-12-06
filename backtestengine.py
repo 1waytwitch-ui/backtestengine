@@ -306,29 +306,55 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---- Range future ----
-st.markdown("""
-<div style="
-    background-color:#FFA700;
-    border-left:6px solid #754C00;
-    padding:15px 20px;
-    border-radius:8px;
-    margin-top:25px;
-    margin-bottom:15px;
-">
-    <h3>Range future</h3>
-</div>
-""", unsafe_allow_html=True)
+# ---- Range future + Time-buffer (2 colonnes) ----
+col_range, col_time = st.columns([2,1])
 
-range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
-ratio_low, ratio_high = 20, 80
-low_offset_pct = -range_percent * ratio_low / 100
-high_offset_pct = range_percent * ratio_high / 100
-final_low = priceA * (1 + low_offset_pct/100)
-final_high = priceA * (1 + high_offset_pct/100)
-if invert_market:
-    final_low, final_high = final_high, final_low
-st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
+with col_range:
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-top:25px;
+        margin-bottom:15px;
+    ">
+        <h3>Range future</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
+    ratio_low, ratio_high = 20, 80
+    low_offset_pct = -range_percent * ratio_low / 100
+    high_offset_pct = range_percent * ratio_high / 100
+    final_low = priceA * (1 + low_offset_pct/100)
+    final_high = priceA * (1 + high_offset_pct/100)
+    if invert_market:
+        final_low, final_high = final_high, final_low
+    st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
+
+with col_time:
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-top:25px;
+        margin-bottom:15px;
+    ">
+        <h3>Time-buffer</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    vola = vol_30d * 100
+    if vola < 1:
+        recomand = "6 à 12 minutes"
+    elif vola < 3:
+        recomand = "18 à 48 minutes"
+    else:
+        recomand = "60 minutes et plus"
+    st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
 # ---- Trigger d’anticipation ----
 st.markdown("""
@@ -355,29 +381,6 @@ trigger_low_price = final_low + (trig_low/100)*rw
 trigger_high_price = final_low + (trig_high/100)*rw
 st.write(f"Trigger Low : {trigger_low_price:.6f}")
 st.write(f"Trigger High : {trigger_high_price:.6f}")
-
-# ---- Time-buffer ----
-st.markdown("""
-<div style="
-    background-color:#FFA700;
-    border-left:6px solid #754C00;
-    padding:15px 20px;
-    border-radius:8px;
-    margin-top:25px;
-    margin-bottom:15px;
-">
-    <h3>Time-buffer</h3>
-</div>
-""", unsafe_allow_html=True)
-
-vola = vol_30d * 100
-if vola < 1:
-    recomand = "6 à 12 minutes"
-elif vola < 3:
-    recomand = "18 à 48 minutes"
-else:
-    recomand = "60 minutes et plus"
-st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
 # ---- Rebalance avancée (futur range) ----
 st.markdown("""
