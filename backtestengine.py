@@ -299,14 +299,27 @@ with col2:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-# =========================== AUTOMATION (inchangé) ===========================
+# =========================== AUTOMATION ===========================
 st.markdown("""
 <div style="background: linear-gradient(135deg,#8e2de2,#4fac66);padding:20px;border-radius:12px;margin-top:20px;">
     <span style="color:white;font-size:28px;font-weight:700;">REGLAGES AUTOMATION</span>
 </div>
 """, unsafe_allow_html=True)
 
-st.subheader("Range future")
+# ---- Range future ----
+st.markdown("""
+<div style="
+    background-color:#FFA700;
+    border-left:6px solid #754C00;
+    padding:15px 20px;
+    border-radius:8px;
+    margin-top:25px;
+    margin-bottom:15px;
+">
+    <h3>Range future</h3>
+</div>
+""", unsafe_allow_html=True)
+
 range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
 ratio_low, ratio_high = 20, 80
 low_offset_pct = -range_percent * ratio_low / 100
@@ -317,7 +330,20 @@ if invert_market:
     final_low, final_high = final_high, final_low
 st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
 
-st.subheader("Trigger d’anticipation")
+# ---- Trigger d’anticipation ----
+st.markdown("""
+<div style="
+    background-color:#FFA700;
+    border-left:6px solid #754C00;
+    padding:15px 20px;
+    border-radius:8px;
+    margin-top:25px;
+    margin-bottom:15px;
+">
+    <h3>Trigger d’anticipation</h3>
+</div>
+""", unsafe_allow_html=True)
+
 t1, t2 = st.columns(2)
 with t1:
     trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
@@ -330,7 +356,20 @@ trigger_high_price = final_low + (trig_high/100)*rw
 st.write(f"Trigger Low : {trigger_low_price:.6f}")
 st.write(f"Trigger High : {trigger_high_price:.6f}")
 
-st.subheader("Time-buffer")
+# ---- Time-buffer ----
+st.markdown("""
+<div style="
+    background-color:#FFA700;
+    border-left:6px solid #754C00;
+    padding:15px 20px;
+    border-radius:8px;
+    margin-top:25px;
+    margin-bottom:15px;
+">
+    <h3>Time-buffer</h3>
+</div>
+""", unsafe_allow_html=True)
+
 vola = vol_30d * 100
 if vola < 1:
     recomand = "6 à 12 minutes"
@@ -340,7 +379,20 @@ else:
     recomand = "60 minutes et plus"
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-st.subheader("Rebalance avancée (futur range)")
+# ---- Rebalance avancée (futur range) ----
+st.markdown("""
+<div style="
+    background-color:#FFA700;
+    border-left:6px solid #754C00;
+    padding:15px 20px;
+    border-radius:8px;
+    margin-top:25px;
+    margin-bottom:15px;
+">
+    <h3>Rebalance avancée (futur range)</h3>
+</div>
+""", unsafe_allow_html=True)
+
 global_range = range_percent
 off_low_pct  = -ratioA * global_range
 off_high_pct =  ratioB * global_range
