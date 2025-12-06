@@ -348,9 +348,9 @@ with col_time:
     """, unsafe_allow_html=True)
 
     vola = vol_30d * 100
-    if vola < 1:
+    if vola < 2:
         recomand = "6 à 12 minutes"
-    elif vola < 3:
+    elif vola < 5:
         recomand = "18 à 48 minutes"
     else:
         recomand = "60 minutes et plus"
