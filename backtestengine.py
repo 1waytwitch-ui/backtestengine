@@ -132,18 +132,25 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---- BUTTON DISCLAIMER ----
-if st.button("Masquer le disclaimer" if st.session_state.show_disclaimer else "Afficher le disclaimer"):
-    st.session_state.show_disclaimer = not st.session_state.show_disclaimer
-
+# ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
-    st.warning("""
-**DISCLAIMER IMPORTANT**
-
-Cet outil peut comporter des approximations.  
-Aucun conseil en investissement.  
-Si l'API est surchargée : prix manuels + suggestion fixée en *Coup de pouce*.
-    """)
+    st.markdown("""
+    <div style="
+        background-color: #fff3cd;
+        border-left: 6px solid #ffca2c;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: #000;
+        margin-bottom: 25px;
+        font-size: 15px;
+    ">
+    <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
+    Cet outil peut comporter des approximations ou des inexactitudes.  
+    Il ne s’agit en aucun cas d’un conseil en investissement.  
+    Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé.<br><br>
+    Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées.
+    </div>
+    """, unsafe_allow_html=True)
 
 # ---- LAYOUT ----
 col1, col2 = st.columns([1.3, 1])
