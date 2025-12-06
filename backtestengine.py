@@ -245,10 +245,10 @@ with col2:
     suggestion = "Mini-doux"
 
     if okA and okB:
-        if vol_7d > 0.03:
-            suggestion = "Neutre"
-        elif vol_7d > 0.015:
+        if vol_7d > 0.04:
             suggestion = "Coup de pouce"
+        elif vol_7d > 0.02:
+            suggestion = "Mini-Doux"
         else:
             suggestion = "Mini-doux"
     else:
