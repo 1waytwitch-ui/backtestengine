@@ -23,7 +23,7 @@ h1, h2, h3, h4 {color: #000000 !important;}
 </style>
 """, unsafe_allow_html=True)
 
-# ---- FIX DARK MODE ----
+# ---- FORCE DARK MODE ----
 st.markdown("""
 <style>
 .stRadio label, .stRadio div, 
@@ -34,11 +34,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ---- INIT SESSION STATE ----
+# ---- INIT ----
 if "show_disclaimer" not in st.session_state:
     st.session_state.show_disclaimer = True
 
-# ---- DONNÉES ----
+# ---- DATA ----
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
     "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité(attention à inverser en fonction du marché)"},
@@ -72,24 +72,21 @@ def get_market_chart(asset_id):
         url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
         data = requests.get(url).json()
         prices = [p[1] for p in data.get("prices", [])]
-        return prices if prices else [1.0] * 30
+        prices = np.array(prices)
+        prices = prices[~np.isnan(prices)]
+        prices = prices[prices > 0]
+        return prices.tolist() if len(prices) > 0 else [1.0] * 30
     except:
         return [1.0] * 30
 
-
-### FIX VOLATILITÉ (log-returns)
+# ✔ volatilité NON annualisée (LP-friendly)
 def compute_volatility(prices):
     if len(prices) < 2:
         return 0.0
-
-    prices = np.array(prices, dtype=float)
-    log_returns = np.diff(np.log(prices))
-
-    if np.all(log_returns == 0) or np.isnan(log_returns).any():
-        return 0.0
-
-    return float(np.std(log_returns) * np.sqrt(365))
-
+    prices = np.array(prices)
+    returns = np.diff(prices) / prices[:-1]
+    returns = returns[~np.isnan(returns)]
+    return float(np.std(returns))
 
 def get_price_usd(token):
     try:
@@ -99,7 +96,6 @@ def get_price_usd(token):
         return res[COINGECKO_IDS[token]]["usd"], True
     except:
         return 0.0, False
-
 
 # ---- HEADER ----
 st.markdown("""
@@ -120,22 +116,10 @@ st.markdown("""
     font-weight: 700;
     color: white !important;
 }
-.deFi-telegram-box {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
 .deFi-telegram-box img {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    border: 2px solid rgba(255,255,255,0.4);
-}
-.deFi-telegram-box a {
-    color: #ffffff !important;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 18px;
 }
 </style>
 
@@ -143,53 +127,43 @@ st.markdown("""
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div class="deFi-telegram-box">
         <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg">
-        <a href="https://t.me/Pigeonchanceux" target="_blank">Mon Telegram</a>
+        <a href="https://t.me/Pigeonchanceux" target="_blank" style="color:white;font-size:18px;font-weight:600;text-decoration:none;">Mon Telegram</a>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ---- BOUTON MASQUER/AFFICHER ----
+# ---- BUTTON DISCLAIMER ----
 if st.button("Masquer le disclaimer" if st.session_state.show_disclaimer else "Afficher le disclaimer"):
     st.session_state.show_disclaimer = not st.session_state.show_disclaimer
 
-# ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
-    st.markdown("""
-    <div style="
-        background-color: #fff3cd;
-        border-left: 6px solid #ffca2c;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: #000;
-        margin-bottom: 25px;
-        font-size: 15px;
-    ">
-    <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
-    Cet outil peut comporter des approximations ou des inexactitudes.  
-    Il ne s’agit en aucun cas d’un conseil en investissement.  
-    Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé.<br><br>
-    Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées.
-    </div>
-    """, unsafe_allow_html=True)
+    st.warning("""
+**DISCLAIMER IMPORTANT**
 
-# ---- LAYOUT PRINCIPAL ----
+Cet outil peut comporter des approximations.  
+Aucun conseil en investissement.  
+Si l'API est surchargée : prix manuels + suggestion fixée en *Coup de pouce*.
+    """)
+
+# ---- LAYOUT ----
 col1, col2 = st.columns([1.3, 1])
 
-# ---- COL 1 : CONFIG ----
+# =============================== COLONNE GAUCHE ===============================
 with col1:
     st.subheader("Configuration de la Pool")
+
     left, right = st.columns(2)
     with left:
         pair_labels = [f"{a}/{b}" for a, b in PAIRS]
-        selected_pair = st.radio("Paire :", pair_labels, index=0, key="pair_radio")
+        selected_pair = st.radio("Paire :", pair_labels, index=0)
     with right:
-        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()), index=0, key="strategy_radio")
+        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
     tokenA, tokenB = selected_pair.split("/")
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
 
-    invert_market = st.checkbox("Inversion marché (bull → bear)", key="invert_checkbox")
+    invert_market = st.checkbox("Inversion marché (bull → bear)")
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
@@ -199,14 +173,17 @@ with col1:
 
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
+    # ---- PRIX ----
     if tokenB == "USDC":
         priceA_usd, okA = get_price_usd(tokenA)
         if not okA:
             priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
         priceA = priceA_usd
+        okB = True
     else:
         priceA_usd, okA = get_price_usd(tokenA)
         priceB_usd, okB = get_price_usd(tokenB)
+
         la, lb = st.columns(2)
         with la:
             if not okA:
@@ -214,45 +191,42 @@ with col1:
         with lb:
             if not okB:
                 priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
-        priceB_usd = max(priceB_usd, 0.0000001)
+
+        priceB_usd = max(priceB_usd, 1e-7)
         priceA = priceA_usd / priceB_usd
 
+    # ---- RANGE ----
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
-
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
         range_low, range_high = range_high, range_low
 
-    pct_low = -ratioA * range_pct
-    pct_high = ratioB * range_pct
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
-# ---- COL 2 : BACKTEST ----
+# =============================== COLONNE DROITE ===============================
 with col2:
     st.subheader("Range et Prix")
     st.write(f"Prix actuel : {priceA:.6f} $")
     st.write(f"Range ($) : {range_low:.6f} ↔ {range_high:.6f}")
-    st.write(f"Range (%) : ⇤ {pct_low:.1f}% | +{pct_high:.1f}% ⇥")
-    st.write(f"Répartitions : {capitalA:.2f} USD {tokenA} ◄ ► {capitalB:.2f} USD {tokenB}")
+    st.write(f"Répartitions : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
-    today = str(datetime.date.today())
-    key = f"{tokenA}_prices_{today}"
-    if key in st.session_state:
-        pricesA = st.session_state[key]
-    else:
-        prices = get_market_chart(COINGECKO_IDS[tokenA])
-        st.session_state[key] = prices
-        pricesA = prices
+    # ---- HISTORIQUE ----
+    key = f"{tokenA}_prices_{datetime.date.today()}"
+    if key not in st.session_state:
+        st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
+    pricesA = st.session_state[key]
 
+    # ---- VOLATILITÉ ----
     vol_30d = compute_volatility(pricesA)
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
 
     st.subheader("Analyse 30 jours")
-    st.write(f"Volatilé : {vol_30d:.2%} — Hors range : {rebalances}")
+    st.write(f"Volatilité : {vol_30d*100:.2f}% — Hors range : {rebalances}")
 
+    # ---- Projection ----
     future_days = st.number_input("Jours simulés future", 1, 120, 30)
-    vol_sim = vol_30d / np.sqrt(365)
+    vol_sim = vol_30d
 
     simulated = [pricesA[-1]]
     for _ in range(future_days):
@@ -261,48 +235,27 @@ with col2:
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Simulation future → Hors range : {future_reb}")
 
-
-    ### FIX 2 — SUGGESTION STRATÉGIE FIABLE SI API KO
+    # ---- VOL 7J ----
     vol_7d = compute_volatility(pricesA[-7:])
-    api_failed = pricesA == [1.0] * len(pricesA)
+    suggestion = "Mini-doux"
 
-    if api_failed or vol_7d == 0 or np.isnan(vol_7d):
-        suggestion = "Coup de pouce"
-    else:
-        if vol_7d > 0.8:
+    if okA and okB:
+        if vol_7d > 0.03:
             suggestion = "Neutre"
-        elif vol_7d > 0.4:
+        elif vol_7d > 0.015:
             suggestion = "Coup de pouce"
         else:
             suggestion = "Mini-doux"
+    else:
+        suggestion = "Coup de pouce"
 
     st.subheader("Analyse stratégie")
-    st.write(f"Vol 7j : {vol_7d:.2%} — Suggestion : {suggestion}")
+    st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
 
-
-# ---- AUTOMATION + REBALANCE ----
-
+# =============================== AUTOMATION ===============================
 st.markdown("""
-<style>
-.automation-banner {
-    background: linear-gradient(135deg, #8e2de2 0%, #4fac66 100%);
-    padding: 20px 25px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    border: 1px solid rgba(255,255,255,0.2);
-    box-shadow: 0px 4px 12px rgba(0,0,0,0.25);
-    margin-bottom: 15px;
-}
-.automation-title-text {
-    font-size: 28px;
-    font-weight: 700;
-    color: white !important;
-}
-</style>
-
-<div class="automation-banner">
-    <div class="automation-title-text">Réglages Automation</div>
+<div style="background: linear-gradient(135deg,#8e2de2,#4fac66);padding:20px;border-radius:12px;margin-top:20px;">
+    <span style="color:white;font-size:28px;font-weight:700;">REGLAGES AUTOMATION</span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -339,7 +292,7 @@ else:
     recomand = "60 minutes et plus"
 st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-# ------------------- REBALANCE AVANCÉE -------------------
+# ---- Advanced Rebalance ----
 st.subheader("Rebalance avancée (futur range)")
 
 global_range = range_percent
