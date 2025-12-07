@@ -166,7 +166,7 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    # ---- RECAP DANS CADRE ----
+    # ---- RECAP OVERLAY ----
     st.markdown(f"""
     <div style="
         background-color: #27F5A9;
@@ -306,7 +306,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ---- Range future + Time-buffer (2 colonnes) ----
+# ---- Range future / Time-buffer ----
 col_range, col_time = st.columns([2,1])
 
 with col_range:
@@ -356,7 +356,7 @@ with col_time:
         recomand = "60 minutes et plus"
     st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-# ---- Trigger d’anticipation + Rebalance avancée (2 colonnes) ----
+# ---- Trigger d’anticipation / Rebalance avancée ----
 col_trigger, col_rebalance = st.columns(2)
 
 with col_trigger:
