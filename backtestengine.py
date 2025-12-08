@@ -421,212 +421,168 @@ with col_rebalance:
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
 
-# ============================================================
-#                         UI INPUTS
-# ============================================================
 
-st.subheader("Interactive IL : paramètres")
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    P_deposit = st.number_input("P_deposit (prix au dépôt)", value=3000.0, format="%.6f")
-
-with col2:
-    P_lower = st.number_input("P_lower (borne basse)", value=2800.0, format="%.6f")
-
-with col3:
-    P_upper = st.number_input("P_upper (borne haute)", value=3500.0, format="%.6f")
-
-with col4:
-    P_now = st.number_input("P_now (prix actuel)", value=3000.0, format="%.6f")
-
-v_deposit = st.number_input("Valeur deposit (USD)", value=10000.0, step=100.0)
-
-# Safety
-if P_lower <= 0:
-    P_lower = 1e-8
-if P_upper <= P_lower:
-    P_upper = P_lower * 1.1
-
-
-# ============================================================
-#     FORMULES OFFICIELLES UNISWAP V3 + RENORMALISATION
-# ============================================================
-
-sqrtPl = np.sqrt(P_lower)
-sqrtPu = np.sqrt(P_upper)
-sqrtPd = np.sqrt(P_deposit)
-
-# ---- 1. Compute liquidity L from deposit value V  (correct Uniswap inverse formula)
-def compute_L_from_value(P, Pl, Pu, V):
+# -------------------------------------------------------------
+# 1. Calcul du liquidity L à partir du dépôt en USD
+# -------------------------------------------------------------
+def compute_L(P, P_l, P_u, V):
     sqrtP = np.sqrt(P)
-    sqrtPl = np.sqrt(Pl)
-    sqrtPu = np.sqrt(Pu)
+    sqrtPl = np.sqrt(P_l)
+    sqrtPu = np.sqrt(P_u)
 
-    denom = P / (sqrtPu - sqrtP) + 1 / (sqrtP - sqrtPl)
+    # Formule Uniswap V3 officielle (liquidity from value)
+    A = (1 / sqrtP - 1 / sqrtPu)
+    B = (sqrtP - sqrtPl)
+
+    # V = L(P * A + B) -> L = V / (P*A + B)
+    denom = P * A + B
     return V / denom
 
-L = compute_L_from_value(P_deposit, P_lower, P_upper, v_deposit)
 
-# ---- 2. Compute initial token amounts from L (official formula)
-x0 = L * (1/sqrtPd - 1/sqrtPu)
-y0 = L * (sqrtPd - sqrtPl)
-
-# ---- 3. RENORMALISATION : ensure LP_value_at_deposit == v_deposit EXACTLY
-V0 = x0 * P_deposit + y0
-factor = v_deposit / V0
-L *= factor
-x0 *= factor
-y0 *= factor
-
-
-# ============================================================
-#         TOKEN AMOUNTS & VALUE OF LP AT ANY PRICE
-# ============================================================
-
-def x_of_P(P):
-    P = np.array(P)
+# -------------------------------------------------------------
+# 2. Tokens déposés (formules Uniswap)
+# -------------------------------------------------------------
+def tokens_from_L(L, P, P_l, P_u):
     sqrtP = np.sqrt(P)
-    x = L * (1/sqrtP - 1/np.sqrt(P_upper))
-    x[x < 0] = 0
-    return x
+    sqrtPl = np.sqrt(P_l)
+    sqrtPu = np.sqrt(P_u)
 
-def y_of_P(P):
-    P = np.array(P)
-    sqrtP = np.sqrt(P)
+    x = L * (1 / sqrtP - 1 / sqrtPu)
+    y = L * (sqrtP - sqrtPl)
+    return x, y
+
+
+# -------------------------------------------------------------
+# 3. Ajustement précis : normalisation pour que LP = V_deposit
+# -------------------------------------------------------------
+def normalize_L(L, x0, y0, P, V):
+    V_calc = x0 * P + y0
+    factor = V / V_calc
+    return L * factor, x0 * factor, y0 * factor
+
+
+# -------------------------------------------------------------
+# 4. Fonctions x(P), y(P) → robustes scalaires & tableaux
+# -------------------------------------------------------------
+def x_of_P(P, L, P_upper):
+    P_arr = np.asarray(P, float)
+    sqrtP = np.sqrt(P_arr)
+
+    x = L * (1 / sqrtP - 1 / np.sqrt(P_upper))
+
+    if isinstance(x, np.ndarray):
+        return np.where(x < 0, 0, x)
+
+    return max(x, 0.0)
+
+
+def y_of_P(P, L, P_lower):
+    P_arr = np.asarray(P, float)
+    sqrtP = np.sqrt(P_arr)
+
     y = L * (sqrtP - np.sqrt(P_lower))
-    y[y < 0] = 0
-    return y
 
-def V_LP(P):
-    P = np.array(P)
-    return x_of_P(P) * P + y_of_P(P)
+    if isinstance(y, np.ndarray):
+        return np.where(y < 0, 0, y)
 
-def V_HODL(P):
+    return max(y, 0.0)
+
+
+def V_LP(P, L, P_lower, P_upper):
+    P_arr = np.asarray(P, float)
+    return x_of_P(P_arr, L, P_upper) * P_arr + y_of_P(P_arr, L, P_lower)
+
+
+def V_HODL(P, x0, y0):
     return x0 * P + y0
 
 
-# ============================================================
-#                     CURVE COMPUTATION
-# ============================================================
+# -------------------------------------------------------------
+# 5. Interface Streamlit
+# -------------------------------------------------------------
+st.title("Interactive IL : paramètres")
 
-xs = np.linspace(P_lower * 0.3, P_upper * 2.5, 800)
-vals_lp = V_LP(xs)
-vals_hodl = V_HODL(xs)
+P_deposit = st.number_input("P_deposit (prix au dépôt)", value=3000.0, step=0.001, format="%.6f")
+P_lower   = st.number_input("P_lower (borne basse)", value=2800.0, step=0.001, format="%.6f")
+P_upper   = st.number_input("P_upper (borne haute)", value=3500.0, step=0.001, format="%.6f")
+P_now     = st.number_input("P_now (prix actuel)", value=3000.0, step=0.001, format="%.6f")
 
-IL = vals_lp / vals_hodl - 1
-IL_pct = IL * 100
-
-IL_now = (V_LP(P_now) / V_HODL(P_now) - 1) * 100
-
-
-# ============================================================
-#                     MAIN GRAPH LP vs HODL
-# ============================================================
-
-fig = go.Figure()
-
-fig.add_trace(go.Scatter(
-    x=xs, y=vals_hodl,
-    mode="lines",
-    name="HODL (value)",
-    line=dict(color="black", dash="dash", width=2)
-))
-
-fig.add_trace(go.Scatter(
-    x=xs, y=vals_lp,
-    mode="lines",
-    name="LP position (value)",
-    line=dict(color="#2b8a3e", width=3)
-))
-
-mask_gain = vals_lp > vals_hodl
-if np.any(mask_gain):
-    fig.add_trace(go.Scatter(
-        x=np.concatenate([xs[mask_gain], xs[mask_gain][::-1]]),
-        y=np.concatenate([vals_lp[mask_gain], vals_hodl[mask_gain][::-1]]),
-        fill="toself",
-        fillcolor="rgba(170, 240, 255, 0.6)",
-        line=dict(color="rgba(0,0,0,0)"),
-        name="LP above HODL"
-    ))
-
-mask_loss = vals_lp <= vals_hodl
-if np.any(mask_loss):
-    fig.add_trace(go.Scatter(
-        x=np.concatenate([xs[mask_loss], xs[mask_loss][::-1]]),
-        y=np.concatenate([vals_lp[mask_loss], vals_hodl[mask_loss][::-1]]),
-        fill="toself",
-        fillcolor="rgba(20,140,70,0.4)",
-        line=dict(color="rgba(0,0,0,0)"),
-        name="LP below HODL"
-    ))
-
-# Markers (vertical lines)
-for xpos, color, name in [
-    (P_lower, "orange", "P_lower"),
-    (P_deposit, "blue", "P_deposit"),
-    (P_upper, "purple", "P_upper"),
-    (P_now, "red", "P_now"),
-]:
-    fig.add_vline(x=xpos, line=dict(color=color, width=2, dash="dot"))
-    fig.add_trace(go.Scatter(
-        x=[xpos], y=[0], mode="markers+text",
-        text=[f"{name}: {xpos:.1f}"],
-        textposition="bottom center",
-        marker=dict(size=10, color=color),
-        showlegend=False
-    ))
-
-fig.update_layout(
-    title="Impermanent Loss — LP vs HODL (Concentrated Liquidity)",
-    xaxis_title="Price",
-    yaxis_title="Position value (USD)",
-    template="simple_white",
-    width=1200,
-    height=600
-)
-
-st.plotly_chart(fig, use_container_width=True)
+v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, step=0.01)
 
 
-# ============================================================
-#                    IL CURVE GRAPH
-# ============================================================
+# -------------------------------------------------------------
+# 6. Calcul Liquidity + correction exacte
+# -------------------------------------------------------------
+L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
 
+x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
+
+# Normalisation stricte
+L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
+
+
+# -------------------------------------------------------------
+# 7. Grilles de prix
+# -------------------------------------------------------------
+prices = np.linspace(P_lower * 0.8, P_upper * 1.3, 400)
+
+LP_values   = V_LP(prices, L, P_lower, P_upper)
+HODL_values = V_HODL(prices, x0, y0)
+IL_curve    = (LP_values / HODL_values - 1) * 100
+
+
+# -------------------------------------------------------------
+# 8. Graphique LP vs HODL
+# -------------------------------------------------------------
+fig1 = go.Figure()
+
+fig1.add_trace(go.Scatter(x=prices, y=HODL_values, mode="lines",
+                          name="HODL (value)", line=dict(color="black", dash="dot")))
+
+fig1.add_trace(go.Scatter(x=prices, y=LP_values, mode="lines",
+                          name="LP position (value)", line=dict(color="green")))
+
+fig1.add_trace(go.Scatter(x=prices, y=np.maximum(LP_values - HODL_values, 0),
+                          fill='tozeroy', name="LP above HODL",
+                          line=dict(color="cyan")))
+
+fig1.update_layout(height=450,
+                   title="Impermanent Loss — LP vs HODL (Concentrated Liquidity)",
+                   xaxis_title="Price",
+                   yaxis_title="Position value (USD)")
+
+st.plotly_chart(fig1, use_container_width=True)
+
+
+# -------------------------------------------------------------
+# 9. Courbe exacte d’IL(%)
+# -------------------------------------------------------------
 fig2 = go.Figure()
-fig2.add_trace(go.Scatter(
-    x=xs, y=IL_pct,
-    mode="lines",
-    name="IL (%)",
-    line=dict(color="darkred", width=2)
-))
-fig2.add_vline(x=P_now, line=dict(color="red", width=2, dash="dot"))
 
-fig2.update_layout(
-    title="Impermanent Loss (%) — Courbe exacte",
-    xaxis_title="Price",
-    yaxis_title="IL (%)",
-    template="simple_white",
-    width=1200,
-    height=300
-)
+fig2.add_trace(go.Scatter(x=prices, y=IL_curve,
+                          mode="lines", name="IL(%)", line=dict(color="red", width=3)))
+
+fig2.update_layout(height=300,
+                   title="Impermanent Loss (%) — Courbe exacte",
+                   xaxis_title="Price",
+                   yaxis_title="IL (%)")
 
 st.plotly_chart(fig2, use_container_width=True)
 
 
-# ============================================================
-#                    METRICS DISPLAY
-# ============================================================
+# -------------------------------------------------------------
+# 10. Valeurs actuelles
+# -------------------------------------------------------------
+IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
+LP_now = V_LP(P_now, L, P_lower, P_upper)
+HODL_now = V_HODL(P_now, x0, y0)
 
-colA, colB, colC = st.columns(3)
+st.write("### IL at price now")
+st.write(f"**{IL_now:.2f}%**")
 
-with colA:
-    st.metric("IL at price now", f"{IL_now:.2f}%")
+st.write("### Value LP (now)")
+st.write(f"**${LP_now:,.2f}**")
 
-with colB:
-    st.metric("Value LP (now)", f"${V_LP(P_now):,.2f}")
+st.write("### Value HODL (now)")
+st.write(f"**${HODL_now:,.2f}**")
 
-with colC:
-    st.metric("Value HODL (now)", f"${V_HODL(P_now):,.2f}")
