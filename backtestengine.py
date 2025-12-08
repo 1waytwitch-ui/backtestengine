@@ -420,70 +420,26 @@ with col_rebalance:
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
-# --- Fonctions de calcul ---
-def compute_L(P, P_l, P_u, V):
-    sqrtP = np.sqrt(P)
-    sqrtPl = np.sqrt(P_l)
-    sqrtPu = np.sqrt(P_u)
-    A = (1 / sqrtP - 1 / sqrtPu)
-    B = (sqrtP - sqrtPl)
-    return V / (P * A + B)
-
-def tokens_from_L(L, P, P_l, P_u):
-    sqrtP = np.sqrt(P)
-    sqrtPl = np.sqrt(P_l)
-    sqrtPu = np.sqrt(P_u)
-    x = L * (1 / sqrtP - 1 / sqrtPu)
-    y = L * (sqrtP - sqrtPl)
-    return x, y
-
-def normalize_L(L, x0, y0, P, V):
-    factor = V / (x0 * P + y0)
-    return L * factor, x0 * factor, y0 * factor
-
-def x_of_P(P, L, P_upper):
-    P_arr = np.asarray(P, float)
-    sqrtP = np.sqrt(P_arr)
-    x = L * (1 / sqrtP - 1 / np.sqrt(P_upper))
-    if isinstance(x, np.ndarray):
-        return np.where(x < 0, 0, x)
-    return max(x, 0.0)
-
-def y_of_P(P, L, P_lower):
-    P_arr = np.asarray(P, float)
-    sqrtP = np.sqrt(P_arr)
-    y = L * (sqrtP - np.sqrt(P_lower))
-    if isinstance(y, np.ndarray):
-        return np.where(y < 0, 0, y)
-    return max(y, 0.0)
-
-def V_LP(P, L, P_lower, P_upper):
-    P_arr = np.asarray(P, float)
-    return x_of_P(P_arr, L, P_upper) * P_arr + y_of_P(P_arr, L, P_lower)
-
-def V_HODL(P, x0, y0):
-    return x0 * P + y0
-
-# --- Interface Streamlit ---
+# --- Interface Streamlit IL / LP ---
 st.markdown(
-    "<h1 style='background-color:#1f77b4; color:white; padding:10px; border-radius:8px;'>"
+    "<h1 style='background-color:#FFA700; color:white; padding:10px; border-radius:8px;'>"
     "Interactive Impermanent Loss (IL)</h1>", unsafe_allow_html=True
 )
 
 # --- Inputs compacts ---
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
 with row1_col1:
-    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001)
+    P_deposit = st.number_input("Prix dépôt", value=priceA, format="%.6f", step=0.001)
 with row1_col2:
-    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001)
+    P_now = st.number_input("Prix actuel", value=priceA, format="%.6f", step=0.001)
 with row1_col3:
-    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.2f", step=0.01)
+    v_deposit = st.number_input("Valeur dépôt (USD)", value=capital, format="%.2f", step=0.01)
 
 row2_col1, row2_col2 = st.columns([1,1])
 with row2_col1:
-    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001)
+    P_lower = st.number_input("Prix lower", value=final_low, format="%.6f", step=0.001)
 with row2_col2:
-    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001)
+    P_upper = st.number_input("Prix upper", value=final_high, format="%.6f", step=0.001)
 
 # --- Calcul de L et normalisation ---
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
@@ -504,7 +460,7 @@ fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte",
                   margin=dict(l=40,r=40,t=40,b=40))
 st.plotly_chart(fig, use_container_width=True)
 
-# --- Valeurs actuelles et L au dépôt ---
+# --- Valeurs actuelles et liquidité ---
 IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
 LP_now = V_LP(P_now, L, P_lower, P_upper)
 HODL_now = V_HODL(P_now, x0, y0)
@@ -513,4 +469,4 @@ row_metrics = st.columns(4)
 row_metrics[0].metric("IL now", f"{IL_now:.2f} %")
 row_metrics[1].metric("LP now", f"${LP_now:,.2f}")
 row_metrics[2].metric("HODL now", f"${HODL_now:,.2f}")
-row_metrics[3].metric("Liquidité dépôt", f"${L:,.2f}")
+row_metrics[3].metric("Liquidité dépôt", f"${v_deposit:,.2f}")
