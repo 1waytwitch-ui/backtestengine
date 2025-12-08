@@ -464,7 +464,7 @@ def V_LP(P, L, P_lower, P_upper):
 def V_HODL(P, x0, y0):
     return x0 * P + y0
 
-# --- Interface Streamlit ---
+# --- Interface IL ---
 st.markdown("""
 <div style="background: linear-gradient(135deg,#8e2de2,#4fac66);padding:20px;border-radius:12px;margin-top:20px;">
     <span style="color:white;font-size:28px;font-weight:700;">IMPERMANENT LOSS</span>
