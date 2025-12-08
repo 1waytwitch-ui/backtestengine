@@ -418,3 +418,103 @@ with col_rebalance:
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
+# ===================================================================
+#                   MODULE IMPERMANENT LOSS (UNISWAP V3)
+# ===================================================================
+
+st.markdown("""
+<div style="background:#222;padding:20px;border-radius:12px;margin-top:40px;">
+    <span style="color:white;font-size:28px;font-weight:700;">📉 IMPERMANENT LOSS — LIQUIDITÉ CONCENTRÉE</span>
+</div>
+""", unsafe_allow_html=True)
+
+# -------------------------------
+# FONCTIONS UNISWAP V3
+# -------------------------------
+
+def calc_liquidity(P_lower, P_upper, amount0, amount1):
+    sqrt_lower = np.sqrt(P_lower)
+    sqrt_upper = np.sqrt(P_upper)
+    L0 = amount0 / (1/sqrt_lower - 1/sqrt_upper)
+    L1 = amount1 / (sqrt_upper - sqrt_lower)
+    return min(L0, L1)
+
+def calc_assets(P, P_lower, P_upper, L):
+    sqrtP = np.sqrt(P)
+    sqrt_lower = np.sqrt(P_lower)
+    sqrt_upper = np.sqrt(P_upper)
+
+    if P <= P_lower:
+        x = L * (1/sqrt_lower - 1/sqrt_upper)
+        y = 0
+    elif P >= P_upper:
+        x = 0
+        y = L * (sqrt_upper - sqrt_lower)
+    else:
+        x = L * (1/sqrtP - 1/sqrt_upper)
+        y = L * (sqrtP - sqrt_lower)
+
+    return x, y
+
+def impermanent_loss(P, P_lower, P_upper, amount0, amount1):
+    L = calc_liquidity(P_lower, P_upper, amount0, amount1)
+    x0, y0 = amount0, amount1
+    IL = []
+
+    for price in P:
+        x, y = calc_assets(price, P_lower, P_upper, L)
+        V_lp = x * price + y
+        V_hodl = x0 * price + y0
+        IL.append((V_lp - V_hodl) / V_hodl)
+
+    return np.array(IL)
+
+
+# -------------------------------
+# UI IMPERMANENT LOSS
+# -------------------------------
+st.subheader("Paramètres IL (Concentrated Liquidity)")
+
+col_il1, col_il2, col_il3 = st.columns(3)
+with col_il1:
+    P_lower = st.number_input("P_lower", value=range_low, format="%.8f")
+with col_il2:
+    P_upper = st.number_input("P_upper", value=range_high, format="%.8f")
+with col_il3:
+    capital_il = st.number_input("Capital pour IL ($)", value=capital, step=50)
+
+# on applique même ratio que stratégie A/B
+amount0 = (capital_il * ratioA) / max(priceA, 1e-8)
+amount1 = (capital_il * ratioB)
+
+# Range de prix à tracer
+P = np.linspace(P_lower * 0.5, P_upper * 1.5, 500)
+IL = impermanent_loss(P, P_lower, P_upper, amount0, amount1)
+
+# -------------------------------
+# AFFICHAGE GRAPHIQUE
+# -------------------------------
+fig, ax = plt.subplots(figsize=(10, 4))
+ax.plot(P, IL * 100)
+ax.axvline(priceA, color="orange", linestyle="--", label="Prix actuel")
+ax.set_title("Impermanent Loss % (Uniswap V3)")
+ax.set_xlabel("Prix")
+ax.set_ylabel("IL (%)")
+ax.grid(True)
+ax.legend()
+
+st.pyplot(fig)
+
+# Résumé
+min_il = np.min(IL) * 100
+max_il = np.max(IL) * 100
+
+st.markdown(f"""
+<div style="background:#EEE;padding:15px;border-radius:8px;margin-top:15px;">
+<b>IL minimum :</b> {min_il:.2f}%<br>
+<b>IL maximum :</b> {max_il:.2f}%<br>
+<b>Prix actuel :</b> {priceA:.6f}
+</div>
+""", unsafe_allow_html=True)
+
+
