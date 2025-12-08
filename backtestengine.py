@@ -429,17 +429,17 @@ st.markdown(
 # --- Inputs compacts ---
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
 with row1_col1:
-    P_deposit = st.number_input("Prix dépôt", value=priceA, format="%.6f", step=0.001)
+    P_deposit = st.number_input("Prix dépôt", value=float(priceA), format="%.6f", step=0.001)
 with row1_col2:
-    P_now = st.number_input("Prix actuel", value=priceA, format="%.6f", step=0.001)
+    P_now = st.number_input("Prix actuel", value=float(priceA), format="%.6f", step=0.001)
 with row1_col3:
-    v_deposit = st.number_input("Valeur dépôt (USD)", value=capital, format="%.2f", step=0.01)
+    v_deposit = st.number_input("Valeur dépôt (USD)", value=float(capital), format="%.2f", step=0.01)
 
 row2_col1, row2_col2 = st.columns([1,1])
 with row2_col1:
-    P_lower = st.number_input("Prix lower", value=final_low, format="%.6f", step=0.001)
+    P_lower = st.number_input("Prix lower", value=float(final_low), format="%.6f", step=0.001)
 with row2_col2:
-    P_upper = st.number_input("Prix upper", value=final_high, format="%.6f", step=0.001)
+    P_upper = st.number_input("Prix upper", value=float(final_high), format="%.6f", step=0.001)
 
 # --- Calcul de L et normalisation ---
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
@@ -469,4 +469,4 @@ row_metrics = st.columns(4)
 row_metrics[0].metric("IL now", f"{IL_now:.2f} %")
 row_metrics[1].metric("LP now", f"${LP_now:,.2f}")
 row_metrics[2].metric("HODL now", f"${HODL_now:,.2f}")
-row_metrics[3].metric("Liquidité dépôt", f"${v_deposit:,.2f}")
+row_metrics[3].metric("Liquidité dépôt", f"${float(v_deposit):,.2f}")
