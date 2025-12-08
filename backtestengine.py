@@ -503,7 +503,8 @@ fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL(%)", line=
 fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte",
                   xaxis_title="Prix", yaxis_title="IL (%)",
                   margin=dict(l=40,r=40,t=40,b=40))
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
+
 
 # --- Valeurs actuelles et L au dépôt ---
 IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
