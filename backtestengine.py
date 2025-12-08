@@ -3,6 +3,7 @@ import requests
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
