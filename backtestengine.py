@@ -2,13 +2,11 @@ import streamlit as st
 import requests
 import numpy as np
 import datetime
-import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-import plotly.express as px
 
-st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
+st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE", layout="wide")
 
-# ---- STYLES GÉNÉRAUX ----
+# ----------------- STYLES -----------------
 st.markdown("""
 <style>
 .stApp {background-color: #FFFFFF !important; color: #000000 !important;}
@@ -25,30 +23,26 @@ h1, h2, h3, h4 {color: #000000 !important;}
 </style>
 """, unsafe_allow_html=True)
 
-# ---- FORCE DARK MODE ----
+# ----------------- HEADER -----------------
 st.markdown("""
-<style>
-.stRadio label, .stRadio div, 
-.stSelectbox label, .stSelectbox div,
-.stCheckbox label, .stCheckbox div {
-    color: #000000 !important;
-}
-</style>
+<div style="background-color:#FFA700;padding:20px;border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+    <h1 style="color:white;margin:0;">LP STRATÉGIES BACKTEST ENGINE</h1>
+    <div>
+        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:60px;height:60px;border-radius:50%;vertical-align:middle;">
+        <a href="https://t.me/Pigeonchanceux" target="_blank" style="color:white;font-size:18px;font-weight:600;text-decoration:none;margin-left:10px;">Mon Telegram</a>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
-# ---- INIT ----
-if "show_disclaimer" not in st.session_state:
-    st.session_state.show_disclaimer = True
-
-# ---- DATA ----
+# ----------------- STRATEGIES / PAIRS -----------------
 STRATEGIES = {
-    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
-    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité(attention à inverser en fonction du marché)"},
-    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance (attention à inverser en fonction du marché)"},
+    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
+    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité"},
+    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance"},
     "Side-line Up": {"ratio": (0.95, 0.05), "objectif": "Accumulation", "contexte": "Dump"},
     "Side-line Below": {"ratio": (0.05, 0.95), "objectif": "Attente avant pump", "contexte": "Marché haussier"},
-    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Accumulation de l'actif le plus volatile (Token A)"},
-    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Tendance haussière revente de l'actif le plus volatile (token A contre le token B)"},
+    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Accumulation"},
+    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Tendance haussière"}
 }
 
 COINGECKO_IDS = {
@@ -67,8 +61,8 @@ PAIRS = [
     ("AERO", "WETH")
 ]
 
-# ---- FONCTIONS ----
-@st.cache_data(ttl=3600, show_spinner=False)
+# ----------------- FONCTIONS UTILITAIRES -----------------
+@st.cache_data(ttl=3600)
 def get_market_chart(asset_id):
     try:
         url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
@@ -98,116 +92,46 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
-# ---- HEADER ----
-st.markdown("""
-<style>
-.deFi-banner {
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
-    padding: 25px 30px;
-    border-radius: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
-    margin-bottom: 25px;
-}
-.deFi-title-text {
-    font-size: 36px;
-    font-weight: 700;
-    color: white !important;
-}
-</style>
+# ----------------- LAYOUT PRINCIPAL -----------------
+col1, col2 = st.columns([1.3,1])
 
-<div class="deFi-banner">
-    <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
-    <div>
-        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:60px;height:60px;border-radius:50%;">
-        <a href="https://t.me/Pigeonchanceux" target="_blank" style="color:white;font-size:18px;font-weight:600;text-decoration:none;">Mon Telegram</a>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# ---- DISCLAIMER ----
-if st.session_state.show_disclaimer:
-    st.markdown("""
-    <div style="
-        background-color: #fff3cd;
-        border-left: 6px solid #ffca2c;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: #000;
-        margin-bottom: 25px;
-        font-size: 15px;
-    ">
-    <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
-    Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement. Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées.
-    </div>
-    """, unsafe_allow_html=True)
-
-# ----------------------------- LAYOUT -----------------------------
-col1, col2 = st.columns([1.3, 1])
-
-# ============================== GAUCHE ==============================
 with col1:
-
     st.subheader("POOL SETUP")
-
     left, right = st.columns(2)
     with left:
-        pair_labels = [f"{a}/{b}" for a, b in PAIRS]
+        pair_labels = [f"{a}/{b}" for a,b in PAIRS]
         selected_pair = st.radio("Paire :", pair_labels, index=0)
     with right:
         strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
     tokenA, tokenB = selected_pair.split("/")
-    info = STRATEGIES[strategy_choice]
-    ratioA, ratioB = info["ratio"]
+    ratioA, ratioB = STRATEGIES[strategy_choice]["ratio"]
 
     invert_market = st.checkbox("Inversion marché (bull → bear)")
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    # ---- RECAP OVERLAY ----
     st.markdown(f"""
-    <div style="
-        background-color: #27F5A9;
-        border-left: 6px solid #00754A;
-        padding: 15px 20px;
-        border-radius: 8px;
-        margin: 12px 0 25px 0;
-    ">
+    <div style="background-color:#27F5A9;padding:12px;border-radius:8px;margin:12px 0 25px 0;">
     <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
-    <b>Objectif :</b> {info['objectif']}<br>
-    <b>Contexte :</b> {info['contexte']}
+    <b>Objectif :</b> {STRATEGIES[strategy_choice]['objectif']}<br>
+    <b>Contexte :</b> {STRATEGIES[strategy_choice]['contexte']}
     </div>
     """, unsafe_allow_html=True)
 
-    capital = st.number_input("Capital (USD)", value=1000, step=50)
+    capital = st.number_input("Capital (USD)", value=1000.0, step=50.0, format="%.2f")
 
-    # ---- PRIX ----
-    if tokenB == "USDC":
-        priceA_usd, okA = get_price_usd(tokenA)
-        if not okA:
-            priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
-        priceA = priceA_usd
-        okB = True
-    else:
-        priceA_usd, okA = get_price_usd(tokenA)
-        priceB_usd, okB = get_price_usd(tokenB)
+    # PRIX ACTUELS
+    priceA_usd, okA = get_price_usd(tokenA)
+    priceB_usd, okB = get_price_usd(tokenB)
+    if not okA:
+        priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0, format="%.6f")
+    if not okB:
+        priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0, format="%.6f")
 
-        la, lb = st.columns(2)
-        with la:
-            if not okA:
-                priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
-        with lb:
-            if not okB:
-                priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
+    priceB_usd = max(priceB_usd, 1e-7)
+    priceA = priceA_usd / priceB_usd
 
-        priceB_usd = max(priceB_usd, 1e-7)
-        priceA = priceA_usd / priceB_usd
-
-    # ---- RANGE ----
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
@@ -216,29 +140,17 @@ with col1:
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
-
-# ============================== DROITE ==============================
 with col2:
-
-    # ---- Price/range ----
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
+    st.markdown(f"""
+    <div style="background-color:#FFA700;padding:15px;border-radius:8px;margin-bottom:25px;">
         <h3>PRICE / RANGE</h3>
+        Prix actuel : {priceA:.6f} $<br>
+        Range : {range_low:.6f} ↔ {range_high:.6f}<br>
+        Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}
+    </div>
     """, unsafe_allow_html=True)
 
-    st.write(f"Prix actuel : {priceA:.6f} $")
-    st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
-    st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ---- HISTORIQUE ----
+    # HISTORIQUE 30 JOURS
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
@@ -247,59 +159,34 @@ with col2:
     vol_30d = compute_volatility(pricesA)
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
 
-    # ---- SECTION ANALYSE 30 JOURS ----
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
+    st.markdown(f"""
+    <div style="background-color:#FFA700;padding:15px;border-radius:8px;margin-bottom:25px;">
         <h3>Analyse 30 jours</h3>
+        Volatilité : {vol_30d*100:.2f}% — Hors range : {rebalances}
+    </div>
     """, unsafe_allow_html=True)
 
-    st.write(f"Volatilité : {vol_30d*100:.2f}% — Hors range : {rebalances}")
-
-    # Simulation fixée à 30 jours
-    future_days = 30
-    vol_sim = vol_30d
+    # SIMULATION 30 JOURS FUTURE
     simulated = [pricesA[-1]]
-
-    for _ in range(future_days):
-        simulated.append(simulated[-1] * (1 + np.random.normal(0, vol_sim)))
-
+    for _ in range(30):
+        simulated.append(simulated[-1] * (1 + np.random.normal(0, vol_30d)))
     future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
     st.write(f"Simulation future (30j) → Hors range : {future_reb}")
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ---- ANALYSE STRATEGIE ----
+    # SUGGESTION STRATEGIE
     vol_7d = compute_volatility(pricesA[-7:])
     suggestion = "Mini-doux"
-
-    if okA and okB:
-        if vol_7d > 0.04:
-            suggestion = "Coup de pouce"
-        elif vol_7d > 0.02:
-            suggestion = "Mini-Doux"
-    else:
+    if vol_7d > 0.04:
         suggestion = "Coup de pouce"
-
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
+    elif vol_7d > 0.02:
+        suggestion = "Mini-doux"
+    st.markdown(f"""
+    <div style="background-color:#FFA700;padding:15px;border-radius:8px;margin-bottom:25px;">
         <h3>Analyse stratégie</h3>
+        Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}
+    </div>
     """, unsafe_allow_html=True)
 
-    st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================== AUTOMATION ===========================
 st.markdown("""
@@ -420,7 +307,24 @@ with col_rebalance:
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
-# --- Fonctions de calcul ---
+# ----------------- SECTION IL / LP -----------------
+st.markdown("<h2 style='background-color:#FFA500;color:white;padding:10px;border-radius:8px;'>Interactive Impermanent Loss (IL)</h2>", unsafe_allow_html=True)
+
+row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+with row1_col1:
+    P_deposit = st.number_input("Prix dépôt (P_deposit)", value=3000.0, format="%.6f")
+with row1_col2:
+    P_now = st.number_input("Prix actuel (P_now)", value=3000.0, format="%.6f")
+with row1_col3:
+    v_deposit = st.number_input("Valeur dépôt (USD)", value=500.0, format="%.2f")
+
+row2_col1, row2_col2 = st.columns([1,1])
+with row2_col1:
+    P_lower = st.number_input("Prix lower (P_lower)", value=2800.0, format="%.6f")
+with row2_col2:
+    P_upper = st.number_input("Prix upper (P_upper)", value=3500.0, format="%.6f")
+
+# FONCTIONS LP / HODL
 def compute_L(P, P_l, P_u, V):
     sqrtP = np.sqrt(P)
     sqrtPl = np.sqrt(P_l)
@@ -464,47 +368,21 @@ def V_LP(P, L, P_lower, P_upper):
 def V_HODL(P, x0, y0):
     return x0 * P + y0
 
-# --- Interface Streamlit ---
-st.markdown(
-    "<h1 style='background-color:#1f77b4; color:white; padding:10px; border-radius:8px;'>"
-    "Interactive Impermanent Loss (IL)</h1>", unsafe_allow_html=True
-)
-
-# --- Inputs compacts ---
-row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
-with row1_col1:
-    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001)
-with row1_col2:
-    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001)
-with row1_col3:
-    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.2f", step=0.01)
-
-row2_col1, row2_col2 = st.columns([1,1])
-with row2_col1:
-    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001)
-with row2_col2:
-    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001)
-
-# --- Calcul de L et normalisation ---
+# CALCUL
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
 x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
 L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
 
-# --- Grille prix ---
 prices = np.linspace(P_lower*0.8, P_upper*1.3, 400)
 LP_values = V_LP(prices, L, P_lower, P_upper)
 HODL_values = V_HODL(prices, x0, y0)
 IL_curve = (LP_values / HODL_values - 1) * 100
 
-# --- Graphique IL(%) ---
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL(%)", line=dict(color="red", width=3)))
-fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte",
-                  xaxis_title="Prix", yaxis_title="IL (%)",
-                  margin=dict(l=40,r=40,t=40,b=40))
+fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL (%)", line=dict(color="red", width=3)))
+fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte", xaxis_title="Prix", yaxis_title="IL (%)")
 st.plotly_chart(fig, use_container_width=True)
 
-# --- Valeurs actuelles et L au dépôt ---
 IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
 LP_now = V_LP(P_now, L, P_lower, P_upper)
 HODL_now = V_HODL(P_now, x0, y0)
