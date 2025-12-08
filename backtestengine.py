@@ -470,7 +470,6 @@ st.markdown("""
     <span style="color:white;font-size:28px;font-weight:700;">IMPERMANENT LOSS</span>
 </div>
 """, unsafe_allow_html=True)
-)
 
 # --- Inputs compacts ---
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
