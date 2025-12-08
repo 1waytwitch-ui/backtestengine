@@ -420,7 +420,24 @@ with col_rebalance:
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
-# --- Fonctions de calcul ---
+# ----------------- SECTION IL / LP -----------------
+st.markdown("<h2 style='background-color:#FFA500;color:white;padding:10px;border-radius:8px;'>Interactive Impermanent Loss (IL)</h2>", unsafe_allow_html=True)
+
+row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+with row1_col1:
+    P_deposit = st.number_input("Prix dépôt (P_deposit)", value=3000.0, format="%.6f")
+with row1_col2:
+    P_now = st.number_input("Prix actuel (P_now)", value=3000.0, format="%.6f")
+with row1_col3:
+    v_deposit = st.number_input("Valeur dépôt (USD)", value=500.0, format="%.2f")
+
+row2_col1, row2_col2 = st.columns([1,1])
+with row2_col1:
+    P_lower = st.number_input("Prix lower (P_lower)", value=2800.0, format="%.6f")
+with row2_col2:
+    P_upper = st.number_input("Prix upper (P_upper)", value=3500.0, format="%.6f")
+
+# FONCTIONS LP / HODL
 def compute_L(P, P_l, P_u, V):
     sqrtP = np.sqrt(P)
     sqrtPl = np.sqrt(P_l)
@@ -464,63 +481,27 @@ def V_LP(P, L, P_lower, P_upper):
 def V_HODL(P, x0, y0):
     return x0 * P + y0
 
-# --- Interface Streamlit ---
-st.markdown("""
-<div style="background: linear-gradient(135deg,#8e2de2,#4fac66);padding:20px;border-radius:12px;margin-top:20px;">
-    <span style="color:white;font-size:28px;font-weight:700;">IMPERMANENT LOSS</span>
-</div>
-""", unsafe_allow_html=True)
-
-# --- Inputs compacts ---
-row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
-with row1_col1:
-    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001)
-with row1_col2:
-    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001)
-with row1_col3:
-    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.2f", step=0.01)
-
-row2_col1, row2_col2 = st.columns([1,1])
-with row2_col1:
-    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001)
-with row2_col2:
-    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001)
-
-# --- Calcul de L et normalisation ---
+# CALCUL
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
 x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
 L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
 
-# --- Grille prix ---
 prices = np.linspace(P_lower*0.8, P_upper*1.3, 400)
 LP_values = V_LP(prices, L, P_lower, P_upper)
 HODL_values = V_HODL(prices, x0, y0)
 IL_curve = (LP_values / HODL_values - 1) * 100
 
-# --- Graphique IL(%) ---
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL(%)", line=dict(color="red", width=3)))
-fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte",
-                  xaxis_title="Prix", yaxis_title="IL (%)",
-                  margin=dict(l=40,r=40,t=40,b=40))
+fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL (%)", line=dict(color="red", width=3)))
+fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte", xaxis_title="Prix", yaxis_title="IL (%)")
 st.plotly_chart(fig, use_container_width=True)
 
-# ---- RECAP IMPERMANENT LOSS ----
-st.markdown(f"""
-<div style="
-    background-color: #27F5A9;
-    border-left: 6px solid #00754A;
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin: 12px 0 25px 0;
-    display: flex;
-    justify-content: space-between;
-    font-size: 16px;
-">
-    <div><b>IL now :</b> {IL_now:.2f} %</div>
-    <div><b>LP now :</b> ${LP_now:,.2f}</div>
-    <div><b>HODL now :</b> ${HODL_now:,.2f}</div>
-    <div><b>Liquidité dépôt :</b> ${L:,.2f}</div>
-</div>
-""", unsafe_allow_html=True)
+IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
+LP_now = V_LP(P_now, L, P_lower, P_upper)
+HODL_now = V_HODL(P_now, x0, y0)
 
+row_metrics = st.columns(4)
+row_metrics[0].metric("IL now", f"{IL_now:.2f} %")
+row_metrics[1].metric("LP now", f"${LP_now:,.2f}")
+row_metrics[2].metric("HODL now", f"${HODL_now:,.2f}")
+row_metrics[3].metric("Liquidité dépôt", f"${L:,.2f}")
