@@ -420,37 +420,26 @@ with col_rebalance:
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
-# ---- Paramètres par défaut récupérés depuis ton app (utilise les variables existantes si présentes)
-# Si ces variables existent déjà dans l'espace de noms (priceA, range_low, range_high, capital, ratioA, ratioB),
-# leurs valeurs seront utilisées comme valeurs initiales des sliders. Sinon, on tombe sur des valeurs sûres.
-try:
-    default_P_now = float(priceA)
-except:
-    default_P_now = 4070.0
+# ---- Paramètres par défaut ----
+try: default_P_now = float(priceA)
+except: default_P_now = 4070.0
 
-try:
-    default_P_deposit = float(priceA)  # si tu veux changer, le slider l'écrasera
-except:
-    default_P_deposit = 3000.0
+try: default_P_deposit = float(priceA)
+except: default_P_deposit = 3000.0
 
-try:
-    default_P_lower = float(range_low)
-except:
-    default_P_lower = 2504.0
+try: default_P_lower = float(range_low)
+except: default_P_lower = 2504.0
 
-try:
-    default_P_upper = float(range_high)
-except:
-    default_P_upper = 3515.0
+try: default_P_upper = float(range_high)
+except: default_P_upper = 3515.0
 
-try:
-    default_v_deposit = float(capital)   # valeur en USD déposée
-except:
-    default_v_deposit = 100000.0
+try: default_v_deposit = float(capital)
+except: default_v_deposit = 100000.0
 
-# Sidebar / Inputs (sliders)
+# ---- UI ----
 st.markdown("<hr/>", unsafe_allow_html=True)
 st.subheader("Interactive IL : paramètres")
+
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     P_deposit = st.number_input("P_deposit (prix au dépôt)", value=default_P_deposit, format="%.6f")
@@ -470,90 +459,46 @@ if P_upper <= P_lower:
     st.error("P_upper doit être strictement supérieur à P_lower.")
     P_upper = P_lower * 1.2
 
-# ---- Formules (selon tes formules fournies) ----
+# ---- Formules ----
 sqrt_pl = np.sqrt(P_lower)
 sqrt_pu = np.sqrt(P_upper)
 sqrt_pd = np.sqrt(P_deposit)
 
-# Liquidity L (formule fournie)
-# L = v_deposit * sqrt(P_deposit) / (sqrt(P_upper) - sqrt(P_lower))
+# Liquidity L (formule correcte Uniswap)
 L = v_deposit * sqrt_pd / (sqrt_pu - sqrt_pl)
 
-# Quantités au dépôt (x_real, y_real)
-x_real_deposit = L * (1/np.sqrt(P_deposit) - 1/np.sqrt(P_upper))
-y_real_deposit = L * (np.sqrt(P_deposit) - np.sqrt(P_lower))
+# ---- Formules exactes Uniswap V3 ----
 
-# Fonction x(P), y(P) selon tes formules (piecewise)
 def x_of_P(P):
-    P = np.array(P)
-    x = np.zeros_like(P, dtype=float)
+    P = np.array(P, dtype=float)
+    x = np.zeros_like(P)
 
-    mask_below = P <= P_lower
-    mask_above = P >= P_upper
-    mask_between = (~mask_below) & (~mask_above)
+    mask = P < P_upper
+    x[mask] = L * (1/np.sqrt(P[mask]) - 1/np.sqrt(P_upper))
 
-    # P <= P_lower: x = 0 (tout en token0? selon tes notes ; ici on met 0)
-    x[mask_below] = 0.0
-
-    # P >= P_upper: x = 0 (tout token1)
-    x[mask_above] = 0.0
-
-    # P_lower < P < P_deposit
-    mask_mid_left = (P > P_lower) & (P < P_deposit)
-    if np.any(mask_mid_left):
-        sqrtP = np.sqrt(P[mask_mid_left])
-        # formule indiquée: x_real(P_deposit) - L*(1/sqrt(P) - 1/sqrt(P_deposit))
-        x[mask_mid_left] = x_real_deposit - L * (1.0 / sqrtP - 1.0 / sqrt_pd)
-
-    # P_deposit <= P < P_upper
-    mask_mid_right = (P >= P_deposit) & (P < P_upper)
-    if np.any(mask_mid_right):
-        sqrtP = np.sqrt(P[mask_mid_right])
-        # formule indiquée: L*(1/sqrt(P_upper) - 1/sqrt(P))
-        x[mask_mid_right] = L * (1.0 / sqrt_pu - 1.0 / sqrtP)
-
+    x[P >= P_upper] = 0
     return x
 
 def y_of_P(P):
-    P = np.array(P)
-    y = np.zeros_like(P, dtype=float)
+    P = np.array(P, dtype=float)
+    y = np.zeros_like(P)
 
-    mask_below = P <= P_lower
-    mask_above = P >= P_upper
-    mask_between = (~mask_below) & (~mask_above)
+    mask = P > P_lower
+    y[mask] = L * (np.sqrt(P[mask]) - np.sqrt(P_lower))
 
-    # P <= P_lower : y = L*(sqrt(P)-sqrt(P_lower)) ? but below lower it's zero per typical LP (we follow your piecewise)
-    y[mask_below] = 0.0
-
-    # P >= P_upper: y = L*(sqrt(P_upper)-sqrt(P_lower)) or same constant
-    y[mask_above] = L * (sqrt_pu - sqrt_pl)
-
-    # P_lower < P < P_deposit
-    mask_mid_left = (P > P_lower) & (P < P_deposit)
-    if np.any(mask_mid_left):
-        sqrtP = np.sqrt(P[mask_mid_left])
-        y[mask_mid_left] = L * (sqrtP - sqrt_pl)
-
-    # P_deposit <= P < P_upper
-    mask_mid_right = (P >= P_deposit) & (P < P_upper)
-    if np.any(mask_mid_right):
-        sqrtP = np.sqrt(P[mask_mid_right])
-        # formule: y_real(P_deposit) + L*(sqrt(P) - sqrt(P_deposit))
-        y[mask_mid_right] = y_real_deposit + L * (sqrtP - sqrt_pd)
-
+    y[P <= P_lower] = 0
     return y
 
-# Valeur LP et HODL
+# ---- Valeurs LP et HODL ----
 def V_LP(P):
     x = x_of_P(P)
     y = y_of_P(P)
     return x * P + y
 
 def V_HODL(P):
-    # selon ta formule: V_hodl(P) = v_deposit * P / P_deposit
     return v_deposit * (P / P_deposit)
 
-# Plage prix pour tracé (assez large)
+# ---- Plage de prix ----
 P_min_plot = max(0.0001, P_lower * 0.25)
 P_max_plot = P_upper * 2.0
 xs = np.linspace(P_min_plot, P_max_plot, 800)
@@ -561,129 +506,120 @@ xs = np.linspace(P_min_plot, P_max_plot, 800)
 vals_lp = V_LP(xs)
 vals_hodl = V_HODL(xs)
 
-# Impermanent Loss (ta définition: IL = 1 - V_LP / V_HODL) -> en %
-IL_pct = (1.0 - (V_LP(xs) / (V_HODL(xs) + 1e-12))) * 100.0
-IL_now_pct = (1.0 - (V_LP(np.array([P_now])) / (V_HODL(np.array([P_now])) + 1e-12)))[0] * 100.0
+# ---- IL EXACT ----
+# Formule correcte :
+# IL = VLP/VHODL - 1   (positif = gain, négatif = perte)
+IL = vals_lp / (vals_hodl + 1e-12) - 1
+IL_pct = IL * 100
 
-# ---- Construire le graphique (zones colorées suivant relation LP vs HODL) ----
+IL_now = (V_LP(np.array([P_now]))[0] / (V_HODL(np.array([P_now]))[0] + 1e-12) - 1) * 100
+
+# ---- Graphique LP vs HODL ----
 fig = go.Figure()
 
-# HODL (dashed black)
 fig.add_trace(go.Scatter(
     x=xs, y=vals_hodl,
     mode="lines",
     name="HODL (value)",
     line=dict(color="black", dash="dash", width=2),
-    hoverinfo="skip"
 ))
 
-# LP value (solid)
 fig.add_trace(go.Scatter(
     x=xs, y=vals_lp,
     mode="lines",
     name="LP position (value)",
-    line=dict(color="#1f7a3a", width=2),
-    hoverinfo="skip"
+    line=dict(color="#1f7a3a", width=2)
 ))
 
-# Fill where LP < HODL => green area (loss)
+# Zones LP < HODL
 mask_loss = vals_lp <= vals_hodl
 if np.any(mask_loss):
-    xs_loss = xs[mask_loss]
-    xs_loss_full = np.concatenate([xs_loss, xs_loss[::-1]])
-    ys_loss_full = np.concatenate([vals_lp[mask_loss], vals_hodl[mask_loss][::-1]])
     fig.add_trace(go.Scatter(
-        x=xs_loss_full, y=ys_loss_full,
-        fill="toself", fillcolor="rgba(20,120,60,0.85)",
+        x=np.concatenate([xs[mask_loss], xs[mask_loss][::-1]]),
+        y=np.concatenate([vals_lp[mask_loss], vals_hodl[mask_loss][::-1]]),
+        fill="toself",
+        fillcolor="rgba(20,120,60,0.85)",
         line=dict(color="rgba(0,0,0,0)"),
-        hoverinfo="skip",
         name="LP below HODL"
     ))
 
-# Fill where LP > HODL => cyan area (LP better than HODL)
+# Zones LP > HODL
 mask_gain = vals_lp > vals_hodl
 if np.any(mask_gain):
-    xs_gain = xs[mask_gain]
-    xs_gain_full = np.concatenate([xs_gain, xs_gain[::-1]])
-    ys_gain_full = np.concatenate([vals_lp[mask_gain], vals_hodl[mask_gain][::-1]])
     fig.add_trace(go.Scatter(
-        x=xs_gain_full, y=ys_gain_full,
-        fill="toself", fillcolor="rgba(150,240,255,0.6)",
+        x=np.concatenate([xs[mask_gain], xs[mask_gain][::-1]]),
+        y=np.concatenate([vals_lp[mask_gain], vals_hodl[mask_gain][::-1]]),
+        fill="toself",
+        fillcolor="rgba(150,240,255,0.6)",
         line=dict(color="rgba(0,0,0,0)"),
-        hoverinfo="skip",
         name="LP above HODL"
     ))
 
-# dashed diagonal line (visual guide like screenshot)
-slope = (vals_hodl[-1] - vals_hodl[0]) / (xs[-1] - xs[0] + 1e-12)
-diag = vals_hodl[0] + slope * (xs - xs[0])
-fig.add_trace(go.Scatter(x=xs, y=diag, mode="lines", line=dict(color="black", dash="dash"), hoverinfo="skip", showlegend=False))
-
-# vertical lines and markers for P_lower / P_deposit / P_upper / P_now
+# Vertical markers
 vlines = [
     (P_lower, "orange", "P_lower"),
     (P_deposit, "blue", "P_deposit"),
     (P_upper, "purple", "P_upper"),
     (P_now, "red", "P_now"),
 ]
-for xpos, color, name in vlines:
+for xpos, color, label in vlines:
     fig.add_vline(x=xpos, line=dict(color=color, width=2, dash="dot"))
-    # small marker on x-axis
     fig.add_trace(go.Scatter(
-        x=[xpos], y=[0], mode="markers+text",
+        x=[xpos], y=[0],
+        mode="markers+text",
         marker=dict(size=10, color=color),
-        text=[f"{name}: {xpos:.0f}"],
+        text=[f"{label}: {xpos:.0f}"],
         textposition="bottom center",
-        showlegend=False,
-        hoverinfo="skip"
+        showlegend=False
     ))
 
-# Annotation for IL at P_now
+# Annotation IL now
 fig.add_annotation(
-    x=P_now, y=V_LP(np.array([P_now]))[0],
-    text=f"{IL_now_pct:.2f}% IL",
-    bgcolor="white",
-    bordercolor="black",
+    x=P_now,
+    y=V_LP(np.array([P_now]))[0],
+    text=f"{IL_now:.2f}% IL",
     showarrow=True,
     arrowhead=2,
     ax=0, ay=-40
 )
 
-# Layout cosmetics to match screenshot feel
 fig.update_layout(
     title="Impermanent Loss — LP vs HODL (Concentrated Liquidity)",
     xaxis_title="Price",
     yaxis_title="Position value (USD)",
-    template="simple_white",
-    width=1200,
-    height=600,
-    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    width=1200, height=600,
+    template="simple_white"
 )
 
-# Axis lines like screenshot (left y axis and bottom x axis bold)
-fig.update_xaxes(showgrid=False, zeroline=True, zerolinewidth=1, zerolinecolor="black")
-fig.update_yaxes(showgrid=False, zeroline=True, zerolinewidth=1, zerolinecolor="black")
-
-# Show IL curve as small second plot? We'll add a small inset-like trace (below as separate chart)
 st.plotly_chart(fig, use_container_width=True)
 
-# Display IL curve below for clarity
+# ---- Courbe IL EXACTE ----
 fig2 = go.Figure()
-fig2.add_trace(go.Scatter(x=xs, y=IL_pct, mode="lines", name="IL (%)", line=dict(color="darkred", width=2)))
+fig2.add_trace(go.Scatter(
+    x=xs, y=IL_pct,
+    mode="lines",
+    name="IL (%)",
+    line=dict(color="darkred", width=2)
+))
 fig2.add_vline(x=P_now, line=dict(color="red", width=2, dash="dot"))
-fig2.update_layout(title="Impermanent Loss (%)", xaxis_title="Price", yaxis_title="IL (%)", width=1200, height=300)
+
+fig2.update_layout(
+    title="Impermanent Loss (%) — Courbe exacte",
+    xaxis_title="Price",
+    yaxis_title="IL (%)",
+    width=1200, height=300,
+)
+
 st.plotly_chart(fig2, use_container_width=True)
 
-# Summary metrics
+# ---- Summary ----
 col_a, col_b, col_c = st.columns(3)
 with col_a:
-    st.metric("IL at price now", f"{IL_now_pct:.2f}%")
+    st.metric("IL at price now", f"{IL_now:.2f}%")
 with col_b:
-    Vlp_now = float(V_LP(np.array([P_now]))[0])
-    Vhodl_now = float(V_HODL(np.array([P_now]))[0])
-    st.metric("Value LP (now)", f"${Vlp_now:,.2f}")
+    st.metric("Value LP (now)", f"${V_LP(np.array([P_now]))[0]:,.2f}")
 with col_c:
-    st.metric("Value HODL (now)", f"${Vhodl_now:,.2f}")
+    st.metric("Value HODL (now)", f"${V_HODL(np.array([P_now]))[0]:,.2f}")
 
 st.markdown("<hr/>", unsafe_allow_html=True)
 
