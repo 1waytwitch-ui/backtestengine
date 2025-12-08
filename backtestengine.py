@@ -420,11 +420,10 @@ with col_rebalance:
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
-# -------------------------------------------------------------
-# ---------------------- UI INPUTS ----------------------------
-# -------------------------------------------------------------
+# ============================================================
+#                         UI INPUTS
+# ============================================================
 
-st.markdown("<hr/>", unsafe_allow_html=True)
 st.subheader("Interactive IL : paramètres")
 
 col1, col2, col3, col4 = st.columns(4)
@@ -432,96 +431,100 @@ col1, col2, col3, col4 = st.columns(4)
 with col1:
     P_deposit = st.number_input("P_deposit (prix au dépôt)", value=3000.0, format="%.6f")
 with col2:
-    P_lower = st.number_input("P_lower (borne basse)", value=2000.0, format="%.6f")
+    P_lower = st.number_input("P_lower (borne basse)", value=2800.0, format="%.6f")
 with col3:
-    P_upper = st.number_input("P_upper (borne haute)", value=4000.0, format="%.6f")
+    P_upper = st.number_input("P_upper (borne haute)", value=3500.0, format="%.6f")
 with col4:
     P_now = st.number_input("P_now (prix actuel)", value=3000.0, format="%.6f")
 
 v_deposit = st.number_input("Valeur deposit (USD)", value=10000.0, step=100.0)
 
-# sécurités
+# Segurança
 if P_lower <= 0:
     P_lower = 1e-8
 if P_upper <= P_lower:
     P_upper = P_lower * 1.1
 
-sqrt_pd = np.sqrt(P_deposit)
-sqrt_pl = np.sqrt(P_lower)
-sqrt_pu = np.sqrt(P_upper)
 
-# -------------------------------------------------------------
-# ----------- FORMULES UNIWSAP V3 – OFFICIELLES ---------------
-# -------------------------------------------------------------
+# ============================================================
+#             FORMULES OFFICIELLES UNISWAP V3
+# ============================================================
 
-# 1) Valeurs initiales en token0 / token1 pour un dépôt "neutralité de prix"
-def initial_quantities(v_deposit, P):
-    """
-    On alloue 50% en token0 et 50% en token1 en valeur.
-    C'est le seul moyen d'obtenir un dépôt neutre ⇒ c'est ce que
-    font les simulateurs institutionnels pour une LP position neutre.
-    """
-    x0 = v_deposit * 0.5 / np.sqrt(P)
-    y0 = v_deposit * 0.5 * np.sqrt(P)
-    return x0, y0
+# ---- 1. Liquidity L (corrigé : formule officielle)
+def compute_L(P, Pl, Pu, V):
+    sqrtP = np.sqrt(P)
+    sqrtPl = np.sqrt(Pl)
+    sqrtPu = np.sqrt(Pu)
 
-# 2) Liquidity L correcte (équivalent Uniswap V3)
-def compute_L(P, Pl, Pu, v_deposit):
-    x0, y0 = initial_quantities(v_deposit, P)
+    denom = (P / (sqrtPu - sqrtP)) + (1 / (sqrtP - sqrtPl))
+    return V / denom
 
-    # Formules officielles Uniswap
-    L0 = x0 * (np.sqrt(P) * np.sqrt(Pu)) / (np.sqrt(Pu) - np.sqrt(P))
-    L1 = y0 / (np.sqrt(P) - np.sqrt(Pl))
-
-    return min(L0, L1)
 
 L = compute_L(P_deposit, P_lower, P_upper, v_deposit)
 
-# 3) Quantités x(P) et y(P) (exact Uniswap)
+
+# ---- 2. Quantités exactes de token0 et token1 en fonction du prix
 def x_of_P(P):
     P = np.array(P)
     x = np.zeros_like(P)
     mask = P < P_upper
-    x[mask] = L * (1/np.sqrt(P[mask]) - 1/np.sqrt(P_upper))
+    x[mask] = L * (1 / np.sqrt(P[mask]) - 1 / np.sqrt(P_upper))
+    x[x < 0] = 0
     return x
+
 
 def y_of_P(P):
     P = np.array(P)
     y = np.zeros_like(P)
     mask = P > P_lower
     y[mask] = L * (np.sqrt(P[mask]) - np.sqrt(P_lower))
+    y[y < 0] = 0
     return y
 
-# 4) Valeur LP
+
+# ---- 3. Valeur LP = x(P)*P + y(P)
 def V_LP(P):
     P = np.array(P)
     return x_of_P(P) * P + y_of_P(P)
 
-# 5) Valeur HODL neutre
+
+# ---- 4. Valeur HODL équivalente
+# On reconstruit la valeur des deux tokens initiaux calculés exactement via L
+def initial_tokens(P, Pl, Pu, L):
+    sqrtP, sqrtPl, sqrtPu = np.sqrt(P), np.sqrt(Pl), np.sqrt(Pu)
+    x0 = L * (1 / sqrtP - 1 / sqrtPu)
+    y0 = L * (sqrtP - sqrtPl)
+    return x0, y0
+
+
+x0, y0 = initial_tokens(P_deposit, P_lower, P_upper, L)
+
+
 def V_HODL(P):
-    return v_deposit * (P / P_deposit)
+    return x0 * P + y0
 
-# -------------------------------------------------------------
-# ---------------------- CALCULS ------------------------------
-# -------------------------------------------------------------
 
-xs = np.linspace(P_lower * 0.25, P_upper * 2.0, 800)
-vals_lp  = V_LP(xs)
+# ============================================================
+#                     CALCULS PRINCIPAUX
+# ============================================================
+
+xs = np.linspace(P_lower * 0.3, P_upper * 2.5, 800)
+
+vals_lp = V_LP(xs)
 vals_hodl = V_HODL(xs)
 
-# IL exact
-IL = vals_lp / (vals_hodl + 1e-12) - 1
+IL = vals_lp / vals_hodl - 1
 IL_pct = IL * 100
 
 IL_now = (V_LP(np.array([P_now]))[0] / V_HODL(np.array([P_now]))[0] - 1) * 100
 
-# -------------------------------------------------------------
-# ---------------------- GRAPHIQUE LP VS HODL -----------------
-# -------------------------------------------------------------
+
+# ============================================================
+#             GRAPHIQUE : LP vs HODL + ZONES
+# ============================================================
 
 fig = go.Figure()
 
-# HODL
 fig.add_trace(go.Scatter(
     x=xs, y=vals_hodl,
     mode="lines",
@@ -529,37 +532,35 @@ fig.add_trace(go.Scatter(
     line=dict(color="black", dash="dash", width=2)
 ))
 
-# LP value
 fig.add_trace(go.Scatter(
     x=xs, y=vals_lp,
     mode="lines",
     name="LP position (value)",
-    line=dict(color="#1f7a3a", width=2)
+    line=dict(color="#2b8a3e", width=3)
 ))
 
-# Zones LP > HODL
 mask_gain = vals_lp > vals_hodl
 fig.add_trace(go.Scatter(
     x=np.concatenate([xs[mask_gain], xs[mask_gain][::-1]]),
     y=np.concatenate([vals_lp[mask_gain], vals_hodl[mask_gain][::-1]]),
     fill="toself",
-    fillcolor="rgba(150,240,255,0.6)",
+    fillcolor="rgba(170, 240, 255, 0.6)",
     line=dict(color="rgba(0,0,0,0)"),
     name="LP above HODL"
 ))
 
-# Zones LP < HODL
-mask_loss = vals_lp <= vals_hodl
+mask_loss = ~mask_gain
 fig.add_trace(go.Scatter(
     x=np.concatenate([xs[mask_loss], xs[mask_loss][::-1]]),
     y=np.concatenate([vals_lp[mask_loss], vals_hodl[mask_loss][::-1]]),
     fill="toself",
-    fillcolor="rgba(20,120,60,0.6)",
+    fillcolor="rgba(20,140,70,0.4)",
     line=dict(color="rgba(0,0,0,0)"),
     name="LP below HODL"
 ))
 
-# Markers verticals
+
+# Markers verticaux
 for xpos, color, label in [
     (P_lower, "orange", "P_lower"),
     (P_deposit, "blue", "P_deposit"),
@@ -576,26 +577,21 @@ for xpos, color, label in [
         showlegend=False
     ))
 
-# Annotation IL
-fig.add_annotation(
-    x=P_now, y=V_LP(np.array([P_now]))[0],
-    text=f"{IL_now:.2f}% IL",
-    showarrow=True, arrowhead=2, ax=0, ay=-40
-)
-
 fig.update_layout(
     title="Impermanent Loss — LP vs HODL (Concentrated Liquidity)",
     xaxis_title="Price",
     yaxis_title="Position value (USD)",
-    width=1200, height=600,
+    width=1200,
+    height=600,
     template="simple_white"
 )
 
 st.plotly_chart(fig, use_container_width=True)
 
-# -------------------------------------------------------------
-# -------------------------- IL CHART -------------------------
-# -------------------------------------------------------------
+
+# ============================================================
+#             GRAPHIQUE IL
+# ============================================================
 
 fig2 = go.Figure()
 fig2.add_trace(go.Scatter(
@@ -610,14 +606,17 @@ fig2.update_layout(
     title="Impermanent Loss (%) — Courbe exacte",
     xaxis_title="Price",
     yaxis_title="IL (%)",
-    width=1200, height=300
+    width=1200,
+    height=300,
+    template="simple_white"
 )
 
 st.plotly_chart(fig2, use_container_width=True)
 
-# -------------------------------------------------------------
-# ---------------------- METRICS FINALES ----------------------
-# -------------------------------------------------------------
+
+# ============================================================
+#                     METRICS FINALES
+# ============================================================
 
 colA, colB, colC = st.columns(3)
 
@@ -629,5 +628,3 @@ with colB:
 
 with colC:
     st.metric("Value HODL (now)", f"${V_HODL(np.array([P_now]))[0]:,.2f}")
-
-st.markdown("<hr/>", unsafe_allow_html=True)
