@@ -420,34 +420,27 @@ with col_rebalance:
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
-# Calcul de la liquidité L à partir du dépôt
+# --- Fonctions de calcul ---
 def compute_L(P, P_l, P_u, V):
     sqrtP = np.sqrt(P)
     sqrtPl = np.sqrt(P_l)
     sqrtPu = np.sqrt(P_u)
-
     A = (1 / sqrtP - 1 / sqrtPu)
     B = (sqrtP - sqrtPl)
-    denom = P * A + B
-    return V / denom
+    return V / (P * A + B)
 
-# Tokens déposés
 def tokens_from_L(L, P, P_l, P_u):
     sqrtP = np.sqrt(P)
     sqrtPl = np.sqrt(P_l)
     sqrtPu = np.sqrt(P_u)
-
     x = L * (1 / sqrtP - 1 / sqrtPu)
     y = L * (sqrtP - sqrtPl)
     return x, y
 
-# Normalisation pour que LP = V_deposit au prix du dépôt
 def normalize_L(L, x0, y0, P, V):
-    V_calc = x0 * P + y0
-    factor = V / V_calc
+    factor = V / (x0 * P + y0)
     return L * factor, x0 * factor, y0 * factor
 
-# Fonctions robustes scalaires & arrays
 def x_of_P(P, L, P_upper):
     P_arr = np.asarray(P, float)
     sqrtP = np.sqrt(P_arr)
@@ -472,55 +465,52 @@ def V_HODL(P, x0, y0):
     return x0 * P + y0
 
 # --- Interface Streamlit ---
-
 st.markdown(
-    """
-    <h1 style='background-color:#1f77b4; color:white; padding:10px; border-radius:8px;'>
-        Interactive Impermanent Loss (IL)
-    </h1>
-    """,
-    unsafe_allow_html=True
+    "<h1 style='background-color:#1f77b4; color:white; padding:10px; border-radius:8px;'>"
+    "Interactive Impermanent Loss (IL)</h1>", unsafe_allow_html=True
 )
 
-# Inputs utilisateur
-P_deposit = st.number_input("P_deposit (prix au dépôt)", value=3000.0, step=0.001, format="%.6f")
-P_lower   = st.number_input("P_lower (borne basse)", value=2800.0, step=0.001, format="%.6f")
-P_upper   = st.number_input("P_upper (borne haute)", value=3500.0, step=0.001, format="%.6f")
-P_now     = st.number_input("P_now (prix actuel)", value=3000.0, step=0.001, format="%.6f")
-v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, step=0.01)
+# --- Inputs compacts ---
+row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+with row1_col1:
+    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001)
+with row1_col2:
+    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001)
+with row1_col3:
+    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.2f", step=0.01)
 
-# Calcul de L + normalisation
+row2_col1, row2_col2 = st.columns([1,1])
+with row2_col1:
+    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001)
+with row2_col2:
+    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001)
+
+# --- Calcul de L et normalisation ---
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
 x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
 L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
 
-# Grille de prix pour la courbe IL
-prices = np.linspace(P_lower * 0.8, P_upper * 1.3, 400)
+# --- Grille prix ---
+prices = np.linspace(P_lower*0.8, P_upper*1.3, 400)
 LP_values = V_LP(prices, L, P_lower, P_upper)
 HODL_values = V_HODL(prices, x0, y0)
 IL_curve = (LP_values / HODL_values - 1) * 100
 
-# Graphique Impermanent Loss (%)
+# --- Graphique IL(%) ---
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=prices, y=IL_curve,
-                         mode="lines", name="IL(%)",
-                         line=dict(color="red", width=3)))
-fig.update_layout(height=350,
-                  title="Impermanent Loss (%) — Courbe exacte",
-                  xaxis_title="Prix",
-                  yaxis_title="IL (%)",
-                  margin=dict(l=40, r=40, t=40, b=40))
+fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL(%)", line=dict(color="red", width=3)))
+fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte",
+                  xaxis_title="Prix", yaxis_title="IL (%)",
+                  margin=dict(l=40,r=40,t=40,b=40))
 st.plotly_chart(fig, use_container_width=True)
 
-# Valeurs actuelles
+# --- Valeurs actuelles et L au dépôt ---
 IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
 LP_now = V_LP(P_now, L, P_lower, P_upper)
 HODL_now = V_HODL(P_now, x0, y0)
 
-col1, col2, col3 = st.columns(3)
-col1.metric("IL at price now", f"{IL_now:.2f} %")
-col2.metric("Value LP (now)", f"${LP_now:,.2f}")
-col3.metric("Value HODL (now)", f"${HODL_now:,.2f}")
-
-
-
+row_metrics = st.columns(4)
+row_metrics[0].metric("IL now", f"{IL_now:.2f} %")
+row_metrics[1].metric("LP now", f"${LP_now:,.2f}")
+row_metrics[2].metric("HODL now", f"${HODL_now:,.2f}")
+row_metrics[3].metric("Liquidité dépôt", f"${L:,.2f}")
