@@ -505,12 +505,22 @@ fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte",
                   margin=dict(l=40,r=40,t=40,b=40))
 st.plotly_chart(fig, use_container_width=True)
 
-# --- Valeurs actuelles et L au dépôt ---
-IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
-LP_now = V_LP(P_now, L, P_lower, P_upper)
-HODL_now = V_HODL(P_now, x0, y0)
+# ---- RECAP IMPERMANENT LOSS ----
+st.markdown(f"""
+<div style="
+    background-color: #27F5A9;
+    border-left: 6px solid #00754A;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin: 12px 0 25px 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+">
+    <div><b>IL now :</b> {IL_now:.2f} %</div>
+    <div><b>LP now :</b> ${LP_now:,.2f}</div>
+    <div><b>HODL now :</b> ${HODL_now:,.2f}</div>
+    <div><b>Liquidité dépôt :</b> ${L:,.2f}</div>
+</div>
+""", unsafe_allow_html=True)
 
-row_metrics = st.columns(4)
-row_metrics[0].metric("IL now", f"{IL_now:.2f} %")
-row_metrics[1].metric("LP now", f"${LP_now:,.2f}")
-row_metrics[2].metric("HODL now", f"${HODL_now:,.2f}")
