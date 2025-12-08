@@ -465,9 +465,8 @@ def V_HODL(P, x0, y0):
     return x0 * P + y0
 
 # --- Interface Streamlit ---
-st.markdown(
-    "<h1 style='background-color:#1f77b4; color:white; padding:10px; border-radius:8px;'>"
-    "Interactive Impermanent Loss (IL)</h1>", unsafe_allow_html=True
+st.markdown("<h2 style='background-color:#FFA500;color:white;padding:10px;border-radius:8px;'>Impermanent Loss</h2>", unsafe_allow_html=True)
+
 )
 
 # --- Inputs compacts ---
