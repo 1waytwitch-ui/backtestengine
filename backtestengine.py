@@ -418,103 +418,75 @@ with col_rebalance:
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
-# ===================================================================
-#                   MODULE IMPERMANENT LOSS (UNISWAP V3)
-# ===================================================================
+st.title("Interactive Impermanent Loss Graph (Range Liquidity)")
 
-st.markdown("""
-<div style="background:#222;padding:20px;border-radius:12px;margin-top:40px;">
-    <span style="color:white;font-size:28px;font-weight:700;">📉 IMPERMANENT LOSS — LIQUIDITÉ CONCENTRÉE</span>
-</div>
-""", unsafe_allow_html=True)
+# --- Sliders ---
+P_deposit = st.slider("Price at deposit", 500, 10000, 3000, 10)
+P_lower = st.slider("Lower price bound", 100, P_deposit, 2500, 10)
+P_upper = st.slider("Upper price bound", P_deposit, 15000, 3500, 10)
+P_now = st.slider("Current price", 100, 15000, 4070, 10)
 
-# -------------------------------
-# FONCTIONS UNISWAP V3
-# -------------------------------
+# --- Price range for graph ---
+P = np.linspace(max(P_lower*0.5, 1), P_upper*1.5, 400)
 
-def calc_liquidity(P_lower, P_upper, amount0, amount1):
-    sqrt_lower = np.sqrt(P_lower)
-    sqrt_upper = np.sqrt(P_upper)
-    L0 = amount0 / (1/sqrt_lower - 1/sqrt_upper)
-    L1 = amount1 / (sqrt_upper - sqrt_lower)
-    return min(L0, L1)
+# --- HODL value ---
+def hodl_value(price):
+    return price  # 1 ETH for simplification
 
-def calc_assets(P, P_lower, P_upper, L):
-    sqrtP = np.sqrt(P)
-    sqrt_lower = np.sqrt(P_lower)
-    sqrt_upper = np.sqrt(P_upper)
+# --- Uniswap V3 range liquidity value ---
+def uniswap_range_value(P, Pl, Pu, P0):
 
-    if P <= P_lower:
-        x = L * (1/sqrt_lower - 1/sqrt_upper)
-        y = 0
-    elif P >= P_upper:
-        x = 0
-        y = L * (sqrt_upper - sqrt_lower)
+    if P <= Pl:
+        return 2*np.sqrt(P0) * (np.sqrt(P) - np.sqrt(Pl))
+    elif P >= Pu:
+        return 2*np.sqrt(P0) * (np.sqrt(Pu) - np.sqrt(Pl))
     else:
-        x = L * (1/sqrtP - 1/sqrt_upper)
-        y = L * (sqrtP - sqrt_lower)
+        L = 2*np.sqrt(P0) / (1/np.sqrt(Pu) - 1/np.sqrt(Pl))
+        x = L*(1/np.sqrt(P) - 1/np.sqrt(Pu))
+        y = L*(np.sqrt(P) - np.sqrt(Pl))
+        return x*P + y
 
-    return x, y
+uni_values = np.array([uniswap_range_value(p, P_lower, P_upper, P_deposit) for p in P])
+hodl_values = np.array([hodl_value(p) for p in P])
 
-def impermanent_loss(P, P_lower, P_upper, amount0, amount1):
-    L = calc_liquidity(P_lower, P_upper, amount0, amount1)
-    x0, y0 = amount0, amount1
-    IL = []
+# --- Impermanent loss ---
+IL = (uni_values - hodl_values) / hodl_values * 100
 
-    for price in P:
-        x, y = calc_assets(price, P_lower, P_upper, L)
-        V_lp = x * price + y
-        V_hodl = x0 * price + y0
-        IL.append((V_lp - V_hodl) / V_hodl)
+# --- Graph ---
+fig = go.Figure()
 
-    return np.array(IL)
+# Zones colorées
+fig.add_traces([
+    go.Scatter(x=P, y=hodl_values, mode="lines", line=dict(dash="dash"), name="HODL"),
+    go.Scatter(x=P, y=uni_values, mode="lines", name="Liquidity Position"),
+])
 
+# IL area color (green = positive, red = negative)
+fig.add_trace(go.Scatter(
+    x=np.concatenate([P, P[::-1]]),
+    y=np.concatenate([uni_values, hodl_values[::-1]]),
+    fill='toself',
+    fillcolor='rgba(0,150,0,0.25)',
+    line=dict(color='rgba(0,0,0,0)'),
+    name="Range vs HODL"
+))
 
-# -------------------------------
-# UI IMPERMANENT LOSS
-# -------------------------------
-st.subheader("Paramètres IL (Concentrated Liquidity)")
+# Markers
+fig.add_vline(x=P_now, line=dict(color="red", width=2, dash="dot"))
+fig.add_vline(x=P_lower, line=dict(color="orange", width=2, dash="dot"))
+fig.add_vline(x=P_upper, line=dict(color="purple", width=2, dash="dot"))
+fig.add_vline(x=P_deposit, line=dict(color="blue", width=2, dash="dot"))
 
-col_il1, col_il2, col_il3 = st.columns(3)
-with col_il1:
-    P_lower = st.number_input("P_lower", value=range_low, format="%.8f")
-with col_il2:
-    P_upper = st.number_input("P_upper", value=range_high, format="%.8f")
-with col_il3:
-    capital_il = st.number_input("Capital pour IL ($)", value=capital, step=50)
+fig.update_layout(
+    title="Impermanent Loss & Liquidity Range",
+    xaxis_title="Price",
+    yaxis_title="Value",
+    width=1000,
+    height=600
+)
 
-# on applique même ratio que stratégie A/B
-amount0 = (capital_il * ratioA) / max(priceA, 1e-8)
-amount1 = (capital_il * ratioB)
+st.plotly_chart(fig)
 
-# Range de prix à tracer
-P = np.linspace(P_lower * 0.5, P_upper * 1.5, 500)
-IL = impermanent_loss(P, P_lower, P_upper, amount0, amount1)
-
-# -------------------------------
-# AFFICHAGE GRAPHIQUE
-# -------------------------------
-fig, ax = plt.subplots(figsize=(10, 4))
-ax.plot(P, IL * 100)
-ax.axvline(priceA, color="orange", linestyle="--", label="Prix actuel")
-ax.set_title("Impermanent Loss % (Uniswap V3)")
-ax.set_xlabel("Prix")
-ax.set_ylabel("IL (%)")
-ax.grid(True)
-ax.legend()
-
-st.pyplot(fig)
-
-# Résumé
-min_il = np.min(IL) * 100
-max_il = np.max(IL) * 100
-
-st.markdown(f"""
-<div style="background:#EEE;padding:15px;border-radius:8px;margin-top:15px;">
-<b>IL minimum :</b> {min_il:.2f}%<br>
-<b>IL maximum :</b> {max_il:.2f}%<br>
-<b>Prix actuel :</b> {priceA:.6f}
-</div>
-""", unsafe_allow_html=True)
+st.write(f"### 📉 Impermanent Loss at current price ({P_now}): {np.interp(P_now, P, IL):.2f}%")
 
 
