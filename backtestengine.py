@@ -237,52 +237,51 @@ with col2:
     st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
     # === GAUGE A/B
-fig_bar = go.Figure()
+    fig_bar = go.Figure()
 
-fig_bar.add_trace(go.Bar(
-    x=[ratioA * 100],
-    y=[f"{tokenA}"],
-    orientation="h",
-    marker=dict(color="#FF8C00"),
-    name=tokenA
-))
+    fig_bar.add_trace(go.Bar(
+        x=[ratioA * 100],
+        y=[f"{tokenA}"],
+        orientation="h",
+        marker=dict(color="#FF8C00"),
+        name=tokenA
+    ))
 
-fig_bar.add_trace(go.Bar(
-    x=[ratioB * 100],
-    y=[f"{tokenB}"],
-    orientation="h",
-    marker=dict(color="#6A5ACD"),
-    name=tokenB
-))
+    fig_bar.add_trace(go.Bar(
+        x=[ratioB * 100],
+        y=[f"{tokenB}"],
+        orientation="h",
+        marker=dict(color="#6A5ACD"),
+        name=tokenB
+    ))
 
+    fig_bar.add_annotation(
+        x=50,
+        y=-0.25,
+        text=f"{capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}",
+        showarrow=False,
+        font=dict(color="white", size=14),
+        xref="x",
+        yref="y"
+    )
 
-fig_bar.add_annotation(
-    x=50,
-    y=-0.25,
-    text=f"{capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}",
-    showarrow=False,
-    font=dict(color="white", size=14),
-    xref="x",
-    yref="y"
-)
+    fig_bar.update_layout(
+        barmode="stack",
+        height=150,
+        title=dict(
+            text="Répartition A / B (%)",
+            font=dict(color="white")
+        ),
+        margin=dict(l=10, r=10, t=40, b=40),
+        xaxis=dict(range=[0, 100], title="Pourcentage", color="white"),
+        yaxis=dict(showticklabels=False, color="white"),
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)"
+    )
 
-fig_bar.update_layout(
-    barmode="stack",
-    height=150,
-    title=dict(
-        text="Répartition A / B (%)",
-        font=dict(color="white")
-    ),
-    margin=dict(l=10, r=10, t=40, b=40),
-    xaxis=dict(range=[0, 100], title="Pourcentage", color="white"),
-    yaxis=dict(showticklabels=False, color="white"),
-    plot_bgcolor="rgba(0,0,0,0)",
-    paper_bgcolor="rgba(0,0,0,0)"
-)
+    st.plotly_chart(fig_bar, use_container_width=True)
 
-st.plotly_chart(fig_bar, use_container_width=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 
