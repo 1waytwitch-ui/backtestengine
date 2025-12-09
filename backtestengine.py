@@ -291,7 +291,7 @@ with col2:
         <h3>Analyse stratégie</h3>
     """, unsafe_allow_html=True)
 
-    st.write(f"Volatilité : {vol_30d*100:.2f}% — Hors range : {rebalances}")
+    st.write(f"Volatilité (30j) : {vol_30d*100:.2f}% — Hors range : {rebalances}")
 
     # Simulation fixée à 30 jours
     future_days = 30
@@ -307,7 +307,7 @@ with col2:
     st.markdown("</div>", unsafe_allow_html=True)
 
     # ---- ANALYSE STRATEGIE ----
-    vol_7d = compute_volatility(pricesA[-7:])
+    volatilité (7d) = compute_volatility(pricesA[-7:])
     suggestion = "Mini-doux"
 
     if okA and okB:
