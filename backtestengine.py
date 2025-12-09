@@ -236,7 +236,7 @@ with col2:
     st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
     st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
-    # === GAUGE A/B
+        # === GAUGE A/B ===
     fig_bar = go.Figure()
 
     fig_bar.add_trace(go.Bar(
@@ -244,7 +244,10 @@ with col2:
         y=[f"{tokenA}"],
         orientation="h",
         marker=dict(color="#FF8C00"),
-        name=tokenA
+        name=tokenA,
+        text=[f"{capitalA:.2f} USD"],
+        textposition="inside",
+        textfont=dict(color="white")
     ))
 
     fig_bar.add_trace(go.Bar(
@@ -252,7 +255,10 @@ with col2:
         y=[f"{tokenB}"],
         orientation="h",
         marker=dict(color="#6A5ACD"),
-        name=tokenB
+        name=tokenB,
+        text=[f"{capitalB:.2f} USD"],
+        textposition="inside",
+        textfont=dict(color="white")
     ))
 
     fig_bar.add_annotation(
@@ -270,16 +276,18 @@ with col2:
         height=150,
         title=dict(
             text="Répartition A / B (%)",
-            font=dict(color="white")
+            font=dict(color="white", size=16)
         ),
         margin=dict(l=10, r=10, t=40, b=40),
-        xaxis=dict(range=[0, 100], title="Pourcentage", color="white"),
+        xaxis=dict(range=[0, 100], title="Pourcentage", color="white", titlefont=dict(color="white")),
         yaxis=dict(showticklabels=False, color="white"),
         plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)"
+        paper_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="white") 
     )
 
     st.plotly_chart(fig_bar, use_container_width=True)
+
 
     st.markdown("</div>", unsafe_allow_html=True)
 
