@@ -6,52 +6,32 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
 
-st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE", layout="wide")
+st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
-# ---- FORCE DARK MODE GLOBAL ----
+# ---- STYLES GÉNÉRAUX ----
 st.markdown("""
 <style>
-/* Fond et texte principal */
-.stApp {
-    background-color: #1e1e1e !important;
-    color: #f0f0f0 !important;
-}
-
-/* Titres */
-h1, h2, h3, h4, h5, h6 {
-    color: #f0f0f0 !important;
-}
-
-/* Inputs */
+.stApp {background-color: #FFFFFF !important; color: #000000 !important;}
+h1, h2, h3, h4 {color: #000000 !important;}
 .stTextInput input, .stNumberInput input {
-    background-color: #2c2c2c !important;
-    color: #f0f0f0 !important;
-    border: 1px solid #555555 !important;
+    background-color: #F0F0F0 !important; 
+    color: #000000 !important;
+    border: 1px solid #000000 !important;
 }
-
-.stSelectbox select, .stRadio label, .stCheckbox label {
-    color: #f0f0f0 !important;
-}
-
-/* Boutons */
 .stButton button {
-    background-color: #444444 !important;
-    color: #ffffff !important;
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
 }
+</style>
+""", unsafe_allow_html=True)
 
-/* Containers / Sections */
-div[style*="background-color:#FFA700"] {
-    background-color: #b36b00 !important;
-    color: #f0f0f0 !important;
-}
-div[style*="background-color:#27F5A9"] {
-    background-color: #1b7a5e !important;
-    color: #f0f0f0 !important;
-}
-
-/* Bannières */
-.deFi-banner {
-    border: 1px solid rgba(255,255,255,0.2);
+# ---- FORCE DARK MODE ----
+st.markdown("""
+<style>
+.stRadio label, .stRadio div, 
+.stSelectbox label, .stSelectbox div,
+.stCheckbox label, .stCheckbox div {
+    color: #000000 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -191,12 +171,11 @@ with col1:
     # ---- RECAP OVERLAY ----
     st.markdown(f"""
     <div style="
-        background-color: #1b7a5e;
-        border-left: 6px solid #27F5A9;
+        background-color: #27F5A9;
+        border-left: 6px solid #00754A;
         padding: 15px 20px;
         border-radius: 8px;
         margin: 12px 0 25px 0;
-        color: #f0f0f0;
     ">
     <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
     <b>Objectif :</b> {info['objectif']}<br>
@@ -237,18 +216,18 @@ with col1:
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
 
+
 # ============================== DROITE ==============================
 with col2:
 
     # ---- Price/range ----
     st.markdown("""
     <div style="
-        background-color:#b36b00;
+        background-color:#FFA700;
         border-left:6px solid #754C00;
         padding:15px 20px;
         border-radius:8px;
         margin-bottom:25px;
-        color: #f0f0f0;
     ">
         <h3>PRICE / RANGE</h3>
     """, unsafe_allow_html=True)
@@ -279,18 +258,18 @@ with col2:
     fig_bar.update_layout(
         barmode="stack",
         height=120,
-        title=dict(text="Répartition A / B (%)", font=dict(color="#f0f0f0")),
+        title="Répartition A / B (%)",
         margin=dict(l=10, r=10, t=40, b=20),
-        xaxis=dict(range=[0, 100], title="Pourcentage", titlefont=dict(color="#f0f0f0"), tickfont=dict(color="#f0f0f0")),
+        xaxis=dict(range=[0, 100], title="Pourcentage"),
         yaxis=dict(showticklabels=False),
-        plot_bgcolor="rgba(30,30,30,1)",
-        paper_bgcolor="rgba(30,30,30,1)",
-        font=dict(color="#f0f0f0")
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)"
     )
 
     st.plotly_chart(fig_bar, use_container_width=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
+
     # ---- HISTORIQUE ----
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
