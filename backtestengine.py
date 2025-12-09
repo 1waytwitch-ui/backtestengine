@@ -236,7 +236,7 @@ with col2:
     st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
     st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
-    # === GAUGE A/B (horizontal stacked bar) ===
+    # === GAUGE A/B ===
     fig_bar = go.Figure()
 
     fig_bar.add_trace(go.Bar(
@@ -288,7 +288,7 @@ with col2:
 
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)with col2:
+    st.markdown("</div>", unsafe_allow_html=True)
 
     # ---- Price/range ----
     st.markdown("""
