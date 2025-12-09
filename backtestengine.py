@@ -498,12 +498,38 @@ HODL_values = V_HODL(prices, x0, y0)
 IL_curve = (LP_values / HODL_values - 1) * 100
 
 # --- Graphique IL(%) ---
+x_min = min(prices)
+x_max = max(prices)
+
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL(%)", line=dict(color="red", width=3)))
-fig.update_layout(height=350, title="Impermanent Loss (%)",
-                  xaxis_title="Prix", yaxis_title="IL (%)",
-                  margin=dict(l=40,r=40,t=40,b=40))
-st.plotly_chart(fig, width="stretch")
+
+fig.add_trace(go.Scatter(
+    x=prices,
+    y=IL_curve,
+    mode="lines",
+    name="IL(%)",
+    line=dict(color="red", width=3)
+))
+
+
+fig.update_xaxes(range=[x_min, x_max])
+
+
+fig.update_yaxes(tickformat=".2f", automargin=True)
+
+
+fig.update_layout(
+    height=380,
+    title="Impermanent Loss (%)",
+    xaxis_title="Prix",
+    yaxis_title="IL (%)",
+    margin=dict(l=70, r=40, t=50, b=40),  # <-- l=70 pour améliorer la visibilité
+    plot_bgcolor="rgba(245,245,245,0.6)",
+    paper_bgcolor="rgba(0,0,0,0)"
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
 
 
 # --- Valeurs actuelles et L au dépôt ---
