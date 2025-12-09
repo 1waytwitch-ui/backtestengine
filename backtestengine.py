@@ -221,48 +221,55 @@ with col1:
 with col2:
 
     # ---- Price/range ----
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
-        <h3>PRICE / RANGE</h3>
-    """, unsafe_allow_html=True)
+st.markdown("""
+<div style="
+    background-color:#FFA700;
+    border-left:6px solid #754C00;
+    padding:15px 20px;
+    border-radius:8px;
+    margin-bottom:25px;
+">
+    <h3>PRICE / RANGE</h3>
+""", unsafe_allow_html=True)
 
-    st.write(f"Prix actuel : {priceA:.6f} $")
-    st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
-    fig_bar = go.Figure()
+st.write(f"Prix actuel : {priceA:.6f} $")
+st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
+st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
+
+# === GAUGE A/B (horizontal stacked bar) ===
+fig_bar = go.Figure()
 
 fig_bar.add_trace(go.Bar(
     x=[ratioA * 100],
-    y=["Token A"],
+    y=[f"{tokenA}"],
     orientation="h",
-    marker=dict(color="orange"),
+    marker=dict(color="#FF8C00"),
     name=tokenA
 ))
 
 fig_bar.add_trace(go.Bar(
     x=[ratioB * 100],
-    y=["Token B"],
+    y=[f"{tokenB}"],
     orientation="h",
-    marker=dict(color="purple"),
+    marker=dict(color="#6A5ACD"),
     name=tokenB
 ))
 
 fig_bar.update_layout(
     barmode="stack",
-    title="Répartition A / B",
     height=120,
-    margin=dict(l=10,r=10,t=30,b=10)
+    title="Répartition A / B (%)",
+    margin=dict(l=10, r=10, t=40, b=20),
+    xaxis=dict(range=[0, 100], title="Pourcentage"),
+    yaxis=dict(showticklabels=False),
+    plot_bgcolor="rgba(0,0,0,0)",
+    paper_bgcolor="rgba(0,0,0,0)"
 )
 
 st.plotly_chart(fig_bar, use_container_width=True)
+# =============================================
 
-
-    st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
     # ---- HISTORIQUE ----
     key = f"{tokenA}_prices_{datetime.date.today()}"
