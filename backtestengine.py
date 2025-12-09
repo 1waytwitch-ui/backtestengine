@@ -500,7 +500,7 @@ IL_curve = (LP_values / HODL_values - 1) * 100
 # --- Graphique IL(%) ---
 fig = go.Figure()
 fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL(%)", line=dict(color="red", width=3)))
-fig.update_layout(height=350, title="Impermanent Loss (%) — Courbe exacte",
+fig.update_layout(height=350, title="Impermanent Loss (%)",
                   xaxis_title="Prix", yaxis_title="IL (%)",
                   margin=dict(l=40,r=40,t=40,b=40))
 st.plotly_chart(fig, width="stretch")
@@ -512,31 +512,18 @@ LP_now = V_LP(P_now, L, P_lower, P_upper)
 HODL_now = V_HODL(P_now, x0, y0)
 
 html_block = f"""
-<div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:30px;border-radius:12px;margin-top:25px;color:#000;">
-<div style="display:flex;justify-content:space-between;gap:40px;width:100%;">
+<div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:30px;border-radius:12px;margin-top:25px;color:#000;text-align:center;">
 
-<div style="flex:1;text-align:center;">
-<h3 style="margin:0 0 15px 0;">VALEURS ACTUELLES</h3>
+<h3 style="margin:0 0 15px 0;">Simulation IL</h3>
+
 <div style="font-size:20px;font-weight:600;line-height:1.6;">
 IL maintenant : {IL_now:.2f}%<br>
 Valeur LP : ${LP_now:,.2f}<br>
 Valeur HODL : ${HODL_now:,.2f}
 </div>
-</div>
 
-<div style="width:1px;background:#00754A;margin:0 20px;"></div>
-
-<div style="flex:1;text-align:center;">
-<h3 style="margin:0 0 15px 0;">L AU DÉPÔT</h3>
-<div style="font-size:20px;font-weight:600;line-height:1.6;">
-L (liquidité) : {L:.6f}<br>
-Token A : {x0:.6f}<br>
-Token B : {y0:.6f}
-</div>
-</div>
-
-</div>
 </div>
 """
 
 st.markdown(html_block, unsafe_allow_html=True)
+
