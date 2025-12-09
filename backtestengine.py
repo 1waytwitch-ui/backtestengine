@@ -498,9 +498,6 @@ HODL_values = V_HODL(prices, x0, y0)
 IL_curve = (LP_values / HODL_values - 1) * 100
 
 # --- Graphique IL(%) ---
-x_min = min(prices)
-x_max = max(prices)
-
 fig = go.Figure()
 
 fig.add_trace(go.Scatter(
@@ -512,18 +509,72 @@ fig.add_trace(go.Scatter(
 ))
 
 
-fig.update_xaxes(range=[x_min, x_max])
+fig.add_vline(
+    x=price_low,
+    line=dict(color="green", width=2, dash="dot"),
+    name="Range Low"
+)
+fig.add_annotation(
+    x=price_low,
+    y=max(IL_curve),
+    text="Low",
+    showarrow=False,
+    font=dict(color="green", size=12),
+    yshift=10
+)
 
 
+fig.add_vline(
+    x=price_high,
+    line=dict(color="green", width=2, dash="dot"),
+    name="Range High"
+)
+fig.add_annotation(
+    x=price_high,
+    y=max(IL_curve),
+    text="High",
+    showarrow=False,
+    font=dict(color="green", size=12),
+    yshift=10
+)
+
+fig.add_vline(
+    x=price_deposit,
+    line=dict(color="blue", width=2, dash="dash"),
+    name="Price Deposit"
+)
+fig.add_annotation(
+    x=price_deposit,
+    y=min(IL_curve),
+    text="Deposit",
+    showarrow=False,
+    font=dict(color="blue", size=12),
+    yshift=-10
+)
+
+fig.add_vline(
+    x=current_price,
+    line=dict(color="purple", width=2),
+    name="Price Now"
+)
+fig.add_annotation(
+    x=current_price,
+    y=min(IL_curve),
+    text="Now",
+    showarrow=False,
+    font=dict(color="purple", size=12),
+    yshift=-10
+)
+
+fig.update_xaxes(range=[min(prices), max(prices)])
 fig.update_yaxes(tickformat=".2f", automargin=True)
-
 
 fig.update_layout(
     height=380,
     title="Impermanent Loss (%)",
     xaxis_title="Prix",
     yaxis_title="IL (%)",
-    margin=dict(l=70, r=40, t=50, b=40),  # <-- l=70 pour améliorer la visibilité
+    margin=dict(l=70, r=40, t=50, b=40),
     plot_bgcolor="rgba(245,245,245,0.6)",
     paper_bgcolor="rgba(0,0,0,0)"
 )
