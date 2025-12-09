@@ -510,11 +510,13 @@ fig.add_trace(go.Scatter(
 
 
 fig.add_vline(
+    x=price_low,
     x=P_lower,
     line=dict(color="green", width=2, dash="dot"),
     name="Range Low"
 )
 fig.add_annotation(
+    x=price_low,
     x=P_lower,
     y=max(IL_curve),
     text="Low",
@@ -523,12 +525,15 @@ fig.add_annotation(
     yshift=10
 )
 
+
 fig.add_vline(
+    x=price_high,
     x=P_upper,
     line=dict(color="green", width=2, dash="dot"),
     name="Range High"
 )
 fig.add_annotation(
+    x=price_high,
     x=P_upper,
     y=max(IL_curve),
     text="High",
@@ -538,11 +543,13 @@ fig.add_annotation(
 )
 
 fig.add_vline(
+    x=price_deposit,
     x=P_deposit,
     line=dict(color="blue", width=2, dash="dash"),
     name="Price Deposit"
 )
 fig.add_annotation(
+    x=price_deposit,
     x=P_deposit,
     y=min(IL_curve),
     text="Deposit",
@@ -552,11 +559,13 @@ fig.add_annotation(
 )
 
 fig.add_vline(
+    x=current_price,
     x=P_now,
     line=dict(color="purple", width=2),
     name="Price Now"
 )
 fig.add_annotation(
+    x=current_price,
     x=P_now,
     y=min(IL_curve),
     text="Now",
@@ -565,7 +574,7 @@ fig.add_annotation(
     yshift=-10
 )
 
-fig.update_xaxes(range=[x_min, x_max])
+fig.update_xaxes(range=[min(prices), max(prices)])
 fig.update_yaxes(tickformat=".2f", automargin=True)
 
 fig.update_layout(
