@@ -472,6 +472,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Inputs compacts ---
+st.write("")
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
 with row1_col1:
     P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001)
