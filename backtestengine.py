@@ -221,39 +221,6 @@ with col1:
 with col2:
 
     # ---- Price/range ----
-st.markdown("""
-<div style="
-    background-color:#FFA700;
-    border-left:6px solid #754C00;
-    padding:15px 20px;
-    border-radius:8px;
-    margin-bottom:25px;
-">
-    <h3>PRICE / RANGE</h3>
-""", unsafe_allow_html=True)
-
-st.write(f"Prix actuel : {priceA:.6f} $")
-st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
-st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
-
-# === GAUGE A/B (horizontal stacked bar) ===
-fig_bar = go.Figure()
-
-fig_bar.add_trace(go.Bar(
-    x=[ratioA * 100],
-    y=[f"{tokenA}"],
-    orientation="h",
-    marker=dict(color="#FF8C00"),
-    name=tokenA
-))
-
-fig_bar.add_trace(go.Bar(
-    x=[ratioB * 100],
-    y=[f"{tokenB}"],
-    orientation="h",
-    marker=dict(color="#6A5ACD"),
-    name=tokenB
-))
     st.markdown("""
     <div style="
         background-color:#FFA700;
@@ -265,21 +232,11 @@ fig_bar.add_trace(go.Bar(
         <h3>PRICE / RANGE</h3>
     """, unsafe_allow_html=True)
 
-fig_bar.update_layout(
-    barmode="stack",
-    height=120,
-    title="Répartition A / B (%)",
-    margin=dict(l=10, r=10, t=40, b=20),
-    xaxis=dict(range=[0, 100], title="Pourcentage"),
-    yaxis=dict(showticklabels=False),
-    plot_bgcolor="rgba(0,0,0,0)",
-    paper_bgcolor="rgba(0,0,0,0)"
-)
     st.write(f"Prix actuel : {priceA:.6f} $")
     st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
     st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
-    # === GAUGE A/B (horizontal stacked bar) ===
+    # === GAUGE A/B ===
     fig_bar = go.Figure()
 
     fig_bar.add_trace(go.Bar(
@@ -311,11 +268,7 @@ fig_bar.update_layout(
 
     st.plotly_chart(fig_bar, use_container_width=True)
 
-st.plotly_chart(fig_bar, use_container_width=True)
-# =============================================
     st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
 
     # ---- HISTORIQUE ----
     key = f"{tokenA}_prices_{datetime.date.today()}"
@@ -379,6 +332,7 @@ st.markdown("</div>", unsafe_allow_html=True)
     st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
 
     st.markdown("</div>", unsafe_allow_html=True)
+
 
 # =========================== AUTOMATION ===========================
 st.markdown("""
