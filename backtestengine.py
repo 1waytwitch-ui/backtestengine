@@ -512,24 +512,31 @@ LP_now = V_LP(P_now, L, P_lower, P_upper)
 HODL_now = V_HODL(P_now, x0, y0)
 
 html_block = f"""
-<div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:25px 30px;border-radius:12px;margin-top:25px;text-align:center;color:#000;">
-<h3 style="margin:0 0 20px 0;">VALEURS ACTUELLES</h3>
-<div style="font-size:22px;font-weight:600;line-height:1.6;">
+<div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:30px;border-radius:12px;margin-top:25px;color:#000;">
+<div style="display:flex;justify-content:space-between;gap:40px;width:100%;">
+
+<div style="flex:1;text-align:center;">
+<h3 style="margin:0 0 15px 0;">VALEURS ACTUELLES</h3>
+<div style="font-size:20px;font-weight:600;line-height:1.6;">
 IL maintenant : {IL_now:.2f}%<br>
 Valeur LP : ${LP_now:,.2f}<br>
 Valeur HODL : ${HODL_now:,.2f}
 </div>
-<hr style="margin:25px 0;border:0;border-top:1px solid #00754A;">
-<h3 style="margin:0 0 20px 0;">L AU DÉPÔT</h3>
-<div style="font-size:22px;font-weight:600;line-height:1.6;">
+</div>
+
+<div style="width:1px;background:#00754A;margin:0 20px;"></div>
+
+<div style="flex:1;text-align:center;">
+<h3 style="margin:0 0 15px 0;">L AU DÉPÔT</h3>
+<div style="font-size:20px;font-weight:600;line-height:1.6;">
 L (liquidité) : {L:.6f}<br>
-Token A au dépôt : {x0:.6f}<br>
-Token B au dépôt : {y0:.6f}
+Token A : {x0:.6f}<br>
+Token B : {y0:.6f}
+</div>
+</div>
+
 </div>
 </div>
 """
 
 st.markdown(html_block, unsafe_allow_html=True)
-
-
-
