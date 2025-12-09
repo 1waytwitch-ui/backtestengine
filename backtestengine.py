@@ -565,7 +565,9 @@ fig.add_annotation(
     yshift=-10
 )
 
-fig.update_xaxes(range=[min(prices), max(prices)])
+padding = (P_upper - P_lower) * 0.05
+x_min = P_lower - padding
+x_max = P_upper + padding
 fig.update_yaxes(tickformat=".2f", automargin=True)
 
 fig.update_layout(
