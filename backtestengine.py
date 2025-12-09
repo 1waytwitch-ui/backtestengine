@@ -515,28 +515,31 @@ st.markdown(f"""
 <div style="
     background-color:#27F5A9;
     border-left:6px solid #00754A;
-    padding:20px;
+    padding:25px 30px;
     border-radius:12px;
     margin-top:25px;
     text-align:center;
+    color:#000;
 ">
-    <h3 style="margin-top:0;margin-bottom:15px;color:#000;">VALEURS ACTUELLES</h3>
+    
+    <h3 style="margin:0 0 20px 0;">VALEURS ACTUELLES</h3>
 
-    <div style="font-size:20px;font-weight:600;color:#000;line-height:1.8;">
-        IL maintenant : <span style="color:#000;">{IL_now:.2f} %</span><br>
-        Valeur LP actuelle : <span style="color:#000;">${LP_now:,.2f}</span><br>
-        Valeur HODL actuelle : <span style="color:#000;">${HODL_now:,.2f}</span><br>
+    <div style="font-size:22px;font-weight:600;line-height:1.6;">
+        IL maintenant : {IL_now:.2f}%<br>
+        Valeur LP : ${LP_now:,.2f}<br>
+        Valeur HODL : ${HODL_now:,.2f}
     </div>
 
-    <hr style="margin:20px 0;border:0;border-top:1px solid #00754A;">
+    <hr style="margin:25px 0;border:0;border-top:1px solid #00754A;">
 
-    <h3 style="margin-top:0;margin-bottom:15px;color:#000;">L AU DÉPÔT</h3>
+    <h3 style="margin:0 0 20px 0;">L AU DÉPÔT</h3>
 
-    <div style="font-size:20px;font-weight:600;color:#000;line-height:1.8;">
-        L (liquidité normalisée) : <span style="color:#000;">{L:.6f}</span><br>
-        Token A au dépôt : <span style="color:#000;">{x0:.6f}</span><br>
-        Token B au dépôt : <span style="color:#000;">{y0:.6f}</span>
+    <div style="font-size:22px;font-weight:600;line-height:1.6;">
+        L (liquidité) : {L:.6f}<br>
+        Token A au dépôt : {x0:.6f}<br>
+        Token B au dépôt : {y0:.6f}
     </div>
+
 </div>
 """, unsafe_allow_html=True)
 
