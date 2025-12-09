@@ -279,7 +279,7 @@ with col2:
     vol_30d = compute_volatility(pricesA)
     rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
 
-    # ---- SECTION ANALYSE 30 JOURS ----
+    # ---- ANALYSE STRATEGIE ----
     st.markdown("""
     <div style="
         background-color:#FFA700;
@@ -288,7 +288,7 @@ with col2:
         border-radius:8px;
         margin-bottom:25px;
     ">
-        <h3>Analyse 30 jours</h3>
+        <h3>Analyse stratégie</h3>
     """, unsafe_allow_html=True)
 
     st.write(f"Volatilité : {vol_30d*100:.2f}% — Hors range : {rebalances}")
@@ -317,17 +317,6 @@ with col2:
             suggestion = "Mini-Doux"
     else:
         suggestion = "Coup de pouce"
-
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
-        <h3>Analyse stratégie</h3>
-    """, unsafe_allow_html=True)
 
     st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
 
