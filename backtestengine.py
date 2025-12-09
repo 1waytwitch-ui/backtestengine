@@ -307,7 +307,7 @@ with col2:
     st.markdown("</div>", unsafe_allow_html=True)
 
     # ---- ANALYSE STRATEGIE ----
-    volatilité (7d) = compute_volatility(pricesA[-7:])
+    vol_7d = compute_volatility(pricesA[-7:])
     suggestion = "Mini-doux"
 
     if okA and okB:
