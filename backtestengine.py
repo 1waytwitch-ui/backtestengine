@@ -512,18 +512,17 @@ LP_now = V_LP(P_now, L, P_lower, P_upper)
 HODL_now = V_HODL(P_now, x0, y0)
 
 html_block = f"""
-<div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:30px;border-radius:12px;margin-top:25px;color:#000;text-align:center;">
+<div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:18px 25px;border-radius:12px;margin-top:20px;color:#000;text-align:center;">
 
-<h3 style="margin:0 0 15px 0;">Simulation IL</h3>
+<h3 style="margin:0 0 10px 0;">Simulation IL</h3>
 
-<div style="font-size:20px;font-weight:600;line-height:1.6;">
-IL maintenant : {IL_now:.2f}%<br>
-Valeur LP : ${LP_now:,.2f}<br>
-Valeur HODL : ${HODL_now:,.2f}
+<div style="font-size:18px;font-weight:600;display:flex;justify-content:center;gap:35px;flex-wrap:wrap;">
+    <span>IL maintenant : {IL_now:.2f}%</span>
+    <span>Valeur LP : ${LP_now:,.2f}</span>
+    <span>Valeur HODL : ${HODL_now:,.2f}</span>
 </div>
 
 </div>
 """
 
 st.markdown(html_block, unsafe_allow_html=True)
-
