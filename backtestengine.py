@@ -629,7 +629,7 @@ st.markdown(html_block, unsafe_allow_html=True)
 # --- GUIDE COMPLET ---
 st.markdown("""
 <div style="background-color:#f0f0f5; border-left:6px solid #4b1c7d; padding:20px; border-radius:12px; margin-top:30px;">
-    <h2 style="color:#4b1c7d; margin-bottom:15px;">📘 Guide LP & Stratégies</h2>
+    <h2 style="color:#4b1c7d; margin-bottom:15px;">Guide - Fournir de la liquidité concentrée</h2>
     <details open>
     <summary style="font-size:18px; font-weight:600; cursor:pointer;">Sommaire</summary>
     <ul style="margin-left:20px; margin-top:10px;">
