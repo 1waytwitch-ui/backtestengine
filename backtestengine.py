@@ -284,7 +284,8 @@ with col2:
         paper_bgcolor="rgba(0,0,0,0)"
     )
 
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width="stretch")
+
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -619,7 +620,8 @@ fig.update_layout(
     paper_bgcolor="rgba(0,0,0,0)"
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
+
 
 
 
