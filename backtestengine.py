@@ -799,3 +799,4 @@ Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et 
 
 </div>
 """
+st.markdown(guide_html, unsafe_allow_html=True)
