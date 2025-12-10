@@ -762,7 +762,7 @@ Objectifs : saisir des fees → petit range ; limiter IL → grand range sans re
     <li>Répartition : 500 USD ETH, 500 USD USDC</li>
     <li>Range bas ≈ 2700, Range haut ≈ 3300</li>
     <li>Si prix = 3300 → plus riche en USDC, fees générés</li>
-    <li>Si prix = 2700 → plus d’ETH, fees générés, IL faible (~1-2%)</li>
+    <li>Si prix = 2700 → plus d’ETH, fees générés</li>
 </ul>
 
 <h3 id="erreurs-de-debutant">Erreurs de débutant</h3>
