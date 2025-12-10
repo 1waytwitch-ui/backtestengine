@@ -116,14 +116,52 @@ st.markdown("""
     font-size: 36px;
     font-weight: 700;
     color: white !important;
+    flex-grow: 1;
+}
+.deFi-buttons {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+.deFi-button {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    transition: background-color 0.3s ease;
+}
+.deFi-button:hover {
+    background-color: #3a9d38;
+}
+.telegram-link {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.telegram-link img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 </style>
 
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
-    <div>
-        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:60px;height:60px;border-radius:50%;">
-        <a href="https://t.me/Pigeonchanceux" target="_blank" style="color:white;font-size:18px;font-weight:600;text-decoration:none;">Mon Telegram</a>
+    <div class="deFi-buttons">
+        <a href="#guide" class="deFi-button">Guide</a>
+        <a href="https://t.me/Pigeonchanceux" target="_blank" class="telegram-link">
+            <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" alt="Telegram">
+            Mon Telegram
+        </a>
     </div>
 </div>
 """, unsafe_allow_html=True)
