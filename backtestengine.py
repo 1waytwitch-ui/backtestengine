@@ -99,6 +99,18 @@ def get_price_usd(token):
         return 0.0, False
 
 # ---- HEADER ----
+# ======================
+#   BANNIÈRE + BOUTON
+# ======================
+
+if "show_guide" not in st.session_state:
+    st.session_state.show_guide = False
+
+clicked = st.button("Guide", key="guide_button_top")
+
+if clicked:
+    st.session_state.show_guide = not st.session_state.show_guide
+
 st.markdown("""
 <style>
 .deFi-banner {
@@ -122,11 +134,16 @@ st.markdown("""
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div>
-        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:60px;height:60px;border-radius:50%;">
-        <a href="https://t.me/Pigeonchanceux" target="_blank" style="color:white;font-size:18px;font-weight:600;text-decoration:none;">Mon Telegram</a>
+        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" 
+             style="width:60px;height:60px;border-radius:50%;border:2px solid white;">
+        <a href="https://t.me/Pigeonchanceux" target="_blank" 
+           style="color:white;font-size:18px;font-weight:600;text-decoration:none;margin-left:10px;">
+           Mon Telegram
+        </a>
     </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 # ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
