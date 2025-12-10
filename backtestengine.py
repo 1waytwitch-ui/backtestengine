@@ -99,18 +99,6 @@ def get_price_usd(token):
         return 0.0, False
 
 # ---- HEADER ----
-# ======================
-#   BANNIÈRE + BOUTON
-# ======================
-
-if "show_guide" not in st.session_state:
-    st.session_state.show_guide = False
-
-clicked = st.button("Guide", key="guide_button_top")
-
-if clicked:
-    st.session_state.show_guide = not st.session_state.show_guide
-
 st.markdown("""
 <style>
 .deFi-banner {
@@ -134,16 +122,11 @@ st.markdown("""
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div>
-        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" 
-             style="width:60px;height:60px;border-radius:50%;border:2px solid white;">
-        <a href="https://t.me/Pigeonchanceux" target="_blank" 
-           style="color:white;font-size:18px;font-weight:600;text-decoration:none;margin-left:10px;">
-           Mon Telegram
-        </a>
+        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:60px;height:60px;border-radius:50%;">
+        <a href="https://t.me/Pigeonchanceux" target="_blank" style="color:white;font-size:18px;font-weight:600;text-decoration:none;">Mon Telegram</a>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 
 # ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
@@ -643,195 +626,91 @@ html_block = f"""
 
 st.markdown(html_block, unsafe_allow_html=True)
 
-# ======================
-#   CONTENU DU GUIDE
-# ======================
+# --- GUIDE COMPLET ---
+st.markdown("""
+<div style="background-color:#f0f0f5; border-left:6px solid #4b1c7d; padding:20px; border-radius:12px; margin-top:30px;">
+    <h2 style="color:#4b1c7d; margin-bottom:15px;">📘 Guide LP & Stratégies</h2>
+    <details open>
+    <summary style="font-size:18px; font-weight:600; cursor:pointer;">Sommaire</summary>
+    <ul style="margin-left:20px; margin-top:10px;">
+        <li>C’est quoi fournir de la liquidité ?</li>
+        <li>Concepts fondamentaux (ratio, range, impermanent loss)</li>
+        <li>Stratégies possibles</li>
+        <li>Comment choisir un range</li>
+        <li>Exemple simple WETH/USDC</li>
+        <li>Erreurs de débutant</li>
+        <li>Rebalancer la position</li>
+        <li>Comprendre la courbe d’IL</li>
+        <li>Quand une stratégie LP est rentable ?</li>
+        <li>Astuces et autonomie des choix</li>
+        <li>Conclusion</li>
+    </ul>
+    </details>
 
-st.session_state["guide_text"] = """
-Bienvenue !  
-Ce guide t’explique **pas à pas** comment comprendre et utiliser les stratégies de LP (Liquidity Providing) dans un AMM (Automated Market Maker) concentré comme Uniswap, Aerodrome, Pancake...
+    <h3 style="color:#333333; margin-top:20px;">C’est quoi fournir de la liquidité ?</h3>
+    <p>Quand tu fournis de la liquidité à une pool (ex : WETH/USDC), tu apportes <b>deux tokens en même temps</b>. En échange, tu deviens <b>market maker</b> et touches des <b>frais de trading</b>. 
+    Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range → tu deviens <b>full Token A</b> ou <b>full Token B</b>. Ta position s’ajuste automatiquement : <b>quand le prix baisse, tu accumules le token le plus volatile</b> ; <b>quand le prix monte, tu revends progressivement ce token volatile</b>.</p>
 
-Krystal, Vfat, Aperture... **ne sont que des agrégateurs de positions** !
+    <h3 style="color:#333333; margin-top:20px;">Concepts fondamentaux</h3>
+    <ul>
+        <li><b>Ratio</b> : proportion entre Token A (volatile) et Token B (stable ou moins volatile). Exemple : 50/50 = neutre, 20/80 = défensif, 95/5 = agressif.</li>
+        <li><b>Range</b> : zone de prix où ton capital est actif. Range serré = plus de fees mais plus de rebalances et IL possible.</li>
+        <li><b>Impermanent Loss (IL)</b> : perte que tu aurais évitée si tu avais simplement conservé tes tokens. Plus le prix s’éloigne, plus l’IL augmente.</li>
+    </ul>
 
-# — C’est quoi fournir de la liquidité ?
+    <h3 style="color:#333333; margin-top:20px;">Stratégies possibles</h3>
+    <ul>
+        <li><b>Neutre (50/50)</b> : marché incertain, stable et simple, risque IL si gros mouvement</li>
+        <li><b>Coup de pouce (20/80)</b> : marché calme, protège du token volatil, défensif</li>
+        <li><b>Mini-doux (10/90)</b> : anticipation de tendance, minimise IL, très défensif</li>
+        <li><b>Side-line up (100/0)</b> : bas de marché, accumulation token volatile, agressif</li>
+        <li><b>Side-line down (0/100)</b> : marché haussier, prendre profit naturellement, agressif vers la vente</li>
+    </ul>
 
-Quand tu fournis de la liquidité à une pool (ex : WETH/USDC), tu apportes **deux tokens en même temps**. En échange, tu deviens **market maker** et tu touches des **frais de trading (trading fees)**.
+    <h3 style="color:#333333; margin-top:20px;">Choisir un range</h3>
+    <p>Le choix dépend de ton objectif, de la volatilité et du marché : haussier → profits A→B, baissier → accumulation B→A, latéral → neutre ou coup de pouce. Objectifs : saisir des fees → petit range, limiter IL → grand range, DCA → ratio 100/0 ou 0/100.</p>
 
-Dans un AMM concentré, tu choisis **un range** où ton capital est actif. Si le prix sort du range → tu deviens **full Token A** ou **full Token B**. Pour rester efficace, il faut parfois **rebalance** ta position.
+    <h3 style="color:#333333; margin-top:20px;">Exemple simple WETH/USDC</h3>
+    <p>Capital = 1000 USD, Prix ETH = 3000, Stratégie = 50/50, Range ±20%.</p>
+    <ul>
+        <li>Répartition : 500 USD ETH, 500 USD USDC</li>
+        <li>Range bas ≈ 2700, Range haut ≈ 3300</li>
+        <li>Si prix = 3300 → plus riche en USDC, fees générés</li>
+        <li>Si prix = 2700 → plus d’ETH, fees générés, IL faible (~1-2%)</li>
+    </ul>
 
-Ta position s’ajuste automatiquement : **quand le prix baisse, tu accumules le token le plus volatile** ; à l’inverse, **quand le prix monte, tu revends progressivement ce token volatil.**
+    <h3 style="color:#333333; margin-top:20px;">Erreurs de débutant</h3>
+    <ul>
+        <li>Range trop serré → rebalances fréquents, IL amplifiée</li>
+        <li>Oublier que l’IL existe → fees ne compensent pas toujours l’IL</li>
+        <li>Choisir un range sans regarder la volatilité → Volatilité 7j et 30j est clé. Pas de stratégie set & forget.</li>
+    </ul>
 
-# — Les trois concepts fondamentaux
+    <h3 style="color:#333333; margin-top:20px;">Rebalancer la position</h3>
+    <p>Quand le prix sort du range tu deviens full A ou B et tu dois repositionner la liquidité pour rester efficace. L’app calcule automatiquement combien de fois le prix sort du range dans le passé et dans une simulation future.</p>
 
-→ Le **ratio**, c’est la proportion entre Token A (volatile) et Token B (stable ou moins volatile).
+    <h3 style="color:#333333; margin-top:20px;">Comprendre la courbe d’IL</h3>
+    <p>Le graphe montre IL(%) vs prix, avec lignes prix dépôt, prix actuel, range bas/haut. Minimum = prix de dépôt, plus on s’éloigne, plus IL augmente. IL = 0 si prix identique.</p>
 
-Exemples :
-- 50/50 → neutre  
-- 20/80 → plutôt défensif  
-- 95/5 → très agressif vers Token A  
+    <h3 style="color:#333333; margin-top:20px;">Quand une stratégie LP est rentable ?</h3>
+    <ul>
+        <li>Frais gagnés > IL</li>
+        <li>Prix ne sort pas trop vite du range</li>
+        <li>Stratégie cohérente avec objectif (DCA, profit, accumulation)</li>
+    </ul>
 
-Ce ratio influence ton **risque**, ta **direction** (bullish ou bearish) et ton **range**.
+    <h3 style="color:#333333; margin-top:20px;">Astuces et autonomie</h3>
+    <ul>
+        <li>Commencer avec faible capital et range large</li>
+        <li>Stratégies asymétriques si marché directionnel</li>
+        <li>Vérifier volatilité 7j et 30j</li>
+        <li>Ne pas déposer tout le capital d’un coup</li>
+        <li>Surveiller courbe IL après dépôt</li>
+        <li>Utiliser le dex pour déposer la liquidité (expert)</li>
+    </ul>
 
-→ Le **range** définit la zone de prix dans laquelle ton capital est utilisé dans la pool.  
-Exemple : Range 1800 – 2200.  
-Si le prix reste dans cette fourchette → tu génères des fees.  
-S’il en sort → tu n’en génères plus.
+    <h3 style="color:#333333; margin-top:20px;">Conclusion</h3>
+    <p>Le guide explique les concepts fondamentaux, les stratégies, comment interpréter ratios, range, volatilité et lire l’IL. Avec l’app, tu as un backtest complet pour apprendre à gérer des pools concentrés efficacement.</p>
 
-Plus **le range est serré** :  
-- *plus tu gagnes de fees*  
-- *plus les rebalances seront fréquents*  
-- *plus l’Impermanent Loss (IL) augmente*
-
-→ L’**impermanent loss (IL)** est la perte que tu aurais évitée si tu avais simplement conservé (HOLD) tes tokens.
-
-Important :  
-- L’IL n’est pas un joker magique.  
-- Elle n’est pas toujours “petite”.  
-- Elle augmente fortement si le prix s’éloigne du point d’entrée.
-
-Un range très large donne une IL **extrêmement importante**, qu’il faudra gérer soit par une sortie de position, soit par un rebalance partiel.
-
-# — Les stratégies possibles
-
-**Neutre : 50/50**  
-Pour : marché incertain, latéral  
-Avantages : stable, simple  
-Risques : IL si gros mouvement
-
-**Coup de pouce : 20/80**  
-Pour : marché calme, faible volatilité  
-Avantages : protège du token volatil  
-Mode : défensif
-
-**Mini-doux : 10/90**  
-Pour : anticipation de tendance  
-Avantages : minimise l’IL  
-Mode : très défensif
-
-**Side-line up : 100/0**  
-Pour : bas de marché, dumps  
-Avantages : accumuler le token volatil  
-Mode : agressif / accumulation
-
-**Side-line down : 0/100**  
-Pour : marché haussier  
-Avantages : prise de profit naturelle  
-Mode : agressif vers la vente
-
-# — Comment choisir un range ?
-
-Le choix du range dépend de ton objectif, de la volatilité et du marché :
-
-- marché haussier → stratégies de profits A→B  
-- marché baissier → stratégies d’accumulation B→A  
-- marché latéral → neutre ou coup de pouce
-
-Objectifs :
-- **Saisir des fees** → petit range  
-- **Limiter l’IL** → range large ou mini-doux  
-- **DCA** → ratio extrême (100/0 ou 0/100)
-
-# — Exemple simple : pool WETH/USDC
-
-- Capital : 1000 USD  
-- Prix ETH : 3000  
-- Stratégie : 50/50  
-- Range : ±20% (volatilité = 8%)
-
-### Étape 1 : Répartition  
-→ 500 USD en ETH  
-→ 500 USD en USDC  
-
-### Étape 2 : Range  
-→ Bas ≈ 2700  
-→ Haut ≈ 3300  
-
-### Résultat 1 : Si prix = 3300  
-→ tu deviens plus riche en USDC  
-→ tu as généré des fees  
-
-### Résultat 2 : Si prix = 2700  
-→ tu possèdes plus de token ETH  
-→ tu as généré des fees  
-→ IL très faible (~1 à 2%)
-
-# — Les erreurs de débutant
-
-### Range trop serré  
-Trop de rebalances, IL amplifiée, capital qui s’épuise.
-
-### Oublier l’IL  
-Les fees **ne compensent pas toujours** l’impermanent loss.
-
-### Oublier la volatilité  
-La volatilité 7j et 30j est un indicateur clé.  
-Il n’existe aucune stratégie *set and forget* viable à long terme. Même avec de l’automation, il faudra ajuster régulièrement.  
-Sinon, autant acheter l’actif bas et simplement le HOLD jusqu’à une prise de profit.
-
-# — Rebalancer une position
-
-Quand le prix sort du range :  
-→ tu deviens full A ou full B  
-→ tu ne génères plus de fees  
-→ ta LP devient un simple “bag”  
-→ il faut repositionner la liquidité
-
-L’application calcule automatiquement :
-- combien de fois le prix est sorti dans le passé  
-- combien de fois dans une simulation future  
-- comment ajuster un range  
-
-Cela aide à **planifier l’automation ou les rebalances**.
-
-# — Comprendre la courbe d’Impermanent Loss
-
-Le graphe montre :
-- IL(%) selon le prix  
-- le prix d’entrée  
-- le prix actuel  
-- le range bas/haut  
-
-Interprétation :
-- **Le minimum de la courbe = prix de dépôt**  
-- Plus le prix s’éloigne → plus l’IL augmente  
-- IL = 0 uniquement si le prix reste exactement au point d’entrée
-
-# — Quand une stratégie LP devient rentable ?
-
-Elle est rentable si :
-1. **les frais gagnés > l’impermanent loss**  
-2. le prix **ne sort pas trop vite** du range  
-3. ta stratégie correspond à ton objectif (DCA, prise de profit, accumulation)
-
-# — Astuces pour devenir autonome
-
-- Commence avec un faible capital et un **range large**  
-- Utilise des stratégies **asymétriques** si marché directionnel  
-- Vérifie toujours la **volatilité 7j / 30j**  
-- Ne dépose pas tout ton capital d’un coup  
-- Surveille la **courbe IL** après le dépôt  
-- Dépose via le DEX directement quand tu maîtrises mieux
-
-# — Conclusion
-
-Ce guide t’a apporté :  
-- les concepts fondamentaux  
-- une explication simple des stratégies  
-- comment lire ratio, range, volatilité  
-- comment interpréter l’IL  
-- comment éviter les erreurs classiques  
-
-Avec l’application, tu disposes d’un **véritable backtest LP**, parfait pour apprendre à gérer des pools concentrés et comprendre leur mécanique globale.
-"""
-
-# ======================
-#   AFFICHAGE DU GUIDE
-# ======================
-
-st.markdown("---")  # séparation visuelle
-
-if st.session_state.show_guide:
-    st.subheader("Guide - Fournir de la liquidité concentrée")
-    st.markdown(st.session_state["guide_text"], unsafe_allow_html=True)
-
-
+</div>
+""", unsafe_allow_html=True)
