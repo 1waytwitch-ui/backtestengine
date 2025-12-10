@@ -799,7 +799,7 @@ Interprétation : minimum de la courbe = prix de dépôt ; plus on s’éloigne,
 
 <h3 id="conclusion">Conclusion</h3>
 <p>Ce guide t’a donné les concepts fondamentaux, des explications simples des stratégies, comment interpréter ratios, range, volatilité, lire l’IL et éviter les erreurs classiques.<br>
-Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et gérer des pools concentrés.</p>
+Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et gérer des pools concentrés avec une vision globale de la mécanique.</p>
 
 </div>
 """
