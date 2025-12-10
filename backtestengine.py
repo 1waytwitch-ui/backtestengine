@@ -117,46 +117,13 @@ st.markdown("""
     font-weight: 700;
     color: white !important;
 }
-.deFi-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-.guide-btn {
-    padding: 10px 18px;
-    background-color: #ffffff22;
-    border: 1px solid #ffffff55;
-    border-radius: 10px;
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-}
-.guide-btn:hover {
-    background-color: #ffffff44;
-}
 </style>
 
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
-
-    <div class="deFi-right">
-        
-        <!-- BOUTON GUIDE -->
-        <form action="" method="post">
-            <button class="guide-btn" name="open_guide" type="submit">📘 Guide</button>
-        </form>
-
-        <!-- TELEGRAM -->
-        <div>
-            <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg"
-                 style="width:60px;height:60px;border-radius:50%;border:2px solid #fff;">
-            <a href="https://t.me/Pigeonchanceux" target="_blank"
-               style="color:white;font-size:18px;font-weight:600;text-decoration:none;margin-left:10px;">
-               Mon Telegram
-            </a>
-        </div>
-
+    <div>
+        <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:60px;height:60px;border-radius:50%;">
+        <a href="https://t.me/Pigeonchanceux" target="_blank" style="color:white;font-size:18px;font-weight:600;text-decoration:none;">Mon Telegram</a>
     </div>
 </div>
 """, unsafe_allow_html=True)
