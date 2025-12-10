@@ -711,6 +711,10 @@ guide_html = """
 
 <h2>Guide - Fournir de la liquidité concentrée</h2>
 
+<!-- Texte d'introduction -->
+<p>Bienvenue !<br>
+Ce guide t’explique <b>pas à pas</b> comment comprendre et utiliser les stratégies de LP (Liquidity Providing) dans un AMM (automated Market Maker) concentré comme Uniswap, Aerodrome, Pancake...<br><br>
+Krystal, Vfat, aperture... <b>sont uniquement des agrégateurs de positions</b> !</p>
 <div id="sommaire">
 <h4>Sommaire</h4>
 <ul>
