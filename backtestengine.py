@@ -539,7 +539,7 @@ with col_rebalance:
     </div>
     """, unsafe_allow_html=True)
 
-    # Offsets pour marché baissier
+    # **Offsets fixes, indépendants de invert_market**
     off_low_pct  = -ratioA * range_percent
     off_high_pct =  ratioB * range_percent
     range_low  = priceA * (1 + off_low_pct / 100)
@@ -560,6 +560,7 @@ with col_rebalance:
         range_high_bull = priceA * (1 - off_low_pct / 100)
         st.write(f"Range Low : {range_low_bull:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {range_high_bull:.6f} (+{-off_low_pct:.0f}%)")
+
 
 # --- Fonctions de calcul ---
 def compute_L(P, P_l, P_u, V):
