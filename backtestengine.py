@@ -102,15 +102,14 @@ def get_price_usd(token):
 
 # ------------------------------- ATR
 def compute_atr(prices, period=14):
-    """Calcul de l'ATR sur une liste de prix"""
-    # Si prices est une liste simple de floats, on crée un faux timestamp
-    if isinstance(prices[0], (int, float)):
-        prices = [[i, p] for i, p in enumerate(prices)]
+    import pandas as pd
+    import numpy as np
 
+    # prices est de la forme [[timestamp, price], ...]
     df = pd.DataFrame(prices, columns=["time", "price"])
     df["price"] = df["price"].astype(float)
 
-    # Simuler high et low
+    # On simule high et low car on a que le prix close
     df["high"] = df["price"] * 1.001
     df["low"]  = df["price"] * 0.999
     df["close"] = df["price"]
@@ -124,37 +123,28 @@ def compute_atr(prices, period=14):
         abs(row["low"]  - row["prev_close"])
     ), axis=1)
 
-    # ATR
+    # ATR : moyenne glissante des True Range
     atr = df["tr"].rolling(period).mean().iloc[-1]
 
     return float(atr)
 
+# --- Partie dans la fonction principale ou le main ---
 
-def compute_atr_range(price, atr_value, multiplier=3):
-    """Calcule le range basé sur ATR"""
-    range_high = price + atr_value * multiplier
-    range_low  = price - atr_value * multiplier
-    return range_low, range_high
+# Supposons que pricesA soit une liste de [timestamp, price] par exemple :
+# pricesA = [[timestamp1, price1], [timestamp2, price2], ...]
 
+atr_value = compute_atr(pricesA, period=14)  # ATR en valeur absolue
+last_price = pricesA[-1][1]                   # Dernier prix (close)
 
-# -------------------------------
-# Partie compute dans ton backtest
-# -------------------------------
+# Calcul de l'ATR en pourcentage du dernier prix
+atr_pct = (atr_value / last_price) * 100
 
-# Exemple : prix historiques de l'actif (ETH)
-pricesA = [2500, 2510, 2490, 2520, 2485, 2515, 2530, 2525, 2540, 2550, 2545, 2535, 2520, 2510]
+# Calcul du range conseillé (exemple ×3)
+range_pct = atr_pct * 3
 
-# Calcul ATR
-atr_value = compute_atr(pricesA, period=14)
+print(f"ATR 14 : {atr_value:.4f} ({atr_pct:.2f}%)")
+print(f"Range conseillé : {range_pct:.2f}%")
 
-# Prix actuel
-last_price = pricesA[-1]
-
-# Calcul range basé sur ATR x3
-range_low, range_high = compute_atr_range(last_price, atr_value, multiplier=3)
-
-print(f"ATR 14: {atr_value:.2f}")
-print(f"Range basé sur ATR x3: {range_low:.2f} - {range_high:.2f}")
 
 
 # ---- HEADER ----
