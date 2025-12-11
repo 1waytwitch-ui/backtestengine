@@ -7,8 +7,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 
-
-st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
+st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE", layout="wide")
 
 # ---- STYLES GÉNÉRAUX ----
 st.markdown("""
@@ -44,13 +43,13 @@ if "show_disclaimer" not in st.session_state:
 
 # ---- DATA ----
 STRATEGIES = {
-    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
-    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité (attention à inverser en fonction du marché)"},
-    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance (attention à inverser en fonction du marché)"},
+    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
+    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité"},
+    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance"},
     "Side-line Up": {"ratio": (0.95, 0.05), "objectif": "Accumulation", "contexte": "Dump"},
     "Side-line Below": {"ratio": (0.05, 0.95), "objectif": "Attente avant pump", "contexte": "Marché haussier"},
-    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Accumulation de l'actif le plus volatile (Token A)"},
-    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Tendance haussière revente de l'actif le plus volatile (token A contre le token B)"},
+    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Accumulation du token A"},
+    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Revente du token A"},
 }
 
 COINGECKO_IDS = {
@@ -60,14 +59,6 @@ COINGECKO_IDS = {
     "VIRTUAL": "virtual-protocol",
     "AERO": "aerodrome-finance"
 }
-
-PAIRS = [
-    ("WETH", "USDC"),
-    ("CBBTC", "USDC"),
-    ("WETH", "CBBTC"),
-    ("VIRTUAL", "WETH"),
-    ("AERO", "WETH")
-]
 
 # ---- FONCTIONS ----
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -79,9 +70,12 @@ def get_market_chart(asset_id):
         prices = np.array(prices)
         prices = prices[~np.isnan(prices)]
         prices = prices[prices > 0]
-        return prices.tolist() if len(prices) > 0 else [1.0] * 30
+        # Ajouter des timestamps fictifs pour ATR
+        timestamps = list(range(len(prices)))
+        return list(zip(timestamps, prices))
     except:
-        return [1.0] * 30
+        # fallback
+        return list(zip(range(30), [1.0]*30))
 
 def compute_volatility(prices):
     if len(prices) < 2:
@@ -102,45 +96,35 @@ def get_price_usd(token):
 
 # ------------------------------- ATR
 def compute_atr(prices, period=14):
-    """Calcule l'ATR à partir d'une liste de [timestamp, price]"""
     df = pd.DataFrame(prices, columns=["time", "price"])
     df["price"] = df["price"].astype(float)
-
-    # Simule high et low car on a que le prix close
     df["high"] = df["price"] * 1.001
-    df["low"] = df["price"] * 0.999
+    df["low"]  = df["price"] * 0.999
     df["close"] = df["price"]
-
     df["prev_close"] = df["close"].shift(1)
-
-    # True Range
     df["tr"] = df.apply(lambda row: max(
         row["high"] - row["low"],
         abs(row["high"] - row["prev_close"]),
-        abs(row["low"] - row["prev_close"])
+        abs(row["low"]  - row["prev_close"])
     ), axis=1)
-
-    # ATR : moyenne glissante des True Range
     atr = df["tr"].rolling(period).mean().iloc[-1]
-
     return float(atr)
 
-# ------------------- EXEMPLE D'UTILISATION -------------------
+# ---- INTERFACE ----
+token = st.selectbox("Choisir un token", list(COINGECKO_IDS.keys()))
+pricesA = get_market_chart(COINGECKO_IDS[token])
 
-token = "weth"  # Exemple, adapte selon ton token
-pricesA = get_prices_with_timestamps(token)
-
-if len(pricesA) < 14:
+if not pricesA or len(pricesA) < 14:
     st.warning("Pas assez de données pour calculer l'ATR")
 else:
     atr_value = compute_atr(pricesA, period=14)
     last_price = pricesA[-1][1]
     atr_pct = (atr_value / last_price) * 100
-    range_pct = atr_pct * 3  # suggestion ×3 du range conseillé
+    range_pct = atr_pct * 3
 
+    st.markdown(f"**Dernier prix** : {last_price:.4f} USD")
     st.markdown(f"**ATR 14** : {atr_value:.4f} ({atr_pct:.2f}%)")
-    st.markdown(f"**Range conseillé** : {range_pct:.2f}%")
-
+    st.markdown(f"**Range conseillé (×3)** : {range_pct:.2f}%")
 
 
 # ---- HEADER ----
