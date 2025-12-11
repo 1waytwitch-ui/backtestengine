@@ -5,9 +5,8 @@ import datetime
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
-import pandas as pd
 
-st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE", layout="wide")
+st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
 # ---- STYLES GÉNÉRAUX ----
 st.markdown("""
@@ -43,13 +42,13 @@ if "show_disclaimer" not in st.session_state:
 
 # ---- DATA ----
 STRATEGIES = {
-    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude"},
-    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité"},
-    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance"},
+    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
+    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité (attention à inverser en fonction du marché)"},
+    "Mini-doux": {"ratio": (0.1, 0.9), "objectif": "Nouveau régime prix", "contexte": "Changement de tendance (attention à inverser en fonction du marché)"},
     "Side-line Up": {"ratio": (0.95, 0.05), "objectif": "Accumulation", "contexte": "Dump"},
     "Side-line Below": {"ratio": (0.05, 0.95), "objectif": "Attente avant pump", "contexte": "Marché haussier"},
-    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Accumulation du token A"},
-    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Revente du token A"},
+    "DCA-in": {"ratio": (1.0, 0.0), "objectif": "Entrée progressive", "contexte": "Accumulation de l'actif le plus volatile (Token A)"},
+    "DCA-out": {"ratio": (0.0, 1.0), "objectif": "Sortie progressive", "contexte": "Tendance haussière revente de l'actif le plus volatile (token A contre le token B)"},
 }
 
 COINGECKO_IDS = {
@@ -59,6 +58,14 @@ COINGECKO_IDS = {
     "VIRTUAL": "virtual-protocol",
     "AERO": "aerodrome-finance"
 }
+
+PAIRS = [
+    ("WETH", "USDC"),
+    ("CBBTC", "USDC"),
+    ("WETH", "CBBTC"),
+    ("VIRTUAL", "WETH"),
+    ("AERO", "WETH")
+]
 
 # ---- FONCTIONS ----
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -70,12 +77,9 @@ def get_market_chart(asset_id):
         prices = np.array(prices)
         prices = prices[~np.isnan(prices)]
         prices = prices[prices > 0]
-        # Ajouter des timestamps fictifs pour ATR
-        timestamps = list(range(len(prices)))
-        return list(zip(timestamps, prices))
+        return prices.tolist() if len(prices) > 0 else [1.0] * 30
     except:
-        # fallback
-        return list(zip(range(30), [1.0]*30))
+        return [1.0] * 30
 
 def compute_volatility(prices):
     if len(prices) < 2:
@@ -93,39 +97,6 @@ def get_price_usd(token):
         return res[COINGECKO_IDS[token]]["usd"], True
     except:
         return 0.0, False
-
-# ------------------------------- ATR
-def compute_atr(prices, period=14):
-    df = pd.DataFrame(prices, columns=["time", "price"])
-    df["price"] = df["price"].astype(float)
-    df["high"] = df["price"] * 1.001
-    df["low"]  = df["price"] * 0.999
-    df["close"] = df["price"]
-    df["prev_close"] = df["close"].shift(1)
-    df["tr"] = df.apply(lambda row: max(
-        row["high"] - row["low"],
-        abs(row["high"] - row["prev_close"]),
-        abs(row["low"]  - row["prev_close"])
-    ), axis=1)
-    atr = df["tr"].rolling(period).mean().iloc[-1]
-    return float(atr)
-
-# ---- INTERFACE ----
-token = st.selectbox("Choisir un token", list(COINGECKO_IDS.keys()))
-pricesA = get_market_chart(COINGECKO_IDS[token])
-
-if not pricesA or len(pricesA) < 14:
-    st.warning("Pas assez de données pour calculer l'ATR")
-else:
-    atr_value = compute_atr(pricesA, period=14)
-    last_price = pricesA[-1][1]
-    atr_pct = (atr_value / last_price) * 100
-    range_pct = atr_pct * 3
-
-    st.markdown(f"**Dernier prix** : {last_price:.4f} USD")
-    st.markdown(f"**ATR 14** : {atr_value:.4f} ({atr_pct:.2f}%)")
-    st.markdown(f"**Range conseillé (×3)** : {range_pct:.2f}%")
-
 
 # ---- HEADER ----
 st.markdown("""
@@ -192,8 +163,6 @@ if st.session_state.show_disclaimer:
     </div>
     """, unsafe_allow_html=True)
 
-
-
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
@@ -217,7 +186,7 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    # ---- OVERLAY INFO ----
+    # ---- RECAP OVERLAY ----
     st.markdown(f"""
     <div style="
         background-color: #27F5A9;
@@ -256,22 +225,29 @@ with col1:
         priceB_usd = max(priceB_usd, 1e-7)
         priceA = priceA_usd / priceB_usd
 
-    # ---- DONNÉES POUR ATR ----
+    # ---- VOLATILITÉ (nécessaire avant range) ----
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
     pricesA = st.session_state[key]
+    vol_30d = compute_volatility(pricesA)
 
-    # ---- ATR 14 ----
-    atr_value = compute_atr(pricesA, period=14)
-    atr_pct = (atr_value / priceA) * 100
-
-    # ---- RANGE INPUT ----
+    # ---- RANGE ----
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
-    # ---- SUGGESTION DE RANGE BASÉE SUR ATR ----
-    # Range = ATR% × 2 ou ×3 (x3 plus réaliste)
-    suggested_range = atr_pct * 3
+    # ---- SUGGESTION DE RANGE BASÉE SUR VOLATILITÉ ----
+    vol_sugg = vol_30d * 100  # en %
+
+    if vol_sugg < 2:
+        suggested_range = 5
+    elif vol_sugg < 4:
+        suggested_range = 8
+    elif vol_sugg < 7:
+        suggested_range = 12
+    elif vol_sugg < 10:
+        suggested_range = 18
+    else:
+        suggested_range = 25
 
     st.markdown(f"""
     <div style="
@@ -282,19 +258,20 @@ with col1:
         margin-top:6px;
         margin-bottom:10px;
     ">
-    <b>ATR 14 :</b> {atr_value:.4f} ({atr_pct:.2f}%)<br>
-    <b>Range conseillé :</b> {suggested_range:.2f}%
+    <b>💡 Suggestion automatique du range (volatilité 30j)</b><br>
+    <b>Suggestion automatique du range (volatilité 30j)</b><br>
+    Volatilité : <b>{vol_sugg:.2f}%</b><br>
+    Range conseillé : <b>{suggested_range}%</b>
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- RANGE CALCUL ----
+    # ---- CALCUL DU RANGE ----
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
 
 
 # ============================== DROITE ==============================
