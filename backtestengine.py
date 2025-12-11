@@ -232,9 +232,22 @@ with col1:
     priceB_usd = max(priceB_usd, 1e-7)
     priceA = priceA_usd / priceB_usd
 
-    # ================== FONCTIONS VOLATILITÉ ==================
+    # ================== VOLATILITÉ PAIRE ==================
+    keyA = f"{tokenA}_prices_{datetime.date.today()}"
+    keyB = f"{tokenB}_prices_{datetime.date.today()}"
+    if keyA not in st.session_state:
+        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
+    if keyB not in st.session_state:
+        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
+    pricesA = st.session_state[keyA]
+    pricesB = st.session_state[keyB]
+
+    # --- Calcul de la volatilité de la paire jour par jour ---
+    min_len = min(len(pricesA), len(pricesB))
+    pair_prices = np.array([a / b for a, b in zip(pricesA[:min_len], pricesB[:min_len])])
+
     def compute_daily_volatility(prices):
-        """Calcule la volatilité sur les rendements journaliers (%)"""
+        """Volatilité sur les rendements journaliers fractionnels"""
         prices = np.array(prices)
         prices = prices[prices > 0]
         if len(prices) < 2:
@@ -243,29 +256,7 @@ with col1:
         returns = returns[~np.isnan(returns)]
         return float(np.std(returns))
 
-    def get_pair_volatility(tokenA, tokenB):
-        keyA = f"{tokenA}_prices_{datetime.date.today()}"
-        keyB = f"{tokenB}_prices_{datetime.date.today()}"
-        if keyA not in st.session_state:
-            st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
-        if keyB not in st.session_state:
-            st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
-        pricesA = st.session_state[keyA]
-        pricesB = st.session_state[keyB]
-
-        stablecoins = ["USDC", "USDT", "DAI"]
-        if tokenB in stablecoins:
-            return compute_daily_volatility(pricesA)
-        elif tokenA in stablecoins:
-            return compute_daily_volatility(pricesB)
-        else:
-            # vol/vol → max des volatilités journalières
-            volA = compute_daily_volatility(pricesA)
-            volB = compute_daily_volatility(pricesB)
-            return max(volA, volB)
-
-    # ================== CALCUL VOLATILITÉ ==================
-    vol_30d = get_pair_volatility(tokenA, tokenB)
+    vol_30d = compute_daily_volatility(pair_prices)
 
     # ================== SUGGESTION AUTOMATIQUE ==================
     vol_sugg = vol_30d * 100  # %
