@@ -241,7 +241,7 @@ with col1:
     pricesA = np.array(st.session_state[keyA])
     pricesB = np.array(st.session_state[keyB])
 
-    # --- Fonction robuste de calcul de volatilité ---
+    # --- Fonction de calcul de volatilité ---
     def compute_pair_volatility(pricesA, pricesB):
         min_len = min(len(pricesA), len(pricesB))
         pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
@@ -256,9 +256,9 @@ with col1:
 
     # --- Calcul de la volatilité selon la paire ---
     if selected_pair == "WETH/USDC":
-        vol_30d = compute_volatility(pricesA)  # WETH seule
+        vol_30d = compute_volatility(pricesA)
     elif selected_pair == "CBBTC/USDC":
-        vol_30d = compute_volatility(pricesA)  # CBBTC seule
+        vol_30d = compute_volatility(pricesA)
     elif selected_pair == "WETH/CBBTC":
         vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
     elif selected_pair == "VIRTUAL/WETH":
@@ -308,15 +308,12 @@ with col1:
         suggested_range *= 3
         vol_sugg_display = vol_sugg * 3
 
-    # --- FORCE le number_input à utiliser suggested_range ---
-    st.session_state["range_pct"] = float(suggested_range)
-
-    # --- INPUT RANGE UTILISÉ POUR LES CALCULS ---
+    # --- INPUT RANGE MANUEL ---
     range_pct = st.number_input(
         "Range (%)",
         min_value=1.0,
         max_value=200.0,
-        value=st.session_state["range_pct"],
+        value=50.0,
         key="range_pct"
     )
 
