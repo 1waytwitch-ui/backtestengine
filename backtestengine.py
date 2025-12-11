@@ -470,8 +470,6 @@ with col_range:
     high_offset_pct = range_percent * ratio_high / 100
     final_low = priceA * (1 + low_offset_pct/100)
     final_high = priceA * (1 + high_offset_pct/100)
-    if invert_market:
-        final_low, final_high = final_high, final_low
     st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
 
 with col_time:
