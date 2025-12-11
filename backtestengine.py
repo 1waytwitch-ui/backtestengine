@@ -252,15 +252,15 @@ with col1:
     vol_sugg = vol_30d * 100  # %
 
     if vol_sugg < 2:
-        suggested_range = 5
+        suggested_range = 3
     elif vol_sugg < 4:
-        suggested_range = 8
+        suggested_range = 7
     elif vol_sugg < 7:
-        suggested_range = 12
+        suggested_range = 10
     elif vol_sugg < 10:
-        suggested_range = 18
+        suggested_range = 16
     else:
-        suggested_range = 25
+        suggested_range = 20
 
     # Multiplicateur ×3
     suggested_range *= 3
