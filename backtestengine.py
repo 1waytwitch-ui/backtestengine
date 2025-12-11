@@ -232,38 +232,27 @@ with col1:
     priceB_usd = max(priceB_usd, 1e-7)
     priceA = priceA_usd / priceB_usd
 
-    # ================== VOLATILITÉ PAIR ==================
-    def get_pair_volatility(tokenA, tokenB):
-        keyA = f"{tokenA}_prices_{datetime.date.today()}"
-        keyB = f"{tokenB}_prices_{datetime.date.today()}"
-        if keyA not in st.session_state:
-            st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
-        if keyB not in st.session_state:
-            st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
-        pricesA = np.array(st.session_state[keyA])
-        pricesB = np.array(st.session_state[keyB])
+    # ================== VOLATILITÉ PAIR A/B ==================
+    keyA = f"{tokenA}_prices_{datetime.date.today()}"
+    keyB = f"{tokenB}_prices_{datetime.date.today()}"
+    if keyA not in st.session_state:
+        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
+    if keyB not in st.session_state:
+        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
 
-        # Nettoyage des prix
-        pricesA = pricesA[pricesA > 0]
-        pricesB = pricesB[pricesB > 0]
+    pricesA = st.session_state[keyA]
+    pricesB = st.session_state[keyB]
 
-        stablecoins = ["USDC", "USDT", "DAI"]
-        if tokenB in stablecoins:
-            return compute_volatility(pricesA)
-        elif tokenA in stablecoins:
-            return compute_volatility(pricesB)
-        else:
-            # Vol/vol → max des volatilités individuelles
-            volA = compute_volatility(pricesA)
-            volB = compute_volatility(pricesB)
-            return max(volA, volB)
-
-    vol_30d = get_pair_volatility(tokenA, tokenB)
+    # --- Calcul du ratio A/B pour chaque jour ---
+    min_len = min(len(pricesA), len(pricesB))
+    pair_prices = [a / b for a, b in zip(pricesA[:min_len], pricesB[:min_len])]
+    vol_30d = compute_volatility(pair_prices)   # fraction, ex: 0.05
 
     # ================= SUGGESTION AUTO =================
     vol_sugg = vol_30d * 100  # %
+
     if vol_sugg < 2:
-        suggested_range = 3
+        suggested_range = 4
     elif vol_sugg < 4:
         suggested_range = 7
     elif vol_sugg < 7:
@@ -301,7 +290,7 @@ with col1:
     ">
     <b>Suggestion du range</b><br>
     Volatilité : <b>{vol_sugg_display:.2f}%</b><br>
-    Range optimal : <b>{suggested_range}%</b>
+    Range conseillé : <b>{suggested_range}%</b>
     </div>
     """, unsafe_allow_html=True)
 
@@ -313,7 +302,6 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
 
 
 # ============================== DROITE ==============================
