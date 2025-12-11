@@ -496,32 +496,6 @@ with col_time:
         recomand = "60 minutes et plus"
     st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-# ---- Rebalance avancée (futur range fixe) ----
-col_rebalance = st.container()
-with col_rebalance:
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-top:25px;
-        margin-bottom:15px;
-    ">
-        <h3>Rebalance avancée (futur range)</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Calcul unique du range futur, indépendant du marché
-    off_low_pct  = -ratioA * range_percent
-    off_high_pct =  ratioB * range_percent
-    range_low  = priceA * (1 + off_low_pct / 100)
-    range_high = priceA * (1 + off_high_pct / 100)
-
-    # Affichage fixe
-    st.write(f"Range Low : {range_low:.6f} ({off_low_pct:.0f}%)")
-    st.write(f"Range High : {range_high:.6f} (+{off_high_pct:.0f}%)")
-
 # ---- Trigger d’anticipation / Rebalance avancée ----
 col_trigger, col_rebalance = st.columns(2)
 
@@ -565,24 +539,24 @@ with col_rebalance:
     </div>
     """, unsafe_allow_html=True)
 
-    global_range = range_percent
-    off_low_pct  = -ratioA * global_range
-    off_high_pct =  ratioB * global_range
-    bear_low  = priceA * (1 + off_low_pct / 100)
-    bear_high = priceA * (1 + off_high_pct / 100)
-    bull_low  = priceA * (1 - off_high_pct / 100)
-    bull_high = priceA * (1 - off_low_pct / 100)
+    # Calcul du range fixe, **indépendant du marché**
+    off_low_pct  = -ratioA * range_percent
+    off_high_pct =  ratioB * range_percent
+    range_low  = priceA * (1 + off_low_pct / 100)
+    range_high = priceA * (1 + off_high_pct / 100)
 
+    # Affichage identique pour les deux colonnes
     col_b1, col_b2 = st.columns(2)
     with col_b1:
         st.markdown("**Marché Baissier (Dump)**")
-        st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
-        st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
+        st.write(f"Range Low : {range_low:.6f} ({off_low_pct:.0f}%)")
+        st.write(f"Range High : {range_high:.6f} (+{off_high_pct:.0f}%)")
 
     with col_b2:
         st.markdown("**Marché Haussier (Pump)**")
-        st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
-        st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
+        st.write(f"Range Low : {range_low:.6f} ({off_low_pct:.0f}%)")
+        st.write(f"Range High : {range_high:.6f} (+{off_high_pct:.0f}%)")
+
 
 # --- Fonctions de calcul ---
 def compute_L(P, P_l, P_u, V):
