@@ -259,7 +259,11 @@ with col1:
         vol_30d = compute_volatility(pricesA)  # WETH seule
     elif selected_pair == "CBBTC/USDC":
         vol_30d = compute_volatility(pricesA)  # CBBTC seule
-    elif selected_pair in ["WETH/CBBTC", "VIRTUAL/WETH", "AERO/WETH"]:
+    elif selected_pair == "WETH/CBBTC":
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+    elif selected_pair == "VIRTUAL/WETH":
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+    elif selected_pair == "AERO/WETH":
         vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
     else:
         vol_30d = compute_pair_volatility(pricesA, pricesB)
@@ -268,7 +272,9 @@ with col1:
     if vol_30d == 0:
         if selected_pair == "CBBTC/USDC":
             vol_30d = 0.12
-        elif selected_pair in ["VIRTUAL/WETH", "AERO/WETH"]:
+        elif selected_pair == "VIRTUAL/WETH":
+            vol_30d = 0.45
+        elif selected_pair == "AERO/WETH":
             vol_30d = 0.45
 
     # ================== SUGGESTION AUTOMATIQUE ==================
@@ -286,22 +292,21 @@ with col1:
         suggested_range = 20
 
     # --- MULTIPLICATEURS SELON PAIRE ---
-if selected_pair == "CBBTC/USDC":
-    suggested_range *= 1.3
-    vol_sugg_display = vol_sugg
-elif selected_pair == "VIRTUAL/WETH":
-    suggested_range *= 3.2  # multiplicateur spécifique pour VIRTUAL/WETH
-    vol_sugg_display = vol_sugg * 3.2
-elif selected_pair == "AERO/WETH":
-    suggested_range *= 3  # multiplicateur spécifique pour AERO/WETH
-    vol_sugg_display = vol_sugg * 2
-elif selected_pair == "WETH/USDC":
-    suggested_range *= 3  # multiplicateur pour WETH/USDC
-    vol_sugg_display = vol_sugg
-else:
-    suggested_range *= 3
-    vol_sugg_display = vol_sugg * 3
-
+    if selected_pair == "CBBTC/USDC":
+        suggested_range *= 1.3
+        vol_sugg_display = vol_sugg
+    elif selected_pair == "VIRTUAL/WETH":
+        suggested_range *= 3.2
+        vol_sugg_display = vol_sugg * 3.2
+    elif selected_pair == "AERO/WETH":
+        suggested_range *= 2
+        vol_sugg_display = vol_sugg * 2
+    elif selected_pair == "WETH/USDC":
+        suggested_range *= 3
+        vol_sugg_display = vol_sugg
+    else:
+        suggested_range *= 3
+        vol_sugg_display = vol_sugg * 3
 
     # --- FORCE le number_input à utiliser suggested_range ---
     st.session_state["range_pct"] = float(suggested_range)
