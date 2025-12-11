@@ -287,13 +287,13 @@ with col1:
     """, unsafe_allow_html=True)
 
     # ================= CALCUL FINAL RANGE ===============
-    range_low = priceA * (1 - ratioA * range_pct / 100)
-    range_high = priceA * (1 + ratioB * range_pct / 100)
+range_low = priceA * (1 - ratioA * range_pct / 100)
+range_high = priceA * (1 + ratioB * range_pct / 100)
 
-    if invert_market:
-        range_low, range_high = range_high, range_low)
+if invert_market:
+    range_low, range_high = range_high, range_low
 
-    capitalA, capitalB = capital * ratioA, capital * ratioB
+capitalA, capitalB = capital * ratioA, capital * ratioB
 
 
 
