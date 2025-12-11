@@ -184,8 +184,9 @@ with col1:
         "last_pair" not in st.session_state
         or st.session_state["last_pair"] != selected_pair
     ):
+        # Suppression des caches de prix pour tous les tokens
         for k in list(st.session_state.keys()):
-            if "prices_" in k:
+            if k.endswith("_prices_" + str(datetime.date.today())):
                 del st.session_state[k]
         st.session_state["last_pair"] = selected_pair
 
@@ -217,39 +218,38 @@ with col1:
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
     # ================== PRIX TOKEN ==================
-    if tokenB == "USDC":
-        priceA_usd, okA = get_price_usd(tokenA)
+    priceA_usd, okA = get_price_usd(tokenA)
+    priceB_usd, okB = get_price_usd(tokenB)
+
+    la, lb = st.columns(2)
+    with la:
         if not okA:
             priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
+    with lb:
+        if not okB:
+            priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
 
-        priceA = priceA_usd
-        okB = True
+    priceB_usd = max(priceB_usd, 1e-7)
+    priceA = priceA_usd / priceB_usd
 
-    else:
-        priceA_usd, okA = get_price_usd(tokenA)
-        priceB_usd, okB = get_price_usd(tokenB)
+    # ================== VOLATILITÉ PAIR A/B ==================
+    keyA = f"{tokenA}_prices_{datetime.date.today()}"
+    keyB = f"{tokenB}_prices_{datetime.date.today()}"
+    if keyA not in st.session_state:
+        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
+    if keyB not in st.session_state:
+        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
 
-        la, lb = st.columns(2)
-        with la:
-            if not okA:
-                priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
-        with lb:
-            if not okB:
-                priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
+    pricesA = st.session_state[keyA]
+    pricesB = st.session_state[keyB]
 
-        priceB_usd = max(priceB_usd, 1e-7)
-        priceA = priceA_usd / priceB_usd
-
-    # ================== VOLATILITÉ ==================
-    key = f"{tokenA}_prices_{datetime.date.today()}"
-    if key not in st.session_state:
-        st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
-
-    pricesA = st.session_state[key]
-    vol_30d = compute_volatility(pricesA)   # ex: 0.05
+    # --- Calcul du ratio A/B pour chaque jour ---
+    min_len = min(len(pricesA), len(pricesB))
+    pair_prices = [a / b for a, b in zip(pricesA[:min_len], pricesB[:min_len])]
+    vol_30d = compute_volatility(pair_prices)   # fraction, ex: 0.05
 
     # ================= SUGGESTION AUTO =================
-    vol_sugg = vol_30d * 100  # en %
+    vol_sugg = vol_30d * 100  # %
 
     if vol_sugg < 2:
         suggested_range = 5
@@ -262,7 +262,7 @@ with col1:
     else:
         suggested_range = 25
 
-    # Multiplicateur x3
+    # Multiplicateur ×3
     suggested_range *= 3
     vol_sugg_display = vol_sugg * 3
 
@@ -301,9 +301,6 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
-
-
 
 # ============================== DROITE ==============================
 with col2:
