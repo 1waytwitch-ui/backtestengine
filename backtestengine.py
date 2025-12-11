@@ -299,7 +299,7 @@ with col1:
         suggested_range *= 6.2
         vol_sugg_display = vol_sugg * 3.2
     elif selected_pair == "AERO/WETH":
-        suggested_range *= 6
+        suggested_range *= 6.5
         vol_sugg_display = vol_sugg * 2
     elif selected_pair == "WETH/USDC":
         suggested_range *= 3
