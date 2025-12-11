@@ -303,7 +303,7 @@ with col1:
         vol_sugg_display = vol_sugg * 2
     elif selected_pair == "WETH/USDC":
         suggested_range *= 3
-        vol_sugg_display = vol_sugg
+        vol_sugg_display = vol_sugg * 3
     else:
         suggested_range *= 3
         vol_sugg_display = vol_sugg * 3
