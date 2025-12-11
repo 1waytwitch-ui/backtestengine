@@ -232,27 +232,35 @@ with col1:
     priceB_usd = max(priceB_usd, 1e-7)
     priceA = priceA_usd / priceB_usd
 
-    # ================== VOLATILITÉ PAIR A/B ==================
-    keyA = f"{tokenA}_prices_{datetime.date.today()}"
-    keyB = f"{tokenB}_prices_{datetime.date.today()}"
-    if keyA not in st.session_state:
-        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
-    if keyB not in st.session_state:
-        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
+    # ================== FONCTION VOLATILITÉ ==================
+    def get_pair_volatility(tokenA, tokenB):
+        keyA = f"{tokenA}_prices_{datetime.date.today()}"
+        keyB = f"{tokenB}_prices_{datetime.date.today()}"
+        if keyA not in st.session_state:
+            st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
+        if keyB not in st.session_state:
+            st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
+        pricesA = np.array(st.session_state[keyA])
+        pricesB = np.array(st.session_state[keyB])
 
-    pricesA = st.session_state[keyA]
-    pricesB = st.session_state[keyB]
+        # Remplacer les zéros et NaN
+        pricesA = np.where(pricesA <= 0, np.nan, pricesA)
+        pricesB = np.where(pricesB <= 0, np.nan, pricesB)
+        pricesA = pricesA[~np.isnan(pricesA)]
+        pricesB = pricesB[~np.isnan(pricesB)]
 
-    # --- Calcul volatilité selon type de paire ---
-    stablecoins = ["USDC", "USDT", "DAI"]
-    if tokenB in stablecoins:
-        # Stablecoin → volatilité basée uniquement sur tokenA
-        vol_30d = compute_volatility(pricesA)
-    else:
-        # Paires vol/vol → volatilité du ratio A/B
-        min_len = min(len(pricesA), len(pricesB))
-        pair_prices = [a / b for a, b in zip(pricesA[:min_len], pricesB[:min_len])]
-        vol_30d = compute_volatility(pair_prices)
+        stablecoins = ["USDC", "USDT", "DAI"]
+        if tokenB in stablecoins:
+            return compute_volatility(pricesA)
+        else:
+            min_len = min(len(pricesA), len(pricesB))
+            if min_len < 2:
+                return 0.0
+            ratio_prices = pricesA[:min_len] / pricesB[:min_len]
+            return compute_volatility(ratio_prices)
+
+    # ================== CALCUL VOLATILITÉ ==================
+    vol_30d = get_pair_volatility(tokenA, tokenB)
 
     # ================= SUGGESTION AUTO =================
     vol_sugg = vol_30d * 100  # %
@@ -308,6 +316,7 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 # ============================== DROITE ==============================
 with col2:
