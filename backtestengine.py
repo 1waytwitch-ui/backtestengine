@@ -450,6 +450,11 @@ st.markdown("""
 # ---- Range future / Time-buffer ----
 col_range, col_time = st.columns([2,1])
 
+# ---- Ratios pour trigger/future range ----
+ratioA_trigger, ratioB_trigger = ratioA, ratioB
+if invert_market:
+    ratioA_trigger, ratioB_trigger = ratioB_trigger, ratioA_trigger
+
 with col_range:
     st.markdown("""
     <div style="
@@ -466,9 +471,8 @@ with col_range:
 
     # Slider pour range total
     range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
-    ratio_low, ratio_high = 20, 80
-    low_offset_pct = -range_percent * ratio_low / 100
-    high_offset_pct = range_percent * ratio_high / 100
+    low_offset_pct = -range_percent * 20 / 100
+    high_offset_pct = range_percent * 80 / 100
     final_low = priceA * (1 + low_offset_pct/100)
     final_high = priceA * (1 + high_offset_pct/100)
     st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
@@ -539,27 +543,25 @@ with col_rebalance:
     </div>
     """, unsafe_allow_html=True)
 
-    # **Offsets fixes, indépendants de invert_market**
+    # ---- Calcul du range fixe pour rebalance (toujours basé sur les ratios d’origine) ----
     off_low_pct  = -ratioA * range_percent
     off_high_pct =  ratioB * range_percent
-    range_low  = priceA * (1 + off_low_pct / 100)
-    range_high = priceA * (1 + off_high_pct / 100)
+
+    bear_low  = priceA * (1 + off_low_pct / 100)
+    bear_high = priceA * (1 + off_high_pct / 100)
+    bull_low  = priceA * (1 - off_high_pct / 100)
+    bull_high = priceA * (1 - off_low_pct / 100)
 
     col_b1, col_b2 = st.columns(2)
-
-    # Marché Baissier (Dump)
     with col_b1:
         st.markdown("**Marché Baissier (Dump)**")
-        st.write(f"Range Low : {range_low:.6f} ({off_low_pct:.0f}%)")
-        st.write(f"Range High : {range_high:.6f} (+{off_high_pct:.0f}%)")
+        st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
+        st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
 
-    # Marché Haussier (Pump) → inverser les offsets
     with col_b2:
         st.markdown("**Marché Haussier (Pump)**")
-        range_low_bull  = priceA * (1 - off_high_pct / 100)
-        range_high_bull = priceA * (1 - off_low_pct / 100)
-        st.write(f"Range Low : {range_low_bull:.6f} ({-off_high_pct:.0f}%)")
-        st.write(f"Range High : {range_high_bull:.6f} (+{-off_low_pct:.0f}%)")
+        st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
+        st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
 
 
 # --- Fonctions de calcul ---
