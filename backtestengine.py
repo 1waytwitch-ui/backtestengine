@@ -178,6 +178,18 @@ with col1:
     with right:
         strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
+    # --- RESET VOLATILITY CACHE WHEN PAIR CHANGES ---
+    if (
+        "last_pair" not in st.session_state
+        or st.session_state["last_pair"] != selected_pair
+    ):
+        # remove old cached prices
+        for k in list(st.session_state.keys()):
+            if "prices_" in k:
+                del st.session_state[k]
+
+        st.session_state["last_pair"] = selected_pair
+
     tokenA, tokenB = selected_pair.split("/")
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
@@ -210,6 +222,7 @@ with col1:
             priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
         priceA = priceA_usd
         okB = True
+
     else:
         priceA_usd, okA = get_price_usd(tokenA)
         priceB_usd, okB = get_price_usd(tokenB)
@@ -229,15 +242,15 @@ with col1:
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
+
     pricesA = st.session_state[key]
     vol_30d = compute_volatility(pricesA)
 
-    # ---- RANGE (%) ----
+    # ---- RANGE INPUT ----
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
-    # ---- SUGGESTION AUTO RANGE (basée sur vol 30j) ----
-    vol_sugg = vol_30d * 100  # en %
-
+    # ---- AUTO RANGE SUGGESTION ----
+    vol_sugg = vol_30d * 100  # %
     if vol_sugg < 2:
         suggested_range = 5
     elif vol_sugg < 4:
@@ -249,7 +262,7 @@ with col1:
     else:
         suggested_range = 25
 
-    # Multiplicateur ×3 appliqué
+    # Apply ×3 as requested
     suggested_range *= 3
 
     st.markdown(f"""
@@ -267,9 +280,10 @@ with col1:
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- CALCUL DU RANGE RÉEL ----
+    # ---- CALCUL RANGE ----
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
+
     if invert_market:
         range_low, range_high = range_high, range_low
 
