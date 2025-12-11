@@ -257,7 +257,16 @@ with col1:
         returns = returns[~np.isnan(returns)]
         return float(np.std(returns)) if len(returns) > 0 else 0.0
 
-    vol_30d = compute_pair_volatility(pricesA, pricesB)
+    # --- Calcul de la volatilité en fonction de la paire ---
+    if selected_pair == "CBBTC/USDC":
+        # Volatilité du token seul
+        vol_30d = compute_volatility(pricesA)  # CBBTC
+    elif selected_pair in ["WETH/CBBTC", "VIRTUAL/WETH", "AERO/WETH"]:
+        # Diviser par 2 pour correspondre à la volatilité relative
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+    else:
+        # WETH/USDC ou autres
+        vol_30d = compute_pair_volatility(pricesA, pricesB)
 
     # ================== SUGGESTION AUTOMATIQUE ==================
     vol_sugg = vol_30d * 100  # %
@@ -302,7 +311,7 @@ with col1:
     Volatilité : <b>{vol_sugg_display:.2f}%</b><br>
     Range optimal : <b>{suggested_range}%</b>
     </div>
-    """, unsafe_allow_html=True)
+    """ , unsafe_allow_html=True)
 
     # ================= CALCUL FINAL RANGE ===============
     range_low = priceA * (1 - ratioA * range_pct / 100)
@@ -312,7 +321,6 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
 
 
 # ============================== DROITE ==============================
