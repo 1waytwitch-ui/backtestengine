@@ -313,7 +313,7 @@ with col1:
         "Range (%)",
         min_value=1.0,
         max_value=200.0,
-        value=50.0,
+        value=20.0,
         key="range_pct"
     )
 
