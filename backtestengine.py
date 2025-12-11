@@ -184,7 +184,6 @@ with col1:
         "last_pair" not in st.session_state
         or st.session_state["last_pair"] != selected_pair
     ):
-        # Suppression des caches de prix pour tous les tokens
         for k in list(st.session_state.keys()):
             if k.endswith("_prices_" + str(datetime.date.today())):
                 del st.session_state[k]
@@ -286,12 +285,18 @@ with col1:
     else:
         suggested_range = 20
 
-    # --- MULTIPLICATEUR ×3 sauf pour CBBTC/USDC ---
-    if selected_pair != "CBBTC/USDC":
+    # --- MULTIPLICATEURS SELON PAIRE ---
+    if selected_pair == "CBBTC/USDC":
+        suggested_range *= 1.3
+        vol_sugg_display = vol_sugg
+    elif selected_pair in ["VIRTUAL/WETH", "AERO/WETH"]:
+        suggested_range *= 3 * 2  # ancien multiplicateur ×3 + nouveau ×2
+        vol_sugg_display = vol_sugg * 3
+    elif selected_pair == "WETH/USDC":
+        vol_sugg_display = vol_sugg
+    else:
         suggested_range *= 3
         vol_sugg_display = vol_sugg * 3
-    else:
-        vol_sugg_display = vol_sugg
 
     # --- FORCE le number_input à utiliser suggested_range ---
     st.session_state["range_pct"] = float(suggested_range)
@@ -317,7 +322,7 @@ with col1:
     ">
     <b>Suggestion du range</b><br>
     Volatilité : <b>{vol_sugg_display:.2f}%</b><br>
-    Range optimal : <b>{suggested_range}%</b>
+    Range optimal : <b>{suggested_range:.2f}%</b>
     </div>
     """, unsafe_allow_html=True)
 
@@ -329,8 +334,6 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
-
 
 # ============================== DROITE ==============================
 with col2:
