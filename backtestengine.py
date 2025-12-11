@@ -225,45 +225,52 @@ with col1:
         priceB_usd = max(priceB_usd, 1e-7)
         priceA = priceA_usd / priceB_usd
 
+    # ---- VOLATILITÉ (nécessaire avant range) ----
+    key = f"{tokenA}_prices_{datetime.date.today()}"
+    if key not in st.session_state:
+        st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
+    pricesA = st.session_state[key]
+    vol_30d = compute_volatility(pricesA)
+
     # ---- RANGE ----
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
-# --- SUGGESTION DE RANGE ---
-vol_sugg = vol_30d * 100  # en %
+    # ---- SUGGESTION DE RANGE BASÉE SUR VOLATILITÉ ----
+    vol_sugg = vol_30d * 100  # en %
 
-if vol_sugg < 2:
-    suggested_range = 5
-elif vol_sugg < 4:
-    suggested_range = 8
-elif vol_sugg < 7:
-    suggested_range = 12
-elif vol_sugg < 10:
-    suggested_range = 18
-else:
-    suggested_range = 25
+    if vol_sugg < 2:
+        suggested_range = 5
+    elif vol_sugg < 4:
+        suggested_range = 8
+    elif vol_sugg < 7:
+        suggested_range = 12
+    elif vol_sugg < 10:
+        suggested_range = 18
+    else:
+        suggested_range = 25
 
-st.markdown(f"""
-<div style="
-    background-color:#F0F8FF;
-    border-left:6px solid #4682B4;
-    padding:12px 18px;
-    border-radius:8px;
-    margin-top:8px;
-    margin-bottom:8px;
-">
-<b>Suggestion de range basée sur la volatilité (30j)</b><br>
-Volatilité : <b>{vol_sugg:.2f}%</b><br>
-Range recommandé : <b>{suggested_range}%</b>
-</div>
-""", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="
+        background-color:#F0F8FF;
+        border-left:6px solid #4682B4;
+        padding:12px 18px;
+        border-radius:8px;
+        margin-top:6px;
+        margin-bottom:10px;
+    ">
+    <b>💡 Suggestion automatique du range (volatilité 30j)</b><br>
+    Volatilité : <b>{vol_sugg:.2f}%</b><br>
+    Range conseillé : <b>{suggested_range}%</b>
+    </div>
+    """, unsafe_allow_html=True)
 
-range_low = priceA * (1 - ratioA * range_pct / 100)
-range_high = priceA * (1 + ratioB * range_pct / 100)
+    # ---- CALCUL DU RANGE ----
+    range_low = priceA * (1 - ratioA * range_pct / 100)
+    range_high = priceA * (1 + ratioB * range_pct / 100)
+    if invert_market:
+        range_low, range_high = range_high, range_low
 
-if invert_market:
-    range_low, range_high = range_high, range_low
-
-capitalA, capitalB = capital * ratioA, capital * ratioB
+    capitalA, capitalB = capital * ratioA, capital * ratioB
 
 
 # ============================== DROITE ==============================
