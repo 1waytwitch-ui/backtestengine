@@ -296,10 +296,10 @@ with col1:
         suggested_range *= 1.3
         vol_sugg_display = vol_sugg
     elif selected_pair == "VIRTUAL/WETH":
-        suggested_range *= 3.2
+        suggested_range *= 6.2
         vol_sugg_display = vol_sugg * 3.2
     elif selected_pair == "AERO/WETH":
-        suggested_range *= 2
+        suggested_range *= 6
         vol_sugg_display = vol_sugg * 2
     elif selected_pair == "WETH/USDC":
         suggested_range *= 3
