@@ -251,13 +251,13 @@ with col1:
 
         stablecoins = ["USDC", "USDT", "DAI"]
         if tokenB in stablecoins:
+            # Stablecoin → volatilité de tokenA seulement
             return compute_volatility(pricesA)
         else:
-            min_len = min(len(pricesA), len(pricesB))
-            if min_len < 2:
-                return 0.0
-            ratio_prices = pricesA[:min_len] / pricesB[:min_len]
-            return compute_volatility(ratio_prices)
+            # vol/vol → max vol individuelle
+            volA = compute_volatility(pricesA)
+            volB = compute_volatility(pricesB)
+            return max(volA, volB)
 
     # ================== CALCUL VOLATILITÉ ==================
     vol_30d = get_pair_volatility(tokenA, tokenB)
