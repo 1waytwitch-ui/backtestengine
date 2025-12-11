@@ -286,18 +286,14 @@ with col1:
         suggested_range = 20
 
     # --- MULTIPLICATEURS SELON PAIRE ---
-    if selected_pair == "WETH/USDC":
-        suggested_range *= 3
+    if selected_pair == "CBBTC/USDC":
+        suggested_range *= 1.3
         vol_sugg_display = vol_sugg
-    elif selected_pair == "CBBTC/USDC":
-        suggested_range *= 1.2
+    elif selected_pair in ["VIRTUAL/WETH", "AERO/WETH"]:
+        suggested_range *= 3 * 2  # ancien multiplicateur ×3 + nouveau ×2
+        vol_sugg_display = vol_sugg * 3
+    elif selected_pair == "WETH/USDC":
         vol_sugg_display = vol_sugg
-    elif selected_pair == "VIRTUAL/WETH":
-        suggested_range *= 3.2  # multiplicateur total ×3.2
-        vol_sugg_display = vol_sugg * 3
-    elif selected_pair == "AERO/WETH":
-        suggested_range *= 2
-        vol_sugg_display = vol_sugg * 3
     else:
         suggested_range *= 3
         vol_sugg_display = vol_sugg * 3
@@ -338,6 +334,7 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 
 # ============================== DROITE ==============================
