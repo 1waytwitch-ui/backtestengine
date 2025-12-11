@@ -102,16 +102,13 @@ def get_price_usd(token):
 
 # ------------------------------- ATR
 def compute_atr(prices, period=14):
-    import pandas as pd
-    import numpy as np
-
-    # prices est de la forme [[timestamp, price], ...]
+    """Calcule l'ATR à partir d'une liste de [timestamp, price]"""
     df = pd.DataFrame(prices, columns=["time", "price"])
     df["price"] = df["price"].astype(float)
 
-    # On simule high et low car on a que le prix close
+    # Simule high et low car on a que le prix close
     df["high"] = df["price"] * 1.001
-    df["low"]  = df["price"] * 0.999
+    df["low"] = df["price"] * 0.999
     df["close"] = df["price"]
 
     df["prev_close"] = df["close"].shift(1)
@@ -120,7 +117,7 @@ def compute_atr(prices, period=14):
     df["tr"] = df.apply(lambda row: max(
         row["high"] - row["low"],
         abs(row["high"] - row["prev_close"]),
-        abs(row["low"]  - row["prev_close"])
+        abs(row["low"] - row["prev_close"])
     ), axis=1)
 
     # ATR : moyenne glissante des True Range
@@ -128,22 +125,21 @@ def compute_atr(prices, period=14):
 
     return float(atr)
 
-# --- Partie dans la fonction principale ou le main ---
+# ------------------- EXEMPLE D'UTILISATION -------------------
 
-# Supposons que pricesA soit une liste de [timestamp, price] par exemple :
-# pricesA = [[timestamp1, price1], [timestamp2, price2], ...]
+token = "weth"  # Exemple, adapte selon ton token
+pricesA = get_prices_with_timestamps(token)
 
-atr_value = compute_atr(pricesA, period=14)  # ATR en valeur absolue
-last_price = pricesA[-1][1]                   # Dernier prix (close)
+if len(pricesA) < 14:
+    st.warning("Pas assez de données pour calculer l'ATR")
+else:
+    atr_value = compute_atr(pricesA, period=14)
+    last_price = pricesA[-1][1]
+    atr_pct = (atr_value / last_price) * 100
+    range_pct = atr_pct * 3  # suggestion ×3 du range conseillé
 
-# Calcul de l'ATR en pourcentage du dernier prix
-atr_pct = (atr_value / last_price) * 100
-
-# Calcul du range conseillé (exemple ×3)
-range_pct = atr_pct * 3
-
-print(f"ATR 14 : {atr_value:.4f} ({atr_pct:.2f}%)")
-print(f"Range conseillé : {range_pct:.2f}%")
+    st.markdown(f"**ATR 14** : {atr_value:.4f} ({atr_pct:.2f}%)")
+    st.markdown(f"**Range conseillé** : {range_pct:.2f}%")
 
 
 
