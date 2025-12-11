@@ -227,6 +227,37 @@ with col1:
 
     # ---- RANGE ----
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
+
+# --- SUGGESTION DE RANGE ---
+# Calcul de la volatilité 30j
+vol_sugg = vol_30d * 100  # en %
+
+if vol_sugg < 2:
+    suggested_range = 5
+elif vol_sugg < 4:
+    suggested_range = 8
+elif vol_sugg < 7:
+    suggested_range = 12
+elif vol_sugg < 10:
+    suggested_range = 18
+else:
+    suggested_range = 25
+
+st.markdown(f"""
+<div style="
+    background-color:#F0F8FF;
+    border-left:6px solid #4682B4;
+    padding:12px 18px;
+    border-radius:8px;
+    margin-top:8px;
+    margin-bottom:8px;
+">
+<b>Suggestion automatique du range</b><br>
+Volatilité 30j : <b>{vol_sugg:.2f}%</b><br>
+Range recommandé : <b>{suggested_range}%</b>
+</div>
+""", unsafe_allow_html=True)
+    
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
