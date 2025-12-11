@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
 
+
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
 # ---- STYLES GÉNÉRAUX ----
@@ -98,6 +99,54 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
+# ------------------------------- ATR
+def compute_atr(prices, period=14):
+    import pandas as pd
+    import numpy as np
+
+    df = pd.DataFrame(prices, columns=["time", "price"])
+    df["price"] = df["price"].astype(float)
+    df["high"] = df["price"] * 1.001
+    df["low"]  = df["price"] * 0.999
+    df["close"] = df["price"]
+    df["prev_close"] = df["close"].shift(1)
+
+    df["tr"] = df.apply(lambda row: max(
+        row["high"] - row["low"],
+        abs(row["high"] - row["prev_close"]),
+        abs(row["low"]  - row["prev_close"])
+    ), axis=1)
+
+    atr = df["tr"].rolling(period).mean().iloc[-1]
+    return float(atr)
+
+
+def compute_atr_range(price, atr_value, multiplier=3):
+    atr_pct = (atr_value / price) * 100
+    range_low = price * (1 - atr_pct * multiplier / 100)
+    range_high = price * (1 + atr_pct * multiplier / 100)
+    return range_low, range_high, atr_pct, atr_pct * multiplier
+
+
+
+def add_atr_to_compute(pricesA):
+    priceA = pricesA[-1][1]  
+
+    atr_value = compute_atr(pricesA, period=14)
+    range_low, range_high, atr_pct, suggested_range_pct = compute_atr_range(priceA, atr_value, multiplier=3)
+
+    print(f"[ATR] Prix: {priceA}, ATR: {atr_value:.4f} ({atr_pct:.2f}%), Range ×3 ATR: {suggested_range_pct:.2f}%")
+    print(f"[ATR] Range Low: {range_low:.2f}, Range High: {range_high:.2f}")
+
+    return {
+        "atr": atr_value,
+        "atr_pct": atr_pct,
+        "range_low": range_low,
+        "range_high": range_high,
+        "range_pct": suggested_range_pct
+    }
+
+
 # ---- HEADER ----
 st.markdown("""
 <style>
@@ -163,6 +212,8 @@ if st.session_state.show_disclaimer:
     </div>
     """, unsafe_allow_html=True)
 
+
+
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
@@ -186,7 +237,7 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    # ---- RECAP OVERLAY ----
+    # ---- OVERLAY INFO ----
     st.markdown(f"""
     <div style="
         background-color: #27F5A9;
@@ -225,29 +276,22 @@ with col1:
         priceB_usd = max(priceB_usd, 1e-7)
         priceA = priceA_usd / priceB_usd
 
-    # ---- VOLATILITÉ (nécessaire avant range) ----
+    # ---- DONNÉES POUR ATR ----
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
     pricesA = st.session_state[key]
-    vol_30d = compute_volatility(pricesA)
 
-    # ---- RANGE ----
+    # ---- ATR 14 ----
+    atr_value = compute_atr(pricesA, period=14)
+    atr_pct = (atr_value / priceA) * 100
+
+    # ---- RANGE INPUT ----
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
-    # ---- SUGGESTION DE RANGE BASÉE SUR VOLATILITÉ ----
-    vol_sugg = vol_30d * 100  # en %
-
-    if vol_sugg < 2:
-        suggested_range = 5
-    elif vol_sugg < 4:
-        suggested_range = 8
-    elif vol_sugg < 7:
-        suggested_range = 12
-    elif vol_sugg < 10:
-        suggested_range = 18
-    else:
-        suggested_range = 25
+    # ---- SUGGESTION DE RANGE BASÉE SUR ATR ----
+    # Range = ATR% × 2 ou ×3 (x3 plus réaliste)
+    suggested_range = atr_pct * 3
 
     st.markdown(f"""
     <div style="
@@ -258,19 +302,19 @@ with col1:
         margin-top:6px;
         margin-bottom:10px;
     ">
-    <b>Suggestion automatique du range (volatilité 30j)</b><br>
-    Volatilité : <b>{vol_sugg:.2f}%</b><br>
-    Range conseillé : <b>{suggested_range}%</b>
+    <b>ATR 14 :</b> {atr_value:.4f} ({atr_pct:.2f}%)<br>
+    <b>Range conseillé :</b> {suggested_range:.2f}%
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- CALCUL DU RANGE ----
+    # ---- RANGE CALCUL ----
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 
 # ============================== DROITE ==============================
