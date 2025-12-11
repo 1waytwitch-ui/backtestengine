@@ -251,15 +251,15 @@ st.markdown(f"""
     margin-top:8px;
     margin-bottom:8px;
 ">
-<b>Suggestion automatique du range basé sur la volatilité</b><br>
-Volatilité 30j : <b>{vol_sugg:.2f}%</b><br>
+<b>💡 Suggestion de range basée sur la volatilité (30j)</b><br>
+Volatilité : <b>{vol_sugg:.2f}%</b><br>
 Range recommandé : <b>{suggested_range}%</b>
 </div>
 """, unsafe_allow_html=True)
 
-    
-    range_low = priceA * (1 - ratioA * range_pct / 100)
-    range_high = priceA * (1 + ratioB * range_pct / 100)
+range_low = priceA * (1 - ratioA * range_pct / 100)
+range_high = priceA * (1 + ratioB * range_pct / 100)
+
     if invert_market:
         range_low, range_high = range_high, range_low
 
