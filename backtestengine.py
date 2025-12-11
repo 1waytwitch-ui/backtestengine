@@ -232,7 +232,7 @@ with col1:
     priceB_usd = max(priceB_usd, 1e-7)
     priceA = priceA_usd / priceB_usd
 
-    # ================== FONCTION VOLATILITÉ ==================
+    # ================== VOLATILITÉ PAIR ==================
     def get_pair_volatility(tokenA, tokenB):
         keyA = f"{tokenA}_prices_{datetime.date.today()}"
         keyB = f"{tokenB}_prices_{datetime.date.today()}"
@@ -243,28 +243,25 @@ with col1:
         pricesA = np.array(st.session_state[keyA])
         pricesB = np.array(st.session_state[keyB])
 
-        # Remplacer les zéros et NaN
-        pricesA = np.where(pricesA <= 0, np.nan, pricesA)
-        pricesB = np.where(pricesB <= 0, np.nan, pricesB)
-        pricesA = pricesA[~np.isnan(pricesA)]
-        pricesB = pricesB[~np.isnan(pricesB)]
+        # Nettoyage des prix
+        pricesA = pricesA[pricesA > 0]
+        pricesB = pricesB[pricesB > 0]
 
         stablecoins = ["USDC", "USDT", "DAI"]
         if tokenB in stablecoins:
-            # Stablecoin → volatilité de tokenA seulement
             return compute_volatility(pricesA)
+        elif tokenA in stablecoins:
+            return compute_volatility(pricesB)
         else:
-            # vol/vol → max vol individuelle
+            # Vol/vol → max des volatilités individuelles
             volA = compute_volatility(pricesA)
             volB = compute_volatility(pricesB)
             return max(volA, volB)
 
-    # ================== CALCUL VOLATILITÉ ==================
     vol_30d = get_pair_volatility(tokenA, tokenB)
 
     # ================= SUGGESTION AUTO =================
     vol_sugg = vol_30d * 100  # %
-
     if vol_sugg < 2:
         suggested_range = 3
     elif vol_sugg < 4:
@@ -316,6 +313,7 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 
 # ============================== DROITE ==============================
