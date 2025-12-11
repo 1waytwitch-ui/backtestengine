@@ -243,10 +243,16 @@ with col1:
     pricesA = st.session_state[keyA]
     pricesB = st.session_state[keyB]
 
-    # --- Calcul du ratio A/B pour chaque jour ---
-    min_len = min(len(pricesA), len(pricesB))
-    pair_prices = [a / b for a, b in zip(pricesA[:min_len], pricesB[:min_len])]
-    vol_30d = compute_volatility(pair_prices)   # fraction, ex: 0.05
+    # --- Calcul volatilité selon type de paire ---
+    stablecoins = ["USDC", "USDT", "DAI"]
+    if tokenB in stablecoins:
+        # Stablecoin → volatilité basée uniquement sur tokenA
+        vol_30d = compute_volatility(pricesA)
+    else:
+        # Paires vol/vol → volatilité du ratio A/B
+        min_len = min(len(pricesA), len(pricesB))
+        pair_prices = [a / b for a, b in zip(pricesA[:min_len], pricesB[:min_len])]
+        vol_30d = compute_volatility(pair_prices)
 
     # ================= SUGGESTION AUTO =================
     vol_sugg = vol_30d * 100  # %
@@ -302,7 +308,6 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
 
 # ============================== DROITE ==============================
 with col2:
