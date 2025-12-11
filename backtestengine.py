@@ -266,16 +266,17 @@ with col1:
     suggested_range *= 3
     vol_sugg_display = vol_sugg * 3
 
-    # --- SYNC AUTOMATIQUE DU CHAMP "Range (%)" ---
-    if (
-        "last_suggested_range" not in st.session_state
-        or st.session_state["last_suggested_range"] != suggested_range
-    ):
-        st.session_state["range_pct"] = float(suggested_range)
-        st.session_state["last_suggested_range"] = suggested_range
+    # --- FORCE le number_input à utiliser suggested_range ---
+    st.session_state["range_pct"] = float(suggested_range)
 
     # --- INPUT RANGE UTILISÉ POUR LES CALCULS ---
-    range_pct = st.number_input("Range (%)", 1.0, 200.0, key="range_pct")
+    range_pct = st.number_input(
+        "Range (%)",
+        min_value=1.0,
+        max_value=200.0,
+        value=st.session_state["range_pct"],
+        key="range_pct"
+    )
 
     # --- AFFICHAGE DES SUGGESTIONS ---
     st.markdown(f"""
@@ -289,7 +290,7 @@ with col1:
     ">
     <b>Suggestion du range</b><br>
     Volatilité : <b>{vol_sugg_display:.2f}%</b><br>
-    Range conseillé : <b>{suggested_range}%</b>
+    Range optimal : <b>{suggested_range}%</b>
     </div>
     """, unsafe_allow_html=True)
 
@@ -301,6 +302,7 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 # ============================== DROITE ==============================
 with col2:
