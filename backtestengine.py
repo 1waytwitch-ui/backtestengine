@@ -263,7 +263,7 @@ with col1:
         suggested_range = 25
 
     # Multiplicateur ×3
-    suggested_range *= 
+    suggested_range *= 2
     vol_sugg_display = vol_sugg * 3
 
     # --- FORCE le number_input à utiliser suggested_range ---
