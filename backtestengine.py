@@ -255,18 +255,6 @@ with col1:
         returns = returns[~np.isnan(returns)]
         return float(np.std(returns)) if len(returns) > 0 else 0.0
 
-    # --- Fonction fallback si volatilité = 0 ---
-    def safe_volatility(pair_name, vol):
-        if vol == 0.0:
-            if pair_name == "CBBTC/USDC":
-                return 0.12  # 12%
-            elif pair_name in ["WETH/CBBTC", "VIRTUAL/WETH", "AERO/WETH"]:
-                if pair_name == "VIRTUAL/WETH" or pair_name == "AERO/WETH":
-                    return 0.45  # 45%
-                else:
-                    return 0.12  # WETH/CBBTC = 12%
-        return vol
-
     # --- Calcul de la volatilité selon la paire ---
     if selected_pair == "WETH/USDC":
         vol_30d = compute_volatility(pricesA)  # WETH seule
@@ -277,11 +265,16 @@ with col1:
     else:
         vol_30d = compute_pair_volatility(pricesA, pricesB)
 
-    # --- Appliquer fallback si vol = 0 ---
-    vol_30d = safe_volatility(selected_pair, vol_30d)
+    # --- Fallback si vol = 0 ---
+    if vol_30d == 0:
+        if selected_pair == "CBBTC/USDC":
+            vol_30d = 0.12
+        elif selected_pair in ["VIRTUAL/WETH", "AERO/WETH"]:
+            vol_30d = 0.45
 
     # ================== SUGGESTION AUTOMATIQUE ==================
     vol_sugg = vol_30d * 100  # %
+
     if vol_sugg < 2:
         suggested_range = 3
     elif vol_sugg < 4:
@@ -293,9 +286,12 @@ with col1:
     else:
         suggested_range = 20
 
-    # Multiplicateur ×3
-    suggested_range *= 3
-    vol_sugg_display = vol_sugg * 3
+    # --- MULTIPLICATEUR ×3 sauf pour CBBTC/USDC ---
+    if selected_pair != "CBBTC/USDC":
+        suggested_range *= 3
+        vol_sugg_display = vol_sugg * 3
+    else:
+        vol_sugg_display = vol_sugg
 
     # --- FORCE le number_input à utiliser suggested_range ---
     st.session_state["range_pct"] = float(suggested_range)
@@ -333,6 +329,7 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 
 # ============================== DROITE ==============================
