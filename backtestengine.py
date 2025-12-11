@@ -239,15 +239,13 @@ with col1:
         st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
     if keyB not in st.session_state:
         st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
-    pricesA = st.session_state[keyA]
-    pricesB = st.session_state[keyB]
+    pricesA = np.array(st.session_state[keyA])
+    pricesB = np.array(st.session_state[keyB])
 
-    # --- Fonction robuste de calcul de volatilité de la paire ---
+    # --- Fonction robuste de calcul de volatilité ---
     def compute_pair_volatility(pricesA, pricesB):
         min_len = min(len(pricesA), len(pricesB))
-        pricesA = np.array(pricesA[:min_len])
-        pricesB = np.array(pricesB[:min_len])
-        # Filtrer les prix non valides
+        pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
         mask = (pricesA > 1e-8) & (pricesB > 1e-8)
         pricesA, pricesB = pricesA[mask], pricesB[mask]
         if len(pricesA) < 2:
@@ -257,15 +255,14 @@ with col1:
         returns = returns[~np.isnan(returns)]
         return float(np.std(returns)) if len(returns) > 0 else 0.0
 
-    # --- Calcul de la volatilité en fonction de la paire ---
-    if selected_pair == "CBBTC/USDC":
-        # Volatilité du token seul
-        vol_30d = compute_volatility(pricesA)  # CBBTC
+    # --- Calcul de la volatilité selon la paire ---
+    if selected_pair == "WETH/USDC":
+        vol_30d = compute_volatility(pricesA)  # WETH seule
+    elif selected_pair == "CBBTC/USDC":
+        vol_30d = compute_volatility(pricesA)  # CBBTC seule
     elif selected_pair in ["WETH/CBBTC", "VIRTUAL/WETH", "AERO/WETH"]:
-        # Diviser par 2 pour correspondre à la volatilité relative
         vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
     else:
-        # WETH/USDC ou autres
         vol_30d = compute_pair_volatility(pricesA, pricesB)
 
     # ================== SUGGESTION AUTOMATIQUE ==================
@@ -321,7 +318,6 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
 
 # ============================== DROITE ==============================
 with col2:
