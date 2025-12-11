@@ -396,66 +396,12 @@ with col2:
 
     st.plotly_chart(fig_bar, width="stretch")
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ---- HISTORIQUE ----
+    # ---- ANALYSE STRATEGIE ----
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
     pricesA = np.array(st.session_state[key])
 
-    # --- Calcul volatilité en accord avec colonne gauche ---
-    if selected_pair == "WETH/USDC":
-        vol_current = compute_volatility(pricesA)
-        vol_display = vol_current * 3
-    elif selected_pair == "CBBTC/USDC":
-        vol_current = compute_volatility(pricesA)
-        vol_current = vol_current if vol_current > 0 else 0.12
-        vol_display = vol_current
-    elif selected_pair == "VIRTUAL/WETH":
-        vol_current = compute_pair_volatility(pricesA, pricesB) / 2
-        vol_current = vol_current if vol_current > 0 else 0.45
-        vol_display = vol_current * 3.2
-    elif selected_pair == "AERO/WETH":
-        vol_current = compute_pair_volatility(pricesA, pricesB) / 2
-        vol_current = vol_current if vol_current > 0 else 0.45
-        vol_display = vol_current * 2
-    elif selected_pair == "WETH/CBBTC":
-        vol_current = compute_pair_volatility(pricesA, pricesB) / 2
-        vol_display = vol_current
-    else:
-        vol_current = compute_pair_volatility(pricesA, pricesB)
-        vol_display = vol_current * 3
-
-    rebalances = sum((p < range_low) or (p > range_high) for p in pricesA)
-
-    # ---- ANALYSE STRATEGIE ----
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
-        <h3>Analyse stratégie</h3>
-    """, unsafe_allow_html=True)
-
-    st.write(f"Volatilité (30j) : {vol_display*100:.2f}% — Hors range : {rebalances}")
-
-    # Simulation fixée à 30 jours
-    future_days = 30
-    simulated = [pricesA[-1]]
-
-    for _ in range(future_days):
-        simulated.append(simulated[-1] * (1 + np.random.normal(0, vol_current)))
-
-    future_reb = sum((p < range_low) or (p > range_high) for p in simulated)
-    st.write(f"Simulation future (30j) → Hors range : {future_reb}")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # ---- VOLATILITÉ 7J & SUGGESTION ----
     vol_7d = compute_volatility(pricesA[-7:])
     suggestion = "Mini-doux"
 
@@ -467,10 +413,19 @@ with col2:
     else:
         suggestion = "Coup de pouce"
 
-    st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
+    # ---- Overlay / suggestion stratégie ----
+    st.markdown(f"""
+    <div style="
+        background-color:#FFFACD;
+        border-left:6px solid #FFA500;
+        padding:12px 15px;
+        border-radius:6px;
+        margin-top:12px;
+        margin-bottom:12px;
+    ">
+        <b>Suggestion stratégie :</b> {suggestion}
+    </div>
+    """, unsafe_allow_html=True)
 
 # =========================== AUTOMATION ===========================
 st.markdown("""
