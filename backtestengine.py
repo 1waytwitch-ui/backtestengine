@@ -225,17 +225,17 @@ with col1:
         priceB_usd = max(priceB_usd, 1e-7)
         priceA = priceA_usd / priceB_usd
 
-    # ---- VOLATILITÉ (nécessaire avant range) ----
+    # ---- VOLATILITÉ ----
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
     pricesA = st.session_state[key]
     vol_30d = compute_volatility(pricesA)
 
-    # ---- RANGE ----
+    # ---- RANGE (%) ----
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
-    # ---- SUGGESTION DE RANGE BASÉE SUR VOLATILITÉ ----
+    # ---- SUGGESTION AUTO RANGE (basée sur vol 30j) ----
     vol_sugg = vol_30d * 100  # en %
 
     if vol_sugg < 2:
@@ -249,6 +249,9 @@ with col1:
     else:
         suggested_range = 25
 
+    # Multiplicateur ×3 appliqué
+    suggested_range *= 3
+
     st.markdown(f"""
     <div style="
         background-color:#F0F8FF;
@@ -258,14 +261,13 @@ with col1:
         margin-top:6px;
         margin-bottom:10px;
     ">
-    <b>💡 Suggestion automatique du range (volatilité 30j)</b><br>
     <b>Suggestion automatique du range (volatilité 30j)</b><br>
     Volatilité : <b>{vol_sugg:.2f}%</b><br>
     Range conseillé : <b>{suggested_range}%</b>
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- CALCUL DU RANGE ----
+    # ---- CALCUL DU RANGE RÉEL ----
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
     if invert_market:
