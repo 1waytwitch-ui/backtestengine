@@ -464,6 +464,7 @@ with col_range:
     </div>
     """, unsafe_allow_html=True)
 
+    # Slider pour range total
     range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
     ratio_low, ratio_high = 20, 80
     low_offset_pct = -range_percent * ratio_low / 100
@@ -494,6 +495,32 @@ with col_time:
     else:
         recomand = "60 minutes et plus"
     st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
+
+# ---- Rebalance avancée (futur range fixe) ----
+col_rebalance = st.container()
+with col_rebalance:
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-top:25px;
+        margin-bottom:15px;
+    ">
+        <h3>Rebalance avancée (futur range)</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Calcul unique du range futur, indépendant du marché
+    off_low_pct  = -ratioA * range_percent
+    off_high_pct =  ratioB * range_percent
+    range_low  = priceA * (1 + off_low_pct / 100)
+    range_high = priceA * (1 + off_high_pct / 100)
+
+    # Affichage fixe
+    st.write(f"Range Low : {range_low:.6f} ({off_low_pct:.0f}%)")
+    st.write(f"Range High : {range_high:.6f} (+{off_high_pct:.0f}%)")
 
 # ---- Trigger d’anticipation / Rebalance avancée ----
 col_trigger, col_rebalance = st.columns(2)
