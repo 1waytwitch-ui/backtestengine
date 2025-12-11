@@ -179,7 +179,7 @@ with col1:
     with right:
         strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
-    # --- RESET DU CACHE LORS DU CHANGEMENT DE PAIRE ---
+    # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
     if (
         "last_pair" not in st.session_state
         or st.session_state["last_pair"] != selected_pair
@@ -189,7 +189,7 @@ with col1:
                 del st.session_state[k]
         st.session_state["last_pair"] = selected_pair
 
-    # --- RATIO / STRATEGIE ---
+    # --- EXTRACTION STRAT ---
     tokenA, tokenB = selected_pair.split("/")
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
@@ -198,7 +198,7 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    # --- CADRE DE RECAP ---
+    # --- CADRE RECAP ---
     st.markdown(f"""
     <div style="
         background-color: #27F5A9;
@@ -218,7 +218,6 @@ with col1:
 
     # ================== PRIX TOKEN ==================
     if tokenB == "USDC":
-
         priceA_usd, okA = get_price_usd(tokenA)
         if not okA:
             priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
@@ -247,10 +246,7 @@ with col1:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
 
     pricesA = st.session_state[key]
-    vol_30d = compute_volatility(pricesA)   # en fraction (ex: 0.05)
-
-    # ================= RANGE (%) ====================
-    range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
+    vol_30d = compute_volatility(pricesA)   # ex: 0.05
 
     # ================= SUGGESTION AUTO =================
     vol_sugg = vol_30d * 100  # en %
@@ -266,11 +262,22 @@ with col1:
     else:
         suggested_range = 25
 
-    # Multiplicateur ×3 appliqué partout
+    # Multiplicateur x3
     suggested_range *= 3
     vol_sugg_display = vol_sugg * 3
 
-    # --- AFFICHAGE ---
+    # --- SYNC AUTOMATIQUE DU CHAMP "Range (%)" ---
+    if (
+        "last_suggested_range" not in st.session_state
+        or st.session_state["last_suggested_range"] != suggested_range
+    ):
+        st.session_state["range_pct"] = float(suggested_range)
+        st.session_state["last_suggested_range"] = suggested_range
+
+    # --- INPUT RANGE UTILISÉ POUR LES CALCULS ---
+    range_pct = st.number_input("Range (%)", 1.0, 200.0, key="range_pct")
+
+    # --- AFFICHAGE DES SUGGESTIONS ---
     st.markdown(f"""
     <div style="
         background-color:#F0F8FF;
@@ -280,20 +287,21 @@ with col1:
         margin-top:6px;
         margin-bottom:10px;
     ">
-    <b>Suggestion automatique du range (volatilité 30j)</b><br>
+    <b>Suggestion du range</b><br>
     Volatilité : <b>{vol_sugg_display:.2f}%</b><br>
     Range conseillé : <b>{suggested_range}%</b>
     </div>
     """, unsafe_allow_html=True)
 
     # ================= CALCUL FINAL RANGE ===============
-range_low = priceA * (1 - ratioA * range_pct / 100)
-range_high = priceA * (1 + ratioB * range_pct / 100)
+    range_low = priceA * (1 - ratioA * range_pct / 100)
+    range_high = priceA * (1 + ratioB * range_pct / 100)
 
-if invert_market:
-    range_low, range_high = range_high, range_low
+    if invert_market:
+        range_low, range_high = range_high, range_low
 
-capitalA, capitalB = capital * ratioA, capital * ratioB
+    capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 
 
