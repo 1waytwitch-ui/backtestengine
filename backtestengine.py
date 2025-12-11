@@ -293,6 +293,7 @@ with col1:
         suggested_range *= 3 * 2  # ancien multiplicateur ×3 + nouveau ×2
         vol_sugg_display = vol_sugg * 3
     elif selected_pair == "WETH/USDC":
+        suggested_range *= 3  # <-- multiplicateur pour WETH/USDC
         vol_sugg_display = vol_sugg
     else:
         suggested_range *= 3
@@ -334,7 +335,6 @@ with col1:
         range_low, range_high = range_high, range_low
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
-
 
 
 # ============================== DROITE ==============================
