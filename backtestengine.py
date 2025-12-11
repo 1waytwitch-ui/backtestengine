@@ -323,8 +323,8 @@ with col1:
     # --- AFFICHAGE DES SUGGESTIONS ---
     st.markdown(f"""
     <div style="
-        background-color:#F0F8FF;
-        border-left:6px solid #4682B4;
+        background-color:#FFFACD;
+        border-left:6px solid #FFA500;
         padding:12px 18px;
         border-radius:8px;
         margin-top:6px;
@@ -427,7 +427,7 @@ with col2:
 
     st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
 
-    # ---- Overlay / suggestion stratégie (optionnel, style cadre info) ----
+    # ---- Suggestion stratégie ----
     st.markdown(f"""
     <div style="
         background-color:#FFFACD;
