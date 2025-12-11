@@ -171,6 +171,7 @@ with col1:
 
     st.subheader("POOL SETUP")
 
+    # --- PAIRE & STRATEGIE ---
     left, right = st.columns(2)
     with left:
         pair_labels = [f"{a}/{b}" for a, b in PAIRS]
@@ -178,18 +179,17 @@ with col1:
     with right:
         strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
-    # --- RESET VOLATILITY CACHE WHEN PAIR CHANGES ---
+    # --- RESET DU CACHE LORS DU CHANGEMENT DE PAIRE ---
     if (
         "last_pair" not in st.session_state
         or st.session_state["last_pair"] != selected_pair
     ):
-        # remove old cached prices
         for k in list(st.session_state.keys()):
             if "prices_" in k:
                 del st.session_state[k]
-
         st.session_state["last_pair"] = selected_pair
 
+    # --- RATIO / STRATEGIE ---
     tokenA, tokenB = selected_pair.split("/")
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
@@ -198,7 +198,7 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    # ---- RECAP OVERLAY ----
+    # --- CADRE DE RECAP ---
     st.markdown(f"""
     <div style="
         background-color: #27F5A9;
@@ -213,13 +213,16 @@ with col1:
     </div>
     """, unsafe_allow_html=True)
 
+    # --- CAPITAL ---
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
-    # ---- PRIX ----
+    # ================== PRIX TOKEN ==================
     if tokenB == "USDC":
+
         priceA_usd, okA = get_price_usd(tokenA)
         if not okA:
             priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
+
         priceA = priceA_usd
         okB = True
 
@@ -238,19 +241,20 @@ with col1:
         priceB_usd = max(priceB_usd, 1e-7)
         priceA = priceA_usd / priceB_usd
 
-    # ---- VOLATILITÉ ----
+    # ================== VOLATILITÉ ==================
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
 
     pricesA = st.session_state[key]
-    vol_30d = compute_volatility(pricesA)
+    vol_30d = compute_volatility(pricesA)   # en fraction (ex: 0.05)
 
-    # ---- RANGE INPUT ----
+    # ================= RANGE (%) ====================
     range_pct = st.number_input("Range (%)", 1.0, 100.0, 20.0)
 
-    # ---- AUTO RANGE SUGGESTION ----
-    vol_sugg = vol_30d * 100  # %
+    # ================= SUGGESTION AUTO =================
+    vol_sugg = vol_30d * 100  # en %
+
     if vol_sugg < 2:
         suggested_range = 5
     elif vol_sugg < 4:
@@ -262,9 +266,11 @@ with col1:
     else:
         suggested_range = 25
 
-    # Apply ×3 as requested
+    # Multiplicateur ×3 appliqué partout
     suggested_range *= 3
+    vol_sugg_display = vol_sugg * 3
 
+    # --- AFFICHAGE ---
     st.markdown(f"""
     <div style="
         background-color:#F0F8FF;
@@ -275,19 +281,20 @@ with col1:
         margin-bottom:10px;
     ">
     <b>Suggestion automatique du range (volatilité 30j)</b><br>
-    Volatilité : <b>{vol_sugg:.2f}%</b><br>
+    Volatilité : <b>{vol_sugg_display:.2f}%</b><br>
     Range conseillé : <b>{suggested_range}%</b>
     </div>
     """, unsafe_allow_html=True)
 
-    # ---- CALCUL RANGE ----
+    # ================= CALCUL FINAL RANGE ===============
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
 
     if invert_market:
-        range_low, range_high = range_high, range_low
+        range_low, range_high = range_high, range_low)
 
     capitalA, capitalB = capital * ratioA, capital * ratioB
+
 
 
 # ============================== DROITE ==============================
