@@ -450,9 +450,6 @@ st.markdown("""
 # ---- Range future / Time-buffer ----
 col_range, col_time = st.columns([2,1])
 
-# Garder ratios originaux pour rebalance fixe
-orig_ratioA, orig_ratioB = info["ratio"]
-
 with col_range:
     st.markdown("""
     <div style="
@@ -542,25 +539,27 @@ with col_rebalance:
     </div>
     """, unsafe_allow_html=True)
 
-    # Calcul du range fixe, **indépendant du marché**
-    off_low_pct  = -orig_ratioA * range_percent
-    off_high_pct =  orig_ratioB * range_percent
+    # Offsets pour marché baissier
+    off_low_pct  = -ratioA * range_percent
+    off_high_pct =  ratioB * range_percent
     range_low  = priceA * (1 + off_low_pct / 100)
     range_high = priceA * (1 + off_high_pct / 100)
 
-    # Affichage identique pour les deux colonnes
     col_b1, col_b2 = st.columns(2)
+
+    # Marché Baissier (Dump)
     with col_b1:
         st.markdown("**Marché Baissier (Dump)**")
         st.write(f"Range Low : {range_low:.6f} ({off_low_pct:.0f}%)")
         st.write(f"Range High : {range_high:.6f} (+{off_high_pct:.0f}%)")
 
+    # Marché Haussier (Pump) → inverser les offsets
     with col_b2:
         st.markdown("**Marché Haussier (Pump)**")
-        st.write(f"Range Low : {range_low:.6f} ({off_low_pct:.0f}%)")
-        st.write(f"Range High : {range_high:.6f} (+{off_high_pct:.0f}%)")
-
-
+        range_low_bull  = priceA * (1 - off_high_pct / 100)
+        range_high_bull = priceA * (1 - off_low_pct / 100)
+        st.write(f"Range Low : {range_low_bull:.6f} ({-off_high_pct:.0f}%)")
+        st.write(f"Range High : {range_high_bull:.6f} (+{-off_low_pct:.0f}%)")
 
 # --- Fonctions de calcul ---
 def compute_L(P, P_l, P_u, V):
