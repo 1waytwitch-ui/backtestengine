@@ -397,11 +397,23 @@ with col2:
     st.plotly_chart(fig_bar, width="stretch")
 
     # ---- ANALYSE STRATEGIE ----
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>Analyse stratégie</h3>
+    """, unsafe_allow_html=True)
+
     key = f"{tokenA}_prices_{datetime.date.today()}"
     if key not in st.session_state:
         st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
     pricesA = np.array(st.session_state[key])
 
+    # --- Volatilité 7 jours
     vol_7d = compute_volatility(pricesA[-7:])
     suggestion = "Mini-doux"
 
@@ -413,7 +425,9 @@ with col2:
     else:
         suggestion = "Coup de pouce"
 
-    # ---- Overlay / suggestion stratégie ----
+    st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
+
+    # ---- Overlay / suggestion stratégie (optionnel, style cadre info) ----
     st.markdown(f"""
     <div style="
         background-color:#FFFACD;
@@ -426,6 +440,8 @@ with col2:
         <b>Suggestion stratégie :</b> {suggestion}
     </div>
     """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # =========================== AUTOMATION ===========================
 st.markdown("""
