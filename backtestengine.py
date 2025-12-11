@@ -242,21 +242,22 @@ with col1:
     pricesA = st.session_state[keyA]
     pricesB = st.session_state[keyB]
 
-    # --- Calcul de la volatilité de la paire jour par jour ---
-    min_len = min(len(pricesA), len(pricesB))
-    pair_prices = np.array([a / b for a, b in zip(pricesA[:min_len], pricesB[:min_len])])
-
-    def compute_daily_volatility(prices):
-        """Volatilité sur les rendements journaliers fractionnels"""
-        prices = np.array(prices)
-        prices = prices[prices > 0]
-        if len(prices) < 2:
+    # --- Fonction robuste de calcul de volatilité de la paire ---
+    def compute_pair_volatility(pricesA, pricesB):
+        min_len = min(len(pricesA), len(pricesB))
+        pricesA = np.array(pricesA[:min_len])
+        pricesB = np.array(pricesB[:min_len])
+        # Filtrer les prix non valides
+        mask = (pricesA > 1e-8) & (pricesB > 1e-8)
+        pricesA, pricesB = pricesA[mask], pricesB[mask]
+        if len(pricesA) < 2:
             return 0.0
-        returns = np.diff(prices) / prices[:-1]
+        pair_prices = pricesA / pricesB
+        returns = np.diff(pair_prices) / pair_prices[:-1]
         returns = returns[~np.isnan(returns)]
-        return float(np.std(returns))
+        return float(np.std(returns)) if len(returns) > 0 else 0.0
 
-    vol_30d = compute_daily_volatility(pair_prices)
+    vol_30d = compute_pair_volatility(pricesA, pricesB)
 
     # ================== SUGGESTION AUTOMATIQUE ==================
     vol_sugg = vol_30d * 100  # %
