@@ -331,8 +331,7 @@ with col1:
         margin-bottom:10px;
     ">
     <b>Suggestion du range</b><br>
-    Volatilité : <b>{vol_sugg_display:.2f}%</b><br>
-    Range optimal : <b>{suggested_range:.2f}%</b>
+        Range optimal : <b>{suggested_range:.2f}%</b>
     </div>
     """, unsafe_allow_html=True)
 
