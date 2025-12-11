@@ -5,6 +5,7 @@ import datetime
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
+import pandas as pd
 
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
@@ -101,50 +102,59 @@ def get_price_usd(token):
 
 # ------------------------------- ATR
 def compute_atr(prices, period=14):
-    import pandas as pd
-    import numpy as np
+    """Calcul de l'ATR sur une liste de prix"""
+    # Si prices est une liste simple de floats, on crée un faux timestamp
+    if isinstance(prices[0], (int, float)):
+        prices = [[i, p] for i, p in enumerate(prices)]
 
     df = pd.DataFrame(prices, columns=["time", "price"])
     df["price"] = df["price"].astype(float)
+
+    # Simuler high et low
     df["high"] = df["price"] * 1.001
     df["low"]  = df["price"] * 0.999
     df["close"] = df["price"]
+
     df["prev_close"] = df["close"].shift(1)
 
+    # True Range
     df["tr"] = df.apply(lambda row: max(
         row["high"] - row["low"],
         abs(row["high"] - row["prev_close"]),
         abs(row["low"]  - row["prev_close"])
     ), axis=1)
 
+    # ATR
     atr = df["tr"].rolling(period).mean().iloc[-1]
+
     return float(atr)
 
 
 def compute_atr_range(price, atr_value, multiplier=3):
-    atr_pct = (atr_value / price) * 100
-    range_low = price * (1 - atr_pct * multiplier / 100)
-    range_high = price * (1 + atr_pct * multiplier / 100)
-    return range_low, range_high, atr_pct, atr_pct * multiplier
+    """Calcule le range basé sur ATR"""
+    range_high = price + atr_value * multiplier
+    range_low  = price - atr_value * multiplier
+    return range_low, range_high
 
 
+# -------------------------------
+# Partie compute dans ton backtest
+# -------------------------------
 
-def add_atr_to_compute(pricesA):
-    priceA = pricesA[-1][1]  
+# Exemple : prix historiques de l'actif (ETH)
+pricesA = [2500, 2510, 2490, 2520, 2485, 2515, 2530, 2525, 2540, 2550, 2545, 2535, 2520, 2510]
 
-    atr_value = compute_atr(pricesA, period=14)
-    range_low, range_high, atr_pct, suggested_range_pct = compute_atr_range(priceA, atr_value, multiplier=3)
+# Calcul ATR
+atr_value = compute_atr(pricesA, period=14)
 
-    print(f"[ATR] Prix: {priceA}, ATR: {atr_value:.4f} ({atr_pct:.2f}%), Range ×3 ATR: {suggested_range_pct:.2f}%")
-    print(f"[ATR] Range Low: {range_low:.2f}, Range High: {range_high:.2f}")
+# Prix actuel
+last_price = pricesA[-1]
 
-    return {
-        "atr": atr_value,
-        "atr_pct": atr_pct,
-        "range_low": range_low,
-        "range_high": range_high,
-        "range_pct": suggested_range_pct
-    }
+# Calcul range basé sur ATR x3
+range_low, range_high = compute_atr_range(last_price, atr_value, multiplier=3)
+
+print(f"ATR 14: {atr_value:.2f}")
+print(f"Range basé sur ATR x3: {range_low:.2f} - {range_high:.2f}")
 
 
 # ---- HEADER ----
