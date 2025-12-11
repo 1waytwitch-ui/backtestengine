@@ -258,7 +258,7 @@ with col1:
         margin-top:6px;
         margin-bottom:10px;
     ">
-    <b>💡 Suggestion automatique du range (volatilité 30j)</b><br>
+    <b>Suggestion automatique du range (volatilité 30j)</b><br>
     Volatilité : <b>{vol_sugg:.2f}%</b><br>
     Range conseillé : <b>{suggested_range}%</b>
     </div>
