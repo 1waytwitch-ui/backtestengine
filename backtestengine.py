@@ -5,6 +5,7 @@ import datetime
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
+import yfinance as yf
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
@@ -748,6 +749,47 @@ html_block = f"""
 """
 
 st.markdown(html_block, unsafe_allow_html=True)
+
+# --- Fonction ATR ---
+def compute_atr(df, period=14):
+    df["H-L"] = df["High"] - df["Low"]
+    df["H-PC"] = (df["High"] - df["Close"].shift(1)).abs()
+    df["L-PC"] = (df["Low"] - df["Close"].shift(1)).abs()
+    df["TR"] = df[["H-L", "H-PC", "L-PC"]].max(axis=1)
+    df["ATR"] = df["TR"].rolling(period).mean()
+    return df
+
+# --- Interface Streamlit ---
+st.header("Calcul ATR et Détermination de Range (Liquidity Concentrée)")
+
+ticker = st.text_input("Ticker (ex: ETH-USD)", "ETH-USD")
+period = st.number_input("Période ATR", min_value=5, max_value=100, value=14)
+k = st.slider("Multiplicateur de range (k × ATR)", 1.0, 6.0, 2.0)
+
+if st.button("Calculer"):
+    with st.spinner("Récupération des données et calcul..."):
+        df = yf.download(ticker, interval="1h", period="30d")
+        df = compute_atr(df, period)
+
+        last_price = df["Close"].iloc[-1]
+        last_atr = df["ATR"].iloc[-1]
+
+        range_low = last_price - k * last_atr
+        range_high = last_price + k * last_atr
+
+        st.subheader("Résultats")
+        st.write(f"Prix actuel : {last_price:.4f}")
+        st.write(f"ATR ({period}) : {last_atr:.4f}")
+        st.write(f"Volatilité ATR (% du prix) : {100 * last_atr / last_price:.2f}%")
+
+        st.write(
+            f"Range recommandé (k = {k}):\n"
+            f"- Minimum : {range_low:.4f}\n"
+            f"- Maximum : {range_high:.4f}"
+        )
+
+        st.line_chart(df[["Close", "ATR"]])
+
 
 # --- GUIDE COMPLET ---
 guide_html = """
