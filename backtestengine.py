@@ -752,12 +752,16 @@ st.markdown(html_block, unsafe_allow_html=True)
 
 # --- Fonction ATR ---
 def compute_atr(df, period=14):
+    if df.empty:
+        return df
+
     df["H-L"] = df["High"] - df["Low"]
     df["H-PC"] = (df["High"] - df["Close"].shift(1)).abs()
     df["L-PC"] = (df["Low"] - df["Close"].shift(1)).abs()
     df["TR"] = df[["H-L", "H-PC", "L-PC"]].max(axis=1)
     df["ATR"] = df["TR"].rolling(period).mean()
     return df
+
 
 # --- Interface Streamlit ---
 st.header("Calcul ATR et Détermination de Range (Liquidity Concentrée)")
@@ -769,11 +773,31 @@ k = st.slider("Multiplicateur de range (k × ATR)", 1.0, 6.0, 2.0)
 if st.button("Calculer"):
     with st.spinner("Récupération des données et calcul..."):
         df = yf.download(ticker, interval="1h", period="30d")
+
+        if df.empty:
+            st.error("Aucune donnée récupérée. Ticker ou interval invalide.")
+            st.stop()
+
         df = compute_atr(df, period)
 
-        last_price = df["Close"].iloc[-1]
-        last_atr = df["ATR"].iloc[-1]
+        # Extraction sécurisée
+        try:
+            last_price = float(df["Close"].iloc[-1])
+        except:
+            st.error("Impossible de récupérer le prix de clôture.")
+            st.stop()
 
+        try:
+            last_atr = float(df["ATR"].iloc[-1])
+        except:
+            st.error("Impossible de calculer l’ATR (pas assez de données).")
+            st.stop()
+
+        if np.isnan(last_price) or np.isnan(last_atr):
+            st.error("Données insuffisantes pour calculer ATR ou prix.")
+            st.stop()
+
+        # Calcul du range
         range_low = last_price - k * last_atr
         range_high = last_price + k * last_atr
 
@@ -789,6 +813,7 @@ if st.button("Calculer"):
         )
 
         st.line_chart(df[["Close", "ATR"]])
+
 
 
 # --- GUIDE COMPLET ---
