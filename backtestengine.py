@@ -618,56 +618,19 @@ st.markdown("""
 
 # --- Inputs compacts ---
 st.write("")
-
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
-
 with row1_col1:
-    P_deposit = st.number_input(
-        "P_deposit",
-        value=st.session_state.get("P_deposit", priceA),
-        format="%.6f",
-        step=0.001,
-        key="P_deposit"
-    )
-
+    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001)
 with row1_col2:
-    P_now = st.number_input(
-        "P_now",
-        value=st.session_state.get("P_now", priceA),
-        format="%.6f",
-        step=0.001,
-        key="P_now"
-    )
-
+    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001)
 with row1_col3:
-    v_deposit = st.number_input(
-        "Valeur deposit (USD)",
-        value=st.session_state.get("v_deposit", capital),
-        format="%.2f",
-        step=0.01,
-        key="v_deposit"
-    )
+    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.2f", step=0.01)
 
 row2_col1, row2_col2 = st.columns([1,1])
-
 with row2_col1:
-    P_lower = st.number_input(
-        "P_lower",
-        value=st.session_state.get("P_lower", atr_low),
-        format="%.6f",
-        step=0.001,
-        key="P_lower"
-    )
-
+    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001)
 with row2_col2:
-    P_upper = st.number_input(
-        "P_upper",
-        value=st.session_state.get("P_upper", atr_high),
-        format="%.6f",
-        step=0.001,
-        key="P_upper"
-    )
-
+    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001)
 
 # --- Calcul de L et normalisation ---
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
@@ -848,14 +811,6 @@ else:  # Custom
 # ---- Calcul prix bas / haut (en $) ----
 atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
 atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
-
-# ================= INIT IL ATR =================
-if "P_lower" not in st.session_state:
-    st.session_state.P_lower = atr_low
-
-if "P_upper" not in st.session_state:
-    st.session_state.P_upper = atr_high
-
 
 # ---- Conversion du range en % (affichage) ----
 low_pct_display = (atr_low / P_deposit - 1) * 100
