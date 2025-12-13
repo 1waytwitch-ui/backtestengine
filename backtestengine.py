@@ -816,25 +816,43 @@ atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
 low_pct_display = (atr_low / P_deposit - 1) * 100
 high_pct_display = (atr_high / P_deposit - 1) * 100
 
-# ---- Affichage ----
+# ---- Affichage ATR ----
 st.markdown(f"""
 <div style="
-    background-color:#e0f7fa;
-    border-left:6px solid #00796b;
-    padding:15px 20px;
-    border-radius:8px;
-    margin-top:10px;
+    background-color:#27F5A9;
+    border-left:6px solid #00754A;
+    padding:18px 25px;
+    border-radius:12px;
+    margin-top:15px;
+    color:#000;
 ">
-<b>Range basé sur ATR (indicatif)</b><br><br>
 
-ATR 14 : <b>{atr_usd:.2f}$</b> 
-(<b>{atr_pct:.2f}%</b> du prix de dépôt)<br>
-Multiplicateur : <b>x{atr_mult:.2f}</b><br>
-Range total : <b>{range_total_pct:.2f}%</b><br><br>
+<h4 style="margin:0 0 12px 0;text-align:center;">
+Range basé sur ATR (indicatif)
+</h4>
 
-<b>Range théorique (en % du prix de dépôt)</b><br>
-Low : <b>{low_pct_display:.2f}%</b><br>
-High : <b>+{high_pct_display:.2f}%</b>
+<div style="
+    display:flex;
+    justify-content:space-between;
+    gap:30px;
+    flex-wrap:wrap;
+    font-size:16px;
+    font-weight:600;
+">
+
+<div>
+    ATR 14 : {atr_usd:.2f}$<br>
+    ATR (%) : {atr_pct:.2f}%<br>
+    Multiplicateur : x{atr_mult:.2f}
+</div>
+
+<div>
+    Range total : {range_total_pct:.2f}%<br>
+    Low : {low_pct_display:.2f}%<br>
+    High : +{high_pct_display:.2f}%
+</div>
+
+</div>
 </div>
 """, unsafe_allow_html=True)
 
