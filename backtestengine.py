@@ -816,7 +816,7 @@ atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
 low_pct_display = (atr_low / P_deposit - 1) * 100
 high_pct_display = (atr_high / P_deposit - 1) * 100
 
-# ---- Affichage ATR ----
+# ---- Affichage ----
 st.markdown(f"""
 <div style="
     background-color:#27F5A9;
@@ -825,32 +825,22 @@ st.markdown(f"""
     border-radius:12px;
     margin-top:15px;
     color:#000;
+    text-align:center;
 ">
 
-<h4 style="margin:0 0 12px 0;text-align:center;">
-Range basé sur ATR (indicatif)
+<h4 style="margin:0 0 10px 0;">
+Range basé sur ATR
 </h4>
 
-<div style="
-    display:flex;
-    justify-content:space-between;
-    gap:30px;
-    flex-wrap:wrap;
-    font-size:16px;
-    font-weight:600;
-">
+<div style="font-size:16px;font-weight:600;line-height:1.6em;">
 
-<div>
-    ATR 14 : {atr_usd:.2f}$<br>
-    ATR (%) : {atr_pct:.2f}%<br>
-    Multiplicateur : x{atr_mult:.2f}
-</div>
+ATR 14 : {atr_usd:.2f}$ 
+&nbsp;|&nbsp; ATR (%) : {atr_pct:.2f}% 
+&nbsp;|&nbsp; Multiplicateur : x{atr_mult:.2f}<br>
 
-<div>
-    Range total : {range_total_pct:.2f}%<br>
-    Low : {low_pct_display:.2f}%<br>
-    High : +{high_pct_display:.2f}%
-</div>
+Range total : {range_total_pct:.2f}% 
+&nbsp;|&nbsp; Low : {low_pct_display:.2f}% 
+&nbsp;|&nbsp; High : +{high_pct_display:.2f}%
 
 </div>
 </div>
