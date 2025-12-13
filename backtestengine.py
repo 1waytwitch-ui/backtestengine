@@ -781,8 +781,8 @@ with col_atr2:
 
 with col_atr3:
     asym_mode = st.selectbox(
-        "Type de range",
-        ["Symétrique", "Asymétrique Bull", "Asymétrique Bear", "Custom"]
+        "Stratégie de range",
+        ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
     )
 
 # ---- Conversion ATR $ → % (basée sur le prix de dépôt) ----
@@ -792,13 +792,13 @@ atr_pct = (atr_usd / P_deposit) * 100
 range_total_pct = atr_pct * atr_mult
 
 # ---- Gestion asymétrie ----
-if asym_mode == "Symétrique":
+if asym_mode == "Stratégie neutre":
     low_weight, high_weight = 0.5, 0.5
 
-elif asym_mode == "Asymétrique Bull":
+elif asym_mode == "Coup de pouce bull":
     low_weight, high_weight = 0.3, 0.7
 
-elif asym_mode == "Asymétrique Bear":
+elif asym_mode == "Coup de pouce bear":
     low_weight, high_weight = 0.7, 0.3
 
 else:  # Custom
@@ -837,7 +837,6 @@ Low : <b>{low_pct_display:.2f}%</b><br>
 High : <b>+{high_pct_display:.2f}%</b>
 </div>
 """, unsafe_allow_html=True)
-
 
 
 # --- GUIDE COMPLET ---
