@@ -645,20 +645,20 @@ LP_values = V_LP(prices, L, P_lower, P_upper)
 HODL_values = V_HODL(prices, x0, y0)
 IL_curve = (LP_values / HODL_values - 1) * 100
 
-# ======================= CALCUL ATR (pour overlay IL) =======================
-# Valeurs par défaut ATR pour afficher le graphique
-atr_usd = 100.0
-atr_mult = 3.0
-asym_mode = "Stratégie neutre"
+# ======================= GRAPHIQUE IL AVEC ATR =======================
+# Valeurs par défaut ATR pour overlay initial
+atr_usd_default = 100.0
+atr_mult_default = 3.0
+asym_mode_default = "Stratégie neutre"
 
-atr_pct = (atr_usd / P_deposit) * 100
-range_total_pct = atr_pct * atr_mult
+atr_pct = (atr_usd_default / P_deposit) * 100
+range_total_pct = atr_pct * atr_mult_default
 
-if asym_mode == "Stratégie neutre":
+if asym_mode_default == "Stratégie neutre":
     low_weight, high_weight = 0.5, 0.5
-elif asym_mode == "Coup de pouce bull":
+elif asym_mode_default == "Coup de pouce bull":
     low_weight, high_weight = 0.3, 0.7
-elif asym_mode == "Coup de pouce bear":
+elif asym_mode_default == "Coup de pouce bear":
     low_weight, high_weight = 0.7, 0.3
 else:
     low_weight, high_weight = 0.5, 0.5
@@ -666,7 +666,6 @@ else:
 atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
 atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
 
-# ======================= GRAPHIQUE IL AVEC ATR =======================
 fig = go.Figure()
 
 # IL Curve
@@ -699,7 +698,7 @@ fig.add_annotation(x=atr_low, y=max(IL_curve), text="ATR Low", showarrow=False, 
 fig.add_vline(x=atr_high, line=dict(color="orange", width=2, dash="dash"), name="ATR High")
 fig.add_annotation(x=atr_high, y=max(IL_curve), text="ATR High", showarrow=False, font=dict(color="orange", size=12), yshift=10)
 
-# Layout final
+# Layout
 fig.update_xaxes(range=[min(prices), max(prices)])
 fig.update_yaxes(tickformat=".2f", automargin=True)
 fig.update_layout(
@@ -726,6 +725,98 @@ st.markdown(f"""
     <span>IL maintenant : {IL_now:.2f}%</span>
     <span>Valeur LP : ${LP_now:,.2f}</span>
     <span>Valeur HODL : ${HODL_now:,.2f}</span>
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+
+# ======================= ATR RANGE BACKTEST =======================
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg,#8e2de2,#4fac66);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        ATR RANGE BACKTEST
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
+
+with col_atr1:
+    atr_usd = st.number_input(
+        "ATR 14 ($)",
+        value=100.0,
+        min_value=0.01,
+        step=1.0,
+        help="Valeur ATR 14 ($) en daily (indicateur)"
+    )
+
+with col_atr2:
+    atr_mult = st.slider(
+        "Multiplicateur ATR",
+        0.5, 10.0, 3.0,
+        step=0.25,
+        help="Largeur du range = ATR × multiplicateur"
+    )
+
+with col_atr3:
+    asym_mode = st.selectbox(
+        "Stratégie de range",
+        ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
+    )
+
+# ---- Conversion ATR $ → % (basée sur le prix de dépôt) ----
+atr_pct = (atr_usd / P_deposit) * 100
+
+# ---- Calcul du range total ----
+range_total_pct = atr_pct * atr_mult
+
+# ---- Gestion asymétrie ----
+if asym_mode == "Stratégie neutre":
+    low_weight, high_weight = 0.5, 0.5
+elif asym_mode == "Coup de pouce bull":
+    low_weight, high_weight = 0.3, 0.7
+elif asym_mode == "Coup de pouce bear":
+    low_weight, high_weight = 0.7, 0.3
+else:  # Custom
+    cw1, cw2 = st.columns(2)
+    with cw1:
+        low_weight = st.slider("Poids bas (%)", 0, 100, 40) / 100
+    with cw2:
+        high_weight = 1 - low_weight
+
+# ---- Calcul prix bas / haut (en $) ----
+atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
+atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
+
+# ---- Conversion du range en % (affichage) ----
+low_pct_display = (atr_low / P_deposit - 1) * 100
+high_pct_display = (atr_high / P_deposit - 1) * 100
+
+# ---- Affichage ATR ----
+st.markdown(f"""
+<div style="
+    background-color:#27F5A9;
+    border-left:6px solid #00754A;
+    padding:18px 25px;
+    border-radius:12px;
+    margin-top:15px;
+    color:#000;
+    text-align:center;
+">
+
+<h4 style="margin:0 0 10px 0;">Range basé sur ATR</h4>
+
+<div style="font-size:16px;font-weight:600;line-height:1.6em;">
+ATR 14 : {atr_usd:.2f}$ | ATR (%) : {atr_pct:.2f}% | Multiplicateur : x{atr_mult:.2f}<br>
+Range total : {range_total_pct:.2f}%<br>
+<span style='color:#ff9f1c;'>ATR Low : {atr_low:.2f}$ | ATR High : {atr_high:.2f}$</span><br>
+Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
 </div>
 </div>
 """, unsafe_allow_html=True)
