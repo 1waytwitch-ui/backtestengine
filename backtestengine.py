@@ -750,6 +750,88 @@ html_block = f"""
 
 st.markdown(html_block, unsafe_allow_html=True)
 
+# ======================= ATR RANGE CALCULATOR =======================
+st.markdown("""
+<div style="background: linear-gradient(135deg,#ff9f1c,#ffbf69);
+padding:18px;border-radius:12px;margin-top:15px;margin-bottom:20px;">
+    <span style="color:black;font-size:26px;font-weight:700;">
+        ATR RANGE CALCULATOR
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
+
+with col_atr1:
+    atr_pct = st.number_input(
+        "ATR 14 (%)",
+        value=3.0,
+        min_value=0.1,
+        step=0.1,
+        help="ATR exprimé en % du prix"
+    )
+
+with col_atr2:
+    atr_mult = st.slider(
+        "Multiplicateur ATR",
+        0.5, 10.0, 3.0, step=0.25,
+        help="Largeur du range = ATR × multiplicateur"
+    )
+
+with col_atr3:
+    asym_mode = st.selectbox(
+        "Type de range",
+        ["Symétrique", "Asymétrique Bull", "Asymétrique Bear", "Custom"]
+    )
+
+# ---- Calcul du range total ----
+range_total_pct = atr_pct * atr_mult
+
+# ---- Gestion asymétrie ----
+if asym_mode == "Symétrique":
+    low_weight, high_weight = 0.5, 0.5
+
+elif asym_mode == "Asymétrique Bull":
+    low_weight, high_weight = 0.3, 0.7
+
+elif asym_mode == "Asymétrique Bear":
+    low_weight, high_weight = 0.7, 0.3
+
+else:  # Custom
+    cw1, cw2 = st.columns(2)
+    with cw1:
+        low_weight = st.slider("Poids bas (%)", 0, 100, 40) / 100
+    with cw2:
+        high_weight = 1 - low_weight
+
+# ---- Calcul prix bas / haut ----
+atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
+atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
+
+# ---- Affichage ----
+st.markdown(f"""
+<div style="
+    background-color:#e0f7fa;
+    border-left:6px solid #00796b;
+    padding:15px 20px;
+    border-radius:8px;
+    margin-top:10px;
+">
+<b>Range basé sur ATR</b><br><br>
+ATR 14 : <b>{atr_pct:.2f}%</b><br>
+Multiplicateur : <b>x{atr_mult:.2f}</b><br>
+Range total : <b>{range_total_pct:.2f}%</b><br><br>
+<b>Range proposé :</b><br>
+Low : <b>{atr_low:.6f}</b><br>
+High : <b>{atr_high:.6f}</b>
+</div>
+""", unsafe_allow_html=True)
+
+# ---- Bouton pour appliquer au calcul IL ----
+if st.button("Appliquer ce range à l'IL"):
+    P_lower = atr_low
+    P_upper = atr_high
+
 
 # --- GUIDE COMPLET ---
 guide_html = """
