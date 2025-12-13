@@ -609,14 +609,16 @@ def V_LP(P, L, P_lower, P_upper):
 def V_HODL(P, x0, y0):
     return x0 * P + y0
 
-# --- Interface IL ---
+# ======================= IMPERMANENT LOSS =======================
+
+# --- Titre IL ---
 st.markdown("""
 <div style="background: linear-gradient(135deg,#8e2de2,#4fac66);padding:20px;border-radius:12px;margin-top:20px;">
     <span style="color:white;font-size:28px;font-weight:700;">IMPERMANENT LOSS</span>
 </div>
 """, unsafe_allow_html=True)
 
-# --- Inputs compacts ---
+# --- Inputs compacts IL ---
 st.write("")
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
 with row1_col1:
@@ -632,29 +634,6 @@ with row2_col1:
 with row2_col2:
     P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001)
 
-# ================= PRE-CALCUL ATR (POUR OVERLAY IL) =================
-
-# ---- Conversion ATR $ → % (basée sur le prix de dépôt) ----
-atr_pct = (atr_usd / P_deposit) * 100
-
-# ---- Calcul du range total ----
-range_total_pct = atr_pct * atr_mult
-
-# ---- Gestion asymétrie ----
-if asym_mode == "Stratégie neutre":
-    low_weight, high_weight = 0.5, 0.5
-elif asym_mode == "Coup de pouce bull":
-    low_weight, high_weight = 0.3, 0.7
-elif asym_mode == "Coup de pouce bear":
-    low_weight, high_weight = 0.7, 0.3
-else:
-    low_weight, high_weight = 0.4, 0.6  # fallback safe
-
-# ---- Calcul prix bas / haut (en $) ----
-atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
-atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
-
-
 # --- Calcul de L et normalisation ---
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
 x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
@@ -669,7 +648,7 @@ IL_curve = (LP_values / HODL_values - 1) * 100
 # --- Graphique IL(%) avec overlay ATR ---
 fig = go.Figure()
 
-# --- IL Curve ---
+# IL Curve
 fig.add_trace(go.Scatter(
     x=prices,
     y=IL_curve,
@@ -678,94 +657,21 @@ fig.add_trace(go.Scatter(
     line=dict(color="red", width=3)
 ))
 
-# --- Range LP ---
-fig.add_vline(
-    x=P_lower,
-    line=dict(color="green", width=2, dash="dot"),
-    name="Range Low"
-)
-fig.add_annotation(
-    x=P_lower,
-    y=max(IL_curve),
-    text="Low",
-    showarrow=False,
-    font=dict(color="green", size=12),
-    yshift=10
-)
+# Range LP
+fig.add_vline(x=P_lower, line=dict(color="green", width=2, dash="dot"), name="Range Low")
+fig.add_annotation(x=P_lower, y=max(IL_curve), text="Low", showarrow=False, font=dict(color="green", size=12), yshift=10)
 
-fig.add_vline(
-    x=P_upper,
-    line=dict(color="green", width=2, dash="dot"),
-    name="Range High"
-)
-fig.add_annotation(
-    x=P_upper,
-    y=max(IL_curve),
-    text="High",
-    showarrow=False,
-    font=dict(color="green", size=12),
-    yshift=10
-)
+fig.add_vline(x=P_upper, line=dict(color="green", width=2, dash="dot"), name="Range High")
+fig.add_annotation(x=P_upper, y=max(IL_curve), text="High", showarrow=False, font=dict(color="green", size=12), yshift=10)
 
-# --- Prix dépôt et actuel ---
-fig.add_vline(
-    x=P_deposit,
-    line=dict(color="blue", width=2, dash="dash"),
-    name="Price Deposit"
-)
-fig.add_annotation(
-    x=P_deposit,
-    y=min(IL_curve),
-    text="Deposit",
-    showarrow=False,
-    font=dict(color="blue", size=12),
-    yshift=-10
-)
+# Prix dépôt et actuel
+fig.add_vline(x=P_deposit, line=dict(color="blue", width=2, dash="dash"), name="Price Deposit")
+fig.add_annotation(x=P_deposit, y=min(IL_curve), text="Deposit", showarrow=False, font=dict(color="blue", size=12), yshift=-10)
 
-fig.add_vline(
-    x=P_now,
-    line=dict(color="purple", width=2),
-    name="Price Now"
-)
-fig.add_annotation(
-    x=P_now,
-    y=min(IL_curve),
-    text="Now",
-    showarrow=False,
-    font=dict(color="purple", size=12),
-    yshift=-10
-)
+fig.add_vline(x=P_now, line=dict(color="purple", width=2), name="Price Now")
+fig.add_annotation(x=P_now, y=min(IL_curve), text="Now", showarrow=False, font=dict(color="purple", size=12), yshift=-10)
 
-# --- OVERLAY ATR RANGE ---
-fig.add_vline(
-    x=atr_low,
-    line=dict(color="#ff9f1c", width=2, dash="dashdot"),
-    name="ATR Low"
-)
-fig.add_annotation(
-    x=atr_low,
-    y=max(IL_curve),
-    text="ATR Low",
-    showarrow=False,
-    font=dict(color="#ff9f1c", size=11),
-    yshift=22
-)
-
-fig.add_vline(
-    x=atr_high,
-    line=dict(color="#ff9f1c", width=2, dash="dashdot"),
-    name="ATR High"
-)
-fig.add_annotation(
-    x=atr_high,
-    y=max(IL_curve),
-    text="ATR High",
-    showarrow=False,
-    font=dict(color="#ff9f1c", size=11),
-    yshift=22
-)
-
-# --- Axes & Layout ---
+# --- Affichage initial IL (sans ATR) ---
 fig.update_xaxes(range=[min(prices), max(prices)])
 fig.update_yaxes(tickformat=".2f", automargin=True)
 fig.update_layout(
@@ -780,29 +686,26 @@ fig.update_layout(
 
 st.plotly_chart(fig, width="stretch")
 
-
-# --- Valeurs actuelles et L au dépôt ---
+# --- Valeurs actuelles IL ---
 IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
 LP_now = V_LP(P_now, L, P_lower, P_upper)
 HODL_now = V_HODL(P_now, x0, y0)
 
-html_block = f"""
+st.markdown(f"""
 <div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:18px 25px;border-radius:12px;margin-top:20px;color:#000;text-align:center;">
-
 <h3 style="margin:0 0 10px 0;">Simulation IL</h3>
-
 <div style="font-size:18px;font-weight:600;display:flex;justify-content:center;gap:35px;flex-wrap:wrap;">
     <span>IL maintenant : {IL_now:.2f}%</span>
     <span>Valeur LP : ${LP_now:,.2f}</span>
     <span>Valeur HODL : ${HODL_now:,.2f}</span>
 </div>
-
 </div>
-"""
+""", unsafe_allow_html=True)
 
-st.markdown(html_block, unsafe_allow_html=True)
 
 # ======================= ATR RANGE BACKTEST =======================
+
+# --- Titre ATR ---
 st.markdown("""
 <div style="
     background: linear-gradient(135deg,#8e2de2,#4fac66);
@@ -817,92 +720,42 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
+# --- Inputs ATR ---
 col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
 
 with col_atr1:
-    atr_usd = st.number_input(
-        "ATR 14 ($)",
-        value=100.0,
-        min_value=0.01,
-        step=1.0,
-        help="Valeur ATR 14 ($) en daily (indicateur)"
-    )
+    atr_usd = st.number_input("ATR 14 ($)", value=100.0, min_value=0.01, step=1.0, help="Valeur ATR 14 ($) en daily")
 
 with col_atr2:
-    atr_mult = st.slider(
-        "Multiplicateur ATR",
-        0.5, 10.0, 3.0,
-        step=0.25,
-        help="Largeur du range = ATR × multiplicateur"
-    )
+    atr_mult = st.slider("Multiplicateur ATR", 0.5, 10.0, 3.0, step=0.25, help="Largeur du range = ATR × multiplicateur")
 
 with col_atr3:
-    asym_mode = st.selectbox(
-        "Stratégie de range",
-        ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
-    )
+    asym_mode = st.selectbox("Stratégie de range", ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"])
 
-# ---- Conversion ATR $ → % (basée sur le prix de dépôt) ----
+# --- Calcul ATR ---
 atr_pct = (atr_usd / P_deposit) * 100
-
-# ---- Calcul du range total ----
 range_total_pct = atr_pct * atr_mult
 
-# ---- Gestion asymétrie ----
 if asym_mode == "Stratégie neutre":
     low_weight, high_weight = 0.5, 0.5
-
 elif asym_mode == "Coup de pouce bull":
     low_weight, high_weight = 0.3, 0.7
-
 elif asym_mode == "Coup de pouce bear":
     low_weight, high_weight = 0.7, 0.3
-
 else:  # Custom
-    cw1, cw2 = st.columns(2)
-    with cw1:
-        low_weight = st.slider("Poids bas (%)", 0, 100, 40) / 100
-    with cw2:
-        high_weight = 1 - low_weight
+    low_weight, high_weight = 0.4, 0.6  # fallback
 
-# ---- Calcul prix bas / haut (en $) ----
 atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
 atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
 
-# ---- Conversion du range en % (affichage) ----
-low_pct_display = (atr_low / P_deposit - 1) * 100
-high_pct_display = (atr_high / P_deposit - 1) * 100
+# --- Overlay ATR sur graphique IL ---
+fig.add_vline(x=atr_low, line=dict(color="#ff9f1c", width=2, dash="dashdot"), name="ATR Low")
+fig.add_annotation(x=atr_low, y=max(IL_curve), text="ATR Low", showarrow=False, font=dict(color="#ff9f1c", size=11), yshift=22)
 
-# ---- Affichage ----
-st.markdown(f"""
-<div style="
-    background-color:#27F5A9;
-    border-left:6px solid #00754A;
-    padding:18px 25px;
-    border-radius:12px;
-    margin-top:15px;
-    color:#000;
-    text-align:center;
-">
+fig.add_vline(x=atr_high, line=dict(color="#ff9f1c", width=2, dash="dashdot"), name="ATR High")
+fig.add_annotation(x=atr_high, y=max(IL_curve), text="ATR High", showarrow=False, font=dict(color="#ff9f1c", size=11), yshift=22)
 
-<h4 style="margin:0 0 10px 0;">
-Range basé sur ATR
-</h4>
-
-<div style="font-size:16px;font-weight:600;line-height:1.6em;">
-
-ATR 14 : {atr_usd:.2f}$ 
-&nbsp;|&nbsp; ATR (%) : {atr_pct:.2f}% 
-&nbsp;|&nbsp; Multiplicateur : x{atr_mult:.2f}<br>
-
-Range total : {range_total_pct:.2f}% 
-&nbsp;|&nbsp; Low : {low_pct_display:.2f}% 
-&nbsp;|&nbsp; High : +{high_pct_display:.2f}%
-
-</div>
-</div>
-""", unsafe_allow_html=True)
+st.plotly_chart(fig, width="stretch")
 
 
 # --- GUIDE COMPLET ---
