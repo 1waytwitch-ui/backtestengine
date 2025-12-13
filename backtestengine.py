@@ -618,29 +618,55 @@ st.markdown("""
 
 # --- Inputs compacts ---
 st.write("")
+
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+
 with row1_col1:
-    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001)
+    P_deposit = st.number_input(
+        "P_deposit",
+        value=st.session_state.get("P_deposit", priceA),
+        format="%.6f",
+        step=0.001,
+        key="P_deposit"
+    )
+
 with row1_col2:
-    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001)
+    P_now = st.number_input(
+        "P_now",
+        value=st.session_state.get("P_now", priceA),
+        format="%.6f",
+        step=0.001,
+        key="P_now"
+    )
+
 with row1_col3:
-    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.2f", step=0.01)
+    v_deposit = st.number_input(
+        "Valeur deposit (USD)",
+        value=st.session_state.get("v_deposit", capital),
+        format="%.2f",
+        step=0.01,
+        key="v_deposit"
+    )
 
-P_lower = st.number_input(
-    "P_lower",
-    value=st.session_state.P_lower,
-    format="%.6f",
-    step=0.001,
-    key="P_lower"
-)
+row2_col1, row2_col2 = st.columns([1,1])
 
-P_upper = st.number_input(
-    "P_upper",
-    value=st.session_state.P_upper,
-    format="%.6f",
-    step=0.001,
-    key="P_upper"
-)
+with row2_col1:
+    P_lower = st.number_input(
+        "P_lower",
+        value=st.session_state.get("P_lower", atr_low),
+        format="%.6f",
+        step=0.001,
+        key="P_lower"
+    )
+
+with row2_col2:
+    P_upper = st.number_input(
+        "P_upper",
+        value=st.session_state.get("P_upper", atr_high),
+        format="%.6f",
+        step=0.001,
+        key="P_upper"
+    )
 
 
 # --- Calcul de L et normalisation ---
