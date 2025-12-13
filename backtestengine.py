@@ -768,7 +768,7 @@ with col_atr1:
         value=100.0,
         min_value=0.01,
         step=1.0,
-        help="Valeur ATR 14 ($) depuis TradingView"
+        help="Valeur ATR 14 ($) en daily (indicateur)"
     )
 
 with col_atr2:
