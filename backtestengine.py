@@ -752,13 +752,19 @@ st.markdown(html_block, unsafe_allow_html=True)
 
 # ======================= ATR RANGE BACKTEST =======================
 st.markdown("""
-<div style="background: linear-gradient(135deg,#ff9f1c,#ffbf69);
-padding:18px;border-radius:12px;margin-top:15px;margin-bottom:20px;">
-    <span style="color:black;font-size:26px;font-weight:700;">
+<div style="
+    background: linear-gradient(135deg,#8e2de2,#4fac66);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
         ATR RANGE BACKTEST
     </span>
 </div>
 """, unsafe_allow_html=True)
+
 
 col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
 
