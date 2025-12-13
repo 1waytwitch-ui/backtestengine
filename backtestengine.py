@@ -700,8 +700,7 @@ fig.add_annotation(
     yshift=10
 )
 
-
-# --- Affichage initial IL (sans ATR) ---
+# --- Affichage IL (avec ATR) ---
 fig.update_xaxes(range=[min(prices), max(prices)])
 fig.update_yaxes(tickformat=".2f", automargin=True)
 fig.update_layout(
