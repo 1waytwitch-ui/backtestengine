@@ -781,8 +781,6 @@ fig.update_layout(
 st.plotly_chart(fig, width="stretch")
 
 
-
-
 # --- Valeurs actuelles et L au dépôt ---
 IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
 LP_now = V_LP(P_now, L, P_lower, P_upper)
