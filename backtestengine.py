@@ -932,7 +932,8 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
 
 <h3 id="choisir-un-range">Choisir un range</h3>
 <p>Le choix dépend de ton objectif, de la volatilité et du marché : haussier → profits A→B, baissier → accumulation B→A, latéral → neutre ou coup de pouce.<br>
-Objectifs : saisir des fees → petit range ; limiter IL → grand range sans rebalance ou mini-doux ; DCA → ratio 100/0 ou 0/100.</p>
+Objectifs : saisir des fees → petit range ; limiter IL → grand range sans rebalance ou mini-doux ; DCA → ratio 100/0 ou 0/100.<br>
+Pour affiner ton range, tu peux utiliser l’ATR (Average True Range) daily. Sur TradingView, ajoute l’indicateur ATR 14 et note sa valeur actuelle. Ensuite, applique un multiplicateur pour définir la largeur du range autour du prix actuel (par exemple multiplicateur × ATR).</p>
 
 <h3 id="exemple-simple-weth-usdc">Exemple simple WETH/USDC</h3>
 <p>Capital = 1000 USD, Prix ETH = 3000, Stratégie = 50/50, Range ±20%.</p>
@@ -942,6 +943,7 @@ Objectifs : saisir des fees → petit range ; limiter IL → grand range sans re
     <li>Si prix = 3300 → plus riche en USDC, fees générés</li>
     <li>Si prix = 2700 → plus d’ETH, fees générés</li>
 </ul>
+
 
 <h3 id="erreurs-de-debutant">Erreurs de débutant</h3>
 <ul>
