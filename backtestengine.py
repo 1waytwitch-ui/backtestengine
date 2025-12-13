@@ -755,7 +755,7 @@ st.markdown("""
 <div style="background: linear-gradient(135deg,#ff9f1c,#ffbf69);
 padding:18px;border-radius:12px;margin-top:15px;margin-bottom:20px;">
     <span style="color:black;font-size:26px;font-weight:700;">
-        ATR RANGE CALCULATOR
+        ATR RANGE BACKTEST
     </span>
 </div>
 """, unsafe_allow_html=True)
@@ -817,20 +817,15 @@ st.markdown(f"""
     border-radius:8px;
     margin-top:10px;
 ">
-<b>Range basé sur ATR</b><br><br>
+<b>Range basé sur ATR (indicatif)</b><br><br>
 ATR 14 : <b>{atr_pct:.2f}%</b><br>
 Multiplicateur : <b>x{atr_mult:.2f}</b><br>
 Range total : <b>{range_total_pct:.2f}%</b><br><br>
-<b>Range proposé :</b><br>
+<b>Range théorique :</b><br>
 Low : <b>{atr_low:.6f}</b><br>
 High : <b>{atr_high:.6f}</b>
 </div>
 """, unsafe_allow_html=True)
-
-# ---- Bouton pour appliquer au calcul IL ----
-if st.button("Appliquer ce range à l'IL"):
-    P_lower = atr_low
-    P_upper = atr_high
 
 
 # --- GUIDE COMPLET ---
