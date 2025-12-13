@@ -704,8 +704,6 @@ st.markdown(f"""
 
 
 # ======================= ATR RANGE BACKTEST =======================
-
-# --- Titre ATR ---
 st.markdown("""
 <div style="
     background: linear-gradient(135deg,#8e2de2,#4fac66);
@@ -720,44 +718,63 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- Inputs ATR ---
 col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
 
 with col_atr1:
-    atr_usd = st.number_input("ATR 14 ($)", value=100.0, min_value=0.01, step=1.0, help="Valeur ATR 14 ($) en daily")
+    atr_usd = st.number_input(
+        "ATR 14 ($)",
+        value=100.0,
+        min_value=0.01,
+        step=1.0,
+        help="Valeur ATR 14 ($) en daily (indicateur)"
+    )
 
 with col_atr2:
-    atr_mult = st.slider("Multiplicateur ATR", 0.5, 10.0, 3.0, step=0.25, help="Largeur du range = ATR × multiplicateur")
+    atr_mult = st.slider(
+        "Multiplicateur ATR",
+        0.5, 10.0, 3.0,
+        step=0.25,
+        help="Largeur du range = ATR × multiplicateur"
+    )
 
 with col_atr3:
-    asym_mode = st.selectbox("Stratégie de range", ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"])
+    asym_mode = st.selectbox(
+        "Stratégie de range",
+        ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
+    )
 
-# --- Calcul ATR ---
+# ---- Conversion ATR $ → % (basée sur le prix de dépôt) ----
 atr_pct = (atr_usd / P_deposit) * 100
+
+# ---- Calcul du range total ----
 range_total_pct = atr_pct * atr_mult
 
+# ---- Gestion asymétrie ----
 if asym_mode == "Stratégie neutre":
     low_weight, high_weight = 0.5, 0.5
+
 elif asym_mode == "Coup de pouce bull":
     low_weight, high_weight = 0.3, 0.7
+
 elif asym_mode == "Coup de pouce bear":
     low_weight, high_weight = 0.7, 0.3
-else:  # Custom
-    low_weight, high_weight = 0.4, 0.6  # fallback
 
+else:  # Custom
+    cw1, cw2 = st.columns(2)
+    with cw1:
+        low_weight = st.slider("Poids bas (%)", 0, 100, 40) / 100
+    with cw2:
+        high_weight = 1 - low_weight
+
+# ---- Calcul prix bas / haut (en $) ----
 atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
 atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
 
-# --- Overlay ATR sur graphique IL ---
-fig.add_vline(x=atr_low, line=dict(color="#ff9f1c", width=2, dash="dashdot"), name="ATR Low")
-fig.add_annotation(x=atr_low, y=max(IL_curve), text="ATR Low", showarrow=False, font=dict(color="#ff9f1c", size=11), yshift=22)
+# ---- Conversion du range en % (affichage) ----
+low_pct_display = (atr_low / P_deposit - 1) * 100
+high_pct_display = (atr_high / P_deposit - 1) * 100
 
-fig.add_vline(x=atr_high, line=dict(color="#ff9f1c", width=2, dash="dashdot"), name="ATR High")
-fig.add_annotation(x=atr_high, y=max(IL_curve), text="ATR High", showarrow=False, font=dict(color="#ff9f1c", size=11), yshift=22)
-
-st.plotly_chart(fig, width="stretch")
-
-# ---- Affichage ----
+# ---- Affichage ATR ----
 st.markdown(f"""
 <div style="
     background-color:#27F5A9;
@@ -779,13 +796,18 @@ ATR 14 : {atr_usd:.2f}$
 &nbsp;|&nbsp; ATR (%) : {atr_pct:.2f}% 
 &nbsp;|&nbsp; Multiplicateur : x{atr_mult:.2f}<br>
 
-Range total : {range_total_pct:.2f}% 
-&nbsp;|&nbsp; Low : {low_pct_display:.2f}% 
+Range total : {range_total_pct:.2f}%<br>
+
+<span style='color:#ff9f1c;'>ATR Low : {atr_low:.2f} $</span> 
+&nbsp;|&nbsp; <span style='color:#ff9f1c;'>ATR High : {atr_high:.2f} $</span><br>
+
+Low : {low_pct_display:.2f}% 
 &nbsp;|&nbsp; High : +{high_pct_display:.2f}%
 
 </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 # --- GUIDE COMPLET ---
 guide_html = """
