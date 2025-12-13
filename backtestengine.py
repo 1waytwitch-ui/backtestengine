@@ -768,7 +768,7 @@ with col_atr1:
         value=100.0,
         min_value=0.01,
         step=1.0,
-        help="Valeur ATR 14 ($)"
+        help="Valeur ATR 14 ($) depuis TradingView"
     )
 
 with col_atr2:
@@ -808,9 +808,13 @@ else:  # Custom
     with cw2:
         high_weight = 1 - low_weight
 
-# ---- Calcul prix bas / haut ----
+# ---- Calcul prix bas / haut (en $) ----
 atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
 atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
+
+# ---- Conversion du range en % (affichage) ----
+low_pct_display = (atr_low / P_deposit - 1) * 100
+high_pct_display = (atr_high / P_deposit - 1) * 100
 
 # ---- Affichage ----
 st.markdown(f"""
@@ -822,15 +826,18 @@ st.markdown(f"""
     margin-top:10px;
 ">
 <b>Range basé sur ATR (indicatif)</b><br><br>
+
 ATR 14 : <b>{atr_usd:.2f}$</b> 
 (<b>{atr_pct:.2f}%</b> du prix de dépôt)<br>
 Multiplicateur : <b>x{atr_mult:.2f}</b><br>
 Range total : <b>{range_total_pct:.2f}%</b><br><br>
-<b>Range théorique :</b><br>
-Low : <b>{atr_low:.6f}</b><br>
-High : <b>{atr_high:.6f}</b>
+
+<b>Range théorique (en % du prix de dépôt)</b><br>
+Low : <b>{low_pct_display:.2f}%</b><br>
+High : <b>+{high_pct_display:.2f}%</b>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 # --- GUIDE COMPLET ---
