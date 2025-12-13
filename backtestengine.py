@@ -671,6 +671,36 @@ fig.add_annotation(x=P_deposit, y=min(IL_curve), text="Deposit", showarrow=False
 fig.add_vline(x=P_now, line=dict(color="purple", width=2), name="Price Now")
 fig.add_annotation(x=P_now, y=min(IL_curve), text="Now", showarrow=False, font=dict(color="purple", size=12), yshift=-10)
 
+# ---- Overlay ATR sur le graphique IL ----
+fig.add_vline(
+    x=atr_low,
+    line=dict(color="orange", width=2, dash="dash"),
+    name="ATR Low"
+)
+fig.add_annotation(
+    x=atr_low,
+    y=max(IL_curve),
+    text="ATR Low",
+    showarrow=False,
+    font=dict(color="orange", size=12),
+    yshift=10
+)
+
+fig.add_vline(
+    x=atr_high,
+    line=dict(color="orange", width=2, dash="dash"),
+    name="ATR High"
+)
+fig.add_annotation(
+    x=atr_high,
+    y=max(IL_curve),
+    text="ATR High",
+    showarrow=False,
+    font=dict(color="orange", size=12),
+    yshift=10
+)
+
+
 # --- Affichage initial IL (sans ATR) ---
 fig.update_xaxes(range=[min(prices), max(prices)])
 fig.update_yaxes(tickformat=".2f", automargin=True)
