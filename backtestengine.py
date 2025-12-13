@@ -632,6 +632,29 @@ with row2_col1:
 with row2_col2:
     P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001)
 
+# ================= PRE-CALCUL ATR (POUR OVERLAY IL) =================
+
+# ---- Conversion ATR $ → % (basée sur le prix de dépôt) ----
+atr_pct = (atr_usd / P_deposit) * 100
+
+# ---- Calcul du range total ----
+range_total_pct = atr_pct * atr_mult
+
+# ---- Gestion asymétrie ----
+if asym_mode == "Stratégie neutre":
+    low_weight, high_weight = 0.5, 0.5
+elif asym_mode == "Coup de pouce bull":
+    low_weight, high_weight = 0.3, 0.7
+elif asym_mode == "Coup de pouce bear":
+    low_weight, high_weight = 0.7, 0.3
+else:
+    low_weight, high_weight = 0.4, 0.6  # fallback safe
+
+# ---- Calcul prix bas / haut (en $) ----
+atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
+atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
+
+
 # --- Calcul de L et normalisation ---
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
 x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
@@ -643,9 +666,10 @@ LP_values = V_LP(prices, L, P_lower, P_upper)
 HODL_values = V_HODL(prices, x0, y0)
 IL_curve = (LP_values / HODL_values - 1) * 100
 
-# --- Graphique IL(%) ---
+# --- Graphique IL(%) avec overlay ATR ---
 fig = go.Figure()
 
+# --- IL Curve ---
 fig.add_trace(go.Scatter(
     x=prices,
     y=IL_curve,
@@ -654,7 +678,7 @@ fig.add_trace(go.Scatter(
     line=dict(color="red", width=3)
 ))
 
-
+# --- Range LP ---
 fig.add_vline(
     x=P_lower,
     line=dict(color="green", width=2, dash="dot"),
@@ -683,6 +707,7 @@ fig.add_annotation(
     yshift=10
 )
 
+# --- Prix dépôt et actuel ---
 fig.add_vline(
     x=P_deposit,
     line=dict(color="blue", width=2, dash="dash"),
@@ -711,9 +736,38 @@ fig.add_annotation(
     yshift=-10
 )
 
+# --- OVERLAY ATR RANGE ---
+fig.add_vline(
+    x=atr_low,
+    line=dict(color="#ff9f1c", width=2, dash="dashdot"),
+    name="ATR Low"
+)
+fig.add_annotation(
+    x=atr_low,
+    y=max(IL_curve),
+    text="ATR Low",
+    showarrow=False,
+    font=dict(color="#ff9f1c", size=11),
+    yshift=22
+)
+
+fig.add_vline(
+    x=atr_high,
+    line=dict(color="#ff9f1c", width=2, dash="dashdot"),
+    name="ATR High"
+)
+fig.add_annotation(
+    x=atr_high,
+    y=max(IL_curve),
+    text="ATR High",
+    showarrow=False,
+    font=dict(color="#ff9f1c", size=11),
+    yshift=22
+)
+
+# --- Axes & Layout ---
 fig.update_xaxes(range=[min(prices), max(prices)])
 fig.update_yaxes(tickformat=".2f", automargin=True)
-
 fig.update_layout(
     height=380,
     title="Impermanent Loss (%)",
