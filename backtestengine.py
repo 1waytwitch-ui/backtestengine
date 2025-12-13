@@ -750,7 +750,7 @@ html_block = f"""
 
 st.markdown(html_block, unsafe_allow_html=True)
 
-# ======================= ATR RANGE CALCULATOR =======================
+# ======================= ATR RANGE BACKTEST =======================
 st.markdown("""
 <div style="background: linear-gradient(135deg,#ff9f1c,#ffbf69);
 padding:18px;border-radius:12px;margin-top:15px;margin-bottom:20px;">
@@ -763,18 +763,19 @@ padding:18px;border-radius:12px;margin-top:15px;margin-bottom:20px;">
 col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
 
 with col_atr1:
-    atr_pct = st.number_input(
-        "ATR 14 (%)",
-        value=3.0,
-        min_value=0.1,
-        step=0.1,
-        help="ATR exprimé en % du prix"
+    atr_usd = st.number_input(
+        "ATR 14 ($)",
+        value=100.0,
+        min_value=0.01,
+        step=1.0,
+        help="Valeur ATR 14 ($)"
     )
 
 with col_atr2:
     atr_mult = st.slider(
         "Multiplicateur ATR",
-        0.5, 10.0, 3.0, step=0.25,
+        0.5, 10.0, 3.0,
+        step=0.25,
         help="Largeur du range = ATR × multiplicateur"
     )
 
@@ -783,6 +784,9 @@ with col_atr3:
         "Type de range",
         ["Symétrique", "Asymétrique Bull", "Asymétrique Bear", "Custom"]
     )
+
+# ---- Conversion ATR $ → % (basée sur le prix de dépôt) ----
+atr_pct = (atr_usd / P_deposit) * 100
 
 # ---- Calcul du range total ----
 range_total_pct = atr_pct * atr_mult
@@ -818,7 +822,8 @@ st.markdown(f"""
     margin-top:10px;
 ">
 <b>Range basé sur ATR (indicatif)</b><br><br>
-ATR 14 : <b>{atr_pct:.2f}%</b><br>
+ATR 14 : <b>{atr_usd:.2f}$</b> 
+(<b>{atr_pct:.2f}%</b> du prix de dépôt)<br>
 Multiplicateur : <b>x{atr_mult:.2f}</b><br>
 Range total : <b>{range_total_pct:.2f}%</b><br><br>
 <b>Range théorique :</b><br>
