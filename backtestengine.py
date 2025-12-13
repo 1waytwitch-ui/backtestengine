@@ -757,6 +757,35 @@ fig.add_annotation(x=atr_high, y=max(IL_curve), text="ATR High", showarrow=False
 
 st.plotly_chart(fig, width="stretch")
 
+# ---- Affichage ----
+st.markdown(f"""
+<div style="
+    background-color:#27F5A9;
+    border-left:6px solid #00754A;
+    padding:18px 25px;
+    border-radius:12px;
+    margin-top:15px;
+    color:#000;
+    text-align:center;
+">
+
+<h4 style="margin:0 0 10px 0;">
+Range basé sur ATR
+</h4>
+
+<div style="font-size:16px;font-weight:600;line-height:1.6em;">
+
+ATR 14 : {atr_usd:.2f}$ 
+&nbsp;|&nbsp; ATR (%) : {atr_pct:.2f}% 
+&nbsp;|&nbsp; Multiplicateur : x{atr_mult:.2f}<br>
+
+Range total : {range_total_pct:.2f}% 
+&nbsp;|&nbsp; Low : {low_pct_display:.2f}% 
+&nbsp;|&nbsp; High : +{high_pct_display:.2f}%
+
+</div>
+</div>
+""", unsafe_allow_html=True)
 
 # --- GUIDE COMPLET ---
 guide_html = """
