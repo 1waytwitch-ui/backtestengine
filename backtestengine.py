@@ -786,27 +786,17 @@ st.markdown(f"""
     text-align:center;
 ">
 
-<h4 style="margin:0 0 10px 0;">
-Range basé sur ATR
-</h4>
+<h4 style="margin:0 0 10px 0;">Range basé sur ATR</h4>
 
 <div style="font-size:16px;font-weight:600;line-height:1.6em;">
-
-ATR 14 : {atr_usd:.2f}$ 
-&nbsp;|&nbsp; ATR (%) : {atr_pct:.2f}% 
-&nbsp;|&nbsp; Multiplicateur : x{atr_mult:.2f}<br>
-
+ATR 14 : {atr_usd:.2f}$ | ATR (%) : {atr_pct:.2f}% | Multiplicateur : x{atr_mult:.2f}<br>
 Range total : {range_total_pct:.2f}%<br>
-
-<span style='color:#ff9f1c;'>ATR Low : {atr_low:.2f} $</span> 
-&nbsp;|&nbsp; <span style='color:#ff9f1c;'>ATR High : {atr_high:.2f} $</span><br>
-
-Low : {low_pct_display:.2f}% 
-&nbsp;|&nbsp; High : +{high_pct_display:.2f}%
-
+<span style='color:#ff9f1c;'>ATR Low : {atr_low:.2f}$ | ATR High : {atr_high:.2f}$</span><br>
+Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
 </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 # --- GUIDE COMPLET ---
