@@ -833,44 +833,120 @@ Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
 """, unsafe_allow_html=True)
 
 
-# ---------------- ATR expert ----------------
+import streamlit as st
+import math
 
+# ======================= ATR RANGE BACKTEST =======================
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg,#8e2de2,#4fac66);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        ATR RANGE BACKTEST
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
+
+with col_atr1:
+    atr_usd = st.number_input(
+        "ATR 14 ($)",
+        value=100.0,
+        min_value=0.01,
+        step=1.0,
+        help="Valeur ATR 14 ($) en daily (indicateur)"
+    )
+
+with col_atr2:
+    atr_mult = st.slider(
+        "Multiplicateur ATR",
+        0.5, 10.0, 3.0,
+        step=0.25,
+        help="Largeur du range = ATR × multiplicateur"
+    )
+
+with col_atr3:
+    asym_mode = st.selectbox(
+        "Stratégie de range",
+        ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
+    )
+
+# ---- Prix de référence ATR (manuel) ----
+P_deposit = st.number_input(
+    "Prix de l'actif utilisé pour l'ATR ($)",
+    min_value=0.0001,
+    value=1000.0,
+    step=1.0,
+    help="Prix réel de l'actif pour convertir l'ATR $ en %"
+)
+
+# ---- Conversion ATR $ → % ----
+atr_pct = (atr_usd / P_deposit) * 100
+range_total_pct = atr_pct * atr_mult
+
+# ---- Gestion asymétrie ----
+if asym_mode == "Stratégie neutre":
+    low_weight, high_weight = 0.5, 0.5
+elif asym_mode == "Coup de pouce bull":
+    low_weight, high_weight = 0.3, 0.7
+elif asym_mode == "Coup de pouce bear":
+    low_weight, high_weight = 0.7, 0.3
+else:
+    cw1, cw2 = st.columns(2)
+    with cw1:
+        low_weight = st.slider("Poids bas (%)", 0, 100, 40) / 100
+    with cw2:
+        high_weight = 1 - low_weight
+
+# ---- Calcul prix bas / haut (en $) ----
+atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
+atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
+
+low_pct_display = (atr_low / P_deposit - 1) * 100
+high_pct_display = (atr_high / P_deposit - 1) * 100
+
+# ---- Affichage ATR RANGE ----
+st.markdown(f"""
+<div style="
+    background-color:#27F5A9;
+    border-left:6px solid #00754A;
+    padding:18px 25px;
+    border-radius:12px;
+    margin-top:15px;
+    color:#000;
+    text-align:center;
+">
+
+<h4 style="margin:0 0 10px 0;">Range basé sur ATR</h4>
+
+<div style="font-size:16px;font-weight:600;line-height:1.6em;">
+ATR 14 : {atr_usd:.2f}$ | ATR (%) : {atr_pct:.2f}% | Multiplicateur : x{atr_mult:.2f}<br>
+Prix actif ATR : {P_deposit:.2f}$<br>
+Range total : {range_total_pct:.2f}%<br>
+<span style='color:#ff9f1c;'>ATR Low : {atr_low:.2f}$ | ATR High : {atr_high:.2f}$</span><br>
+Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
+</div>
+</div>
+""", unsafe_allow_html=True)
+
+# ======================= ATR EXPERT PAIRE =======================
 def calculate_pair_atr(price_x, atr_x, price_y, atr_y):
-    """
-    Calcule le range ATR d'une paire X/Y
-    :param price_x: prix actuel de l'actif X
-    :param atr_x: ATR de X
-    :param price_y: prix actuel de l'actif Y
-    :param atr_y: ATR de Y
-    :return: dict avec prix pair, ATR pair, low, high, range %
-    """
-    # Prix de la paire
+    """Calcule le range ATR d'une paire X/Y"""
     pair_price = price_x / price_y
-    
-    # ATR relatif
     delta_x = atr_x / price_y
     delta_y = (price_x / (price_y ** 2)) * atr_y
-    
-    # ATR total de la paire
     atr_pair = math.sqrt(delta_x ** 2 + delta_y ** 2)
-    
-    # Bornes
     low = pair_price - atr_pair
     high = pair_price + atr_pair
-    
-    # Range %
     range_pct = (atr_pair / pair_price) * 100
-    
-    return {
-        "pair_price": pair_price,
-        "atr_pair": atr_pair,
-        "low": low,
-        "high": high,
-        "range_pct": range_pct
-    }
+    return {"pair_price": pair_price, "atr_pair": atr_pair, "low": low, "high": high, "range_pct": range_pct}
 
-# ---------------- Interface ATR expert ----------------
-
+# ---- Interface ATR EXPERT ----
 st.markdown("""
 <div style="
     background: linear-gradient(135deg,#8e2de2,#4fac66);
@@ -885,20 +961,37 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-
-price_x = st.number_input("Prix actuel actif X", value=3111.0)
-atr_x = st.number_input("ATR daily X", value=174.0)
-price_y = st.number_input("Prix actuel actif Y", value=90113.0)
-atr_y = st.number_input("ATR daily Y", value=3282.0)
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    price_x = st.number_input("Prix actuel actif X", value=3111.0)
+with col2:
+    atr_x = st.number_input("ATR daily X", value=174.0)
+with col3:
+    price_y = st.number_input("Prix actuel actif Y", value=90113.0)
+with col4:
+    atr_y = st.number_input("ATR daily Y", value=3282.0)
 
 if st.button("Calculer ATR Paire"):
     result = calculate_pair_atr(price_x, atr_x, price_y, atr_y)
-    st.write(f"**Prix de la paire X/Y :** {result['pair_price']:.6f}")
-    st.write(f"**ATR de la paire :** {result['atr_pair']:.6f}")
-    st.write(f"**Low / High :** {result['low']:.6f} / {result['high']:.6f}")
-    st.write(f"**Range % :** {result['range_pct']:.2f}%")
-
-
+    st.markdown(f"""
+    <div style="
+        background-color:#FFD700;
+        border-left:6px solid #FF8C00;
+        padding:18px 25px;
+        border-radius:12px;
+        margin-top:15px;
+        color:#000;
+        text-align:center;
+    ">
+    <h4 style="margin:0 0 10px 0;">ATR Paire Volatile</h4>
+    <div style="font-size:16px;font-weight:600;line-height:1.6em;">
+    Prix de la paire X/Y : {result['pair_price']:.6f}<br>
+    ATR de la paire : {result['atr_pair']:.6f}<br>
+    Low / High : {result['low']:.6f} / {result['high']:.6f}<br>
+    Range % : ±{result['range_pct']:.2f}%
+    </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- GUIDE COMPLET ---
 guide_html = """
