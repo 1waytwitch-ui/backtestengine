@@ -168,25 +168,82 @@ if st.session_state.show_disclaimer:
 
 SECRET_CODE = "AMM"
 
-# Initialisation de l'état de connexion
+# État d'authentification
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
-# Si l'utilisateur n'est PAS authentifié
+# ---------- OVERLAY ----------
 if not st.session_state.authenticated:
-    st.title("Accès sécurisé")
+    st.markdown(
+        """
+        <style>
+        /* Fond sombre */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.65);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
 
-    code = st.text_input("Entrez le code d'accès", type="password")
+        /* Carte centrale */
+        .login-box {
+            background: #111827;
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            text-align: center;
+        }
 
-    if st.button("Valider"):
+        .login-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .login-subtitle {
+            font-size: 0.9rem;
+            color: #9CA3AF;
+            margin-bottom: 1.5rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <div class="overlay">
+            <div class="login-box">
+                <div class="login-title">Accès sécurisé</div>
+                <div class="login-subtitle">
+                    Réservé aux membres de la Team Élité KBOUR Crypto
+                </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    code = st.text_input("Code d'accès", type="password")
+
+    if st.button("Valider", use_container_width=True):
         if code == SECRET_CODE:
             st.session_state.authenticated = True
             st.rerun()
         else:
             st.error("Code incorrect")
 
-    # STOP ici : rien d'autre ne s'affiche
+    st.markdown("</div></div>", unsafe_allow_html=True)
+
     st.stop()
+
 
 
 # ----------------------------- LAYOUT -----------------------------
