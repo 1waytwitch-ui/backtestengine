@@ -770,8 +770,17 @@ with col_atr3:
         ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
     )
 
-# ---- Conversion ATR $ → % (basée sur le prix de dépôt) ----
-atr_pct = (atr_usd / P_deposit) * 100
+# ---- Prix de référence ATR (manuel) ----
+asset_price = st.number_input(
+    "Prix de l'actif utilisé pour l'ATR ($)",
+    min_value=0.0001,
+    value=float(P_deposit),
+    step=1.0,
+    help="Prix réel de l'actif pour convertir l'ATR $ en %"
+)
+
+# ---- Conversion ATR $ → % (basée sur le prix de l'actif) ----
+atr_pct = (atr_usd / asset_price) * 100
 
 # ---- Calcul du range total ----
 range_total_pct = atr_pct * atr_mult
@@ -783,7 +792,7 @@ elif asym_mode == "Coup de pouce bull":
     low_weight, high_weight = 0.3, 0.7
 elif asym_mode == "Coup de pouce bear":
     low_weight, high_weight = 0.7, 0.3
-else:  # Custom
+else:
     cw1, cw2 = st.columns(2)
     with cw1:
         low_weight = st.slider("Poids bas (%)", 0, 100, 40) / 100
@@ -814,12 +823,14 @@ st.markdown(f"""
 
 <div style="font-size:16px;font-weight:600;line-height:1.6em;">
 ATR 14 : {atr_usd:.2f}$ | ATR (%) : {atr_pct:.2f}% | Multiplicateur : x{atr_mult:.2f}<br>
+Prix actif ATR : {asset_price:.2f}$<br>
 Range total : {range_total_pct:.2f}%<br>
 <span style='color:#ff9f1c;'>ATR Low : {atr_low:.2f}$ | ATR High : {atr_high:.2f}$</span><br>
 Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
 </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 # --- GUIDE COMPLET ---
