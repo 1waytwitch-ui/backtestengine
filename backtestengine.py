@@ -162,7 +162,7 @@ if st.session_state.show_disclaimer:
         font-size: 15px;
     ">
     <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
-    Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement. Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées. L’accès au backtest est exclusivement réservé aux membres de la Team Élité de la chaîne KBOUR Crypto. Le code d’accès est disponible dans le canal privé “DEFI Académie”.
+    Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement. Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées. L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. Le code d’accès est disponible dans le canal privé “DEFI Académie”.
     </div>
     """, unsafe_allow_html=True)
 
@@ -212,13 +212,13 @@ if not st.session_state.authenticated:
     <div class="login-card">
         <div class="login-title">Accès sécurisé</div>
         <div class="login-subtitle">
-            Réservé aux membres de la <b>Team Élité KBOUR Crypto</b><br>
+            Réservé aux membres de la <b>Team Élite KBOUR Crypto</b><br>
             Code disponible dans <b>DEFI Académie</b>
         </div>
         <!-- BOUTON EXTERNE -->
         <a href="https://www.youtube.com/channel/UCZL_vS9bsLI4maA4Oja9zyg/join" 
            target="_blank" class="elite-btn">
-           Rejoindre la Team Élité
+           Rejoindre la Team Élite
         </a>
     </div>
     """, unsafe_allow_html=True)
