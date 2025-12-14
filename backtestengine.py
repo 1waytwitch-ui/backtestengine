@@ -871,7 +871,20 @@ def calculate_pair_atr(price_x, atr_x, price_y, atr_y):
 
 # ---------------- Interface ATR expert ----------------
 
-st.title("ATR mode expert")
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg,#8e2de2,#4fac66);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        ATR PAIRE VOLATILE
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
 
 price_x = st.number_input("Prix actuel actif X", value=3111.0)
 atr_x = st.number_input("ATR daily X", value=174.0)
