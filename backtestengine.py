@@ -833,6 +833,24 @@ Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
 """, unsafe_allow_html=True)
 
 
+# ----------------- Définition de la fonction ATR Expert -----------------
+def calculate_pair_atr(price_x, atr_x, price_y, atr_y):
+    """Calcule le range ATR d'une paire X/Y"""
+    pair_price = price_x / price_y
+    delta_x = atr_x / price_y
+    delta_y = (price_x / (price_y ** 2)) * atr_y
+    atr_pair = math.sqrt(delta_x ** 2 + delta_y ** 2)
+    low = pair_price - atr_pair
+    high = pair_price + atr_pair
+    range_pct = (atr_pair / pair_price) * 100
+    return {
+        "pair_price": pair_price,
+        "atr_pair": atr_pair,
+        "low": low,
+        "high": high,
+        "range_pct": range_pct
+    }
+
 # ---------------- Interface ATR EXPERT ----------------
 st.markdown("""
 <div style="
