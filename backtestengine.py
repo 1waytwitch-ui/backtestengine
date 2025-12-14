@@ -168,50 +168,51 @@ if st.session_state.show_disclaimer:
 
 SECRET_CODE = "AMM"
 
-# État d'authentification
+# Session
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
-# ---------- OVERLAY ----------
 if not st.session_state.authenticated:
+
+    # CSS global
     st.markdown(
         """
         <style>
-        /* Fond sombre */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.65);
+        .block-container {
+            padding-top: 0rem;
+        }
+
+        /* fond sombre */
+        .login-background {
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #111827, #020617);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
         }
 
-        /* Carte centrale */
-        .login-box {
-            background: #111827;
+        /* carte centrale */
+        .login-card {
+            background: #020617;
             padding: 2.5rem;
             border-radius: 16px;
-            width: 100%;
             max-width: 420px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            text-align: center;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0,0,0,.5);
+            border: 1px solid #1f2933;
         }
 
         .login-title {
             font-size: 1.6rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #ffffff;
+            text-align: center;
+            margin-bottom: .5rem;
         }
 
         .login-subtitle {
-            font-size: 0.9rem;
+            font-size: .9rem;
             color: #9CA3AF;
+            text-align: center;
             margin-bottom: 1.5rem;
         }
         </style>
@@ -221,16 +222,18 @@ if not st.session_state.authenticated:
 
     st.markdown(
         """
-        <div class="overlay">
-            <div class="login-box">
+        <div class="login-background">
+            <div class="login-card">
                 <div class="login-title">Accès sécurisé</div>
                 <div class="login-subtitle">
-                    Réservé aux membres de la Team Élité KBOUR Crypto
+                    Accès réservé à la Team Élité KBOUR Crypto<br>
+                    Code disponible dans <b>DEFI Académie</b>
                 </div>
         """,
         unsafe_allow_html=True
     )
 
+    # Widgets Streamlit (cliquables)
     code = st.text_input("Code d'accès", type="password")
 
     if st.button("Valider", use_container_width=True):
@@ -243,7 +246,6 @@ if not st.session_state.authenticated:
     st.markdown("</div></div>", unsafe_allow_html=True)
 
     st.stop()
-
 
 
 # ----------------------------- LAYOUT -----------------------------
