@@ -9,26 +9,28 @@ import yfinance as yf
 import math
 
 
-# Définir un code secret
 SECRET_CODE = "AMM"
 
-# Fonction pour vérifier le code
-def check_access():
-    # Demande à l'utilisateur de saisir un code
-    code = st.text_input("Entrez le code secret pour accéder à l'app:")
+# Initialisation de l'état de connexion
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-    # Si le code saisi correspond au code secret, l'utilisateur a accès
-    if code == SECRET_CODE:
-        st.success("Accès autorisé ! Bienvenue.")
-        return True
-    elif code:
-        st.error("Code incorrect. Essayez à nouveau.")
-        return False
-    return False
+# Si l'utilisateur n'est PAS authentifié
+if not st.session_state.authenticated:
+    st.title("Accès sécurisé")
 
-# Vérifier si l'utilisateur a accès avant de montrer le contenu principal
-if check_access():
-    st.title("Bienvenue !")
+    code = st.text_input("Entrez le code d'accès", type="password")
+
+    if st.button("Valider"):
+        if code == SECRET_CODE:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Code incorrect")
+
+    # STOP ici : rien d'autre ne s'affiche
+    st.stop()
+
     
 
 
