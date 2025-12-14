@@ -729,6 +729,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+import streamlit as st
 
 # ======================= ATR RANGE BACKTEST =======================
 st.markdown("""
@@ -749,12 +750,12 @@ st.markdown("""
 def is_stable(price, tolerance=0.05):
     return abs(price - 1.0) <= tolerance
 
-# ---- Etat ATR secondaire ----
+# ======================= SESSION STATE =======================
 if "use_atr2" not in st.session_state:
     st.session_state.use_atr2 = False
 
 # ======================= INPUTS =======================
-col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
+col_atr1, col_atr2, col_atr3 = st.columns([1, 1, 1])
 
 with col_atr1:
     atr_usd_1 = st.number_input(
@@ -768,130 +769,51 @@ with col_atr1:
 with col_atr2:
     atr_mult = st.slider(
         "Multiplicateur ATR",
-        0.1, 10.0, 3.0,
+        min_value=0.1,
+        max_value=10.0,
+        value=3.0,
         step=0.1
     )
 
 with col_atr3:
     asym_mode = st.selectbox(
         "Stratégie de range",
-        ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
+        [
+            "Stratégie neutre",
+            "Coup de pouce bull",
+            "Coup de pouce bear",
+            "Custom"
+        ]
     )
-
-# ---- Bouton ATR 2 ----
-if st.button("Ajouter un second ATR (paire volatile)"):
-    st.session_state.use_atr2 = not st.session_state.use_atr2
-
-# ---- Prix de la paire ----
-pair_price = st.number_input(
-    "Prix actuel de la paire",
-    min_value=0.00000001,
-    value=1.0,
-    step=0.00000001,
-    format="%.8f"
-)
-
-# ---- Actif 1 ----
-price_asset_1 = st.number_input(
-    "Prix de l'actif 1 ($)",
-    min_value=0.00000001,
-    value=float(pair_price),
-    step=0.0001,
-    format="%.8f"
-)
-
-# ---- Actif 2 ----
-atr_usd_2 = 0.0
-price_asset_2 = 1.0
-stable_2 = False
-
-if st.session_state.use_atr2:
-    atr_usd_2 = st.number_input(
-        "ATR 2 - 14 ($)",
-        value=0.0,
-        min_value=0.0,
-        step=0.0001,
-        format="%.8f"
-    )
-
-    price_asset_2 = st.number_input(
-        "Prix de l'actif 2 ($)",
-        min_value=0.00000001,
-        value=1.0,
-        step=0.0001,
-        format="%.8f"
-    )
-
-    stable_2 = is_stable(price_asset_2)
 
 # ======================= CALCULS =======================
+range_total_pct = atr_usd_1 * atr_mult * 100
+low = 1 - (atr_usd_1 * atr_mult)
+high = 1 + (atr_usd_1 * atr_mult)
 
-vol_1 = atr_usd_1 / price_asset_1
-vol_2 = 0.0 if (not st.session_state.use_atr2 or stable_2) else atr_usd_2 / price_asset_2
-
-vol_pair = vol_1 + vol_2
-range_total_pct = vol_pair * atr_mult
-
-# ---- Asymétrie ----
-if asym_mode == "Stratégie neutre":
-    low_weight, high_weight = 0.5, 0.5
-elif asym_mode == "Coup de pouce bull":
-    low_weight, high_weight = 0.3, 0.7
-elif asym_mode == "Coup de pouce bear":
-    low_weight, high_weight = 0.7, 0.3
-else:
-    cw1, cw2 = st.columns(2)
-    with cw1:
-        low_weight = st.slider("Poids bas (%)", 0, 100, 50) / 100
-    with cw2:
-        high_weight = 1 - low_weight
-
-# ---- Prix bas / haut ----
-atr_low = pair_price * (1 - range_total_pct * low_weight * 2)
-atr_high = pair_price * (1 + range_total_pct * high_weight * 2)
-
-low_pct_display = (atr_low / pair_price - 1) * 100
-high_pct_display = (atr_high / pair_price - 1) * 100
-
-# ======================= AFFICHAGE =======================
-
-if not st.session_state.use_atr2:
-    recap_html = f"""
+# ======================= RÉCAP AFFICHAGE =======================
+st.markdown(
+    f"""
     <div style="font-size:16px;font-weight:600;line-height:1.6em;">
-        ATR 1 : {atr_usd_1:.6f}$ → {vol_1*100:.2f}%<br>
+        ATR 1 : {atr_usd_1:.6f}$ → {atr_usd_1*100:.2f}%<br>
         Multiplicateur : x{atr_mult:.2f}<br>
-        Range total : {range_total_pct*100:.2f}%<br>
-        Low : {atr_low:.8f} | High : {atr_high:.8f}<br>
-        Variation : {low_pct_display:.2f}% / +{high_pct_display:.2f}%
+        Range total : {range_total_pct:.2f}%<br>
+        Low : {low:.8f} | High : {high:.8f}<br>
+        Variation : -{range_total_pct:.2f}% / +{range_total_pct:.2f}%
     </div>
-    """
-else:
-    recap_html = f"""
-    <div style="font-size:16px;font-weight:600;line-height:1.6em;">
-        ATR 1 : {atr_usd_1:.6f}$ → {vol_1*100:.2f}%<br>
-        ATR 2 : {"Stable (ignoré)" if stable_2 else f"{atr_usd_2:.6f}$ → {vol_2*100:.2f}%"}<br>
-        ATR paire : {vol_pair*100:.2f}%<br>
-        Multiplicateur : x{atr_mult:.2f}<br>
-        Range total : {range_total_pct*100:.2f}%<br>
-        Low : {atr_low:.8f} | High : {atr_high:.8f}<br>
-        Variation : {low_pct_display:.2f}% / +{high_pct_display:.2f}%
-    </div>
-    """
+    """,
+    unsafe_allow_html=True
+)
 
-st.markdown(f"""
-<div style="
-    background-color:#27F5A9;
-    border-left:6px solid #00754A;
-    padding:18px 25px;
-    border-radius:12px;
-    margin-top:15px;
-    color:#000;
-    text-align:center;
-">
-<h4 style="margin-bottom:10px;">Range basé sur ATR</h4>
-{recap_html}
-</div>
-""", unsafe_allow_html=True)
+# ======================= ATR 2 (OPTIONNEL) =======================
+st.markdown("---")
+
+if st.button("Activer / Désactiver ATR 2"):
+    st.session_state.use_atr2 = not st.session_state.use_atr2
+
+if st.session_state.use_atr2:
+    st.info("ATR 2 activé (logique à compléter)")
+
 
 
 # --- GUIDE COMPLET ---
