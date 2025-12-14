@@ -8,6 +8,30 @@ import plotly.express as px
 import yfinance as yf
 import math
 
+
+# Définir un code secret
+SECRET_CODE = "AMM"
+
+# Fonction pour vérifier le code
+def check_access():
+    # Demande à l'utilisateur de saisir un code
+    code = st.text_input("Entrez le code secret pour accéder à l'app:")
+
+    # Si le code saisi correspond au code secret, l'utilisateur a accès
+    if code == SECRET_CODE:
+        st.success("Accès autorisé ! Bienvenue.")
+        return True
+    elif code:
+        st.error("Code incorrect. Essayez à nouveau.")
+        return False
+    return False
+
+# Vérifier si l'utilisateur a accès avant de montrer le contenu principal
+if check_access():
+    st.title("Bienvenue !")
+    
+
+
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
 # ---- STYLES GÉNÉRAUX ----
