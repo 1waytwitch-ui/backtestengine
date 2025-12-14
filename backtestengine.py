@@ -760,7 +760,7 @@ with col_atr1:
     atr_usd_1 = st.number_input(
         "ATR 1 - 14 ($)",
         value=100.0,
-        min_value=0.00000001,
+        min_value=0.0,
         step=0.0001,
         format="%.8f"
     )
@@ -782,7 +782,7 @@ with col_atr3:
 if st.button("Ajouter un second ATR (paire volatile)"):
     st.session_state.use_atr2 = not st.session_state.use_atr2
 
-# ---- Prix de la paire (toujours utilisé pour le range final) ----
+# ---- Prix de la paire ----
 pair_price = st.number_input(
     "Prix actuel de la paire",
     min_value=0.00000001,
@@ -802,14 +802,14 @@ price_asset_1 = st.number_input(
 
 # ---- Actif 2 ----
 atr_usd_2 = 0.0
-price_asset_2 = 0.0
+price_asset_2 = 1.0
 stable_2 = False
 
 if st.session_state.use_atr2:
     atr_usd_2 = st.number_input(
         "ATR 2 - 14 ($)",
         value=0.0,
-        min_value=0.00000001,
+        min_value=0.0,
         step=0.0001,
         format="%.8f"
     )
@@ -826,17 +826,10 @@ if st.session_state.use_atr2:
 
 # ======================= CALCULS =======================
 
-# ---- Volatilité relative ----
 vol_1 = atr_usd_1 / price_asset_1
-vol_2 = 0.0
+vol_2 = 0.0 if (not st.session_state.use_atr2 or stable_2) else atr_usd_2 / price_asset_2
 
-if st.session_state.use_atr2 and not stable_2:
-    vol_2 = atr_usd_2 / price_asset_2
-
-# ---- Volatilité paire ----
 vol_pair = vol_1 + vol_2
-
-# ---- Range ----
 range_total_pct = vol_pair * atr_mult
 
 # ---- Asymétrie ----
