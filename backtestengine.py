@@ -9,31 +9,6 @@ import yfinance as yf
 import math
 
 
-SECRET_CODE = "AMM"
-
-# Initialisation de l'état de connexion
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
-# Si l'utilisateur n'est PAS authentifié
-if not st.session_state.authenticated:
-    st.title("Accès sécurisé")
-
-    code = st.text_input("Entrez le code d'accès", type="password")
-
-    if st.button("Valider"):
-        if code == SECRET_CODE:
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
-            st.error("Code incorrect")
-
-    # STOP ici : rien d'autre ne s'affiche
-    st.stop()
-
-    
-
-
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
 # ---- STYLES GÉNÉRAUX ----
@@ -190,6 +165,29 @@ if st.session_state.show_disclaimer:
     Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement. Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées.
     </div>
     """, unsafe_allow_html=True)
+
+SECRET_CODE = "AMM"
+
+# Initialisation de l'état de connexion
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+# Si l'utilisateur n'est PAS authentifié
+if not st.session_state.authenticated:
+    st.title("Accès sécurisé")
+
+    code = st.text_input("Entrez le code d'accès", type="password")
+
+    if st.button("Valider"):
+        if code == SECRET_CODE:
+            st.session_state.authenticated = True
+            st.rerun()
+        else:
+            st.error("Code incorrect")
+
+    # STOP ici : rien d'autre ne s'affiche
+    st.stop()
+
 
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
