@@ -135,6 +135,9 @@ st.markdown("""
 .telegram-btn {
     background-color: #6c5ce7; /* optionnel, juste pour différencier */
 }
+.formation-btn {
+    background-color: #f59e0b; /* nouveau bouton formation */
+}
 </style>
 
 <div class="deFi-banner">
@@ -145,9 +148,13 @@ st.markdown("""
             <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:30px;height:30px;border-radius:50%; vertical-align: middle; margin-right:5px;">
             Mon Telegram
         </a>
+        <a href="https://shorturl.at/X3sYt" target="_blank" class="formation-btn">
+            Formation DEFI
+        </a>
     </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 # ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
