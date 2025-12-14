@@ -181,7 +181,7 @@ if not st.session_state.authenticated:
             background: #020617;
             padding: 2rem;
             border-radius: 14px;
-            max-width: 360px;
+            max-width: 380px;
             margin: 3rem auto;
             box-shadow: 0 20px 40px rgba(0,0,0,.4);
             border: 1px solid #1f2937;
@@ -198,7 +198,25 @@ if not st.session_state.authenticated:
             font-size: .85rem;
             color: #9CA3AF;
             text-align: center;
-            margin-bottom: 1.4rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .elite-button {
+            display: block;
+            text-align: center;
+            background: linear-gradient(135deg, #f59e0b, #facc15);
+            color: #111827;
+            font-weight: 700;
+            padding: 0.7rem;
+            border-radius: 10px;
+            text-decoration: none;
+            margin-bottom: 1.2rem;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .elite-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(250, 204, 21, 0.4);
         }
         </style>
         """,
@@ -206,13 +224,19 @@ if not st.session_state.authenticated:
     )
 
     st.markdown(
-        """
+        f"""
         <div class="login-card">
             <div class="login-title">Accès sécurisé</div>
             <div class="login-subtitle">
                 Réservé à la Team Élité KBOUR Crypto<br>
                 Code dans <b>DEFI Académie</b>
             </div>
+
+            <a class="elite-button"
+               href="https://www.youtube.com/channel/UCZL_vS9bsLI4maA4Oja9zyg/join"
+               target="_blank">
+               Rejoindre la Team Élité
+            </a>
         """,
         unsafe_allow_html=True
     )
@@ -229,7 +253,6 @@ if not st.session_state.authenticated:
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
-
 
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
