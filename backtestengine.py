@@ -750,12 +750,12 @@ st.markdown("""
 def is_stable(price, tolerance=0.05):
     return abs(price - 1.0) <= tolerance
 
-# ======================= SESSION STATE =======================
+# ---- Etat ATR secondaire ----
 if "use_atr2" not in st.session_state:
     st.session_state.use_atr2 = False
 
 # ======================= INPUTS =======================
-col_atr1, col_atr2, col_atr3 = st.columns([1, 1, 1])
+col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
 
 with col_atr1:
     atr_usd_1 = st.number_input(
@@ -769,50 +769,27 @@ with col_atr1:
 with col_atr2:
     atr_mult = st.slider(
         "Multiplicateur ATR",
-        min_value=0.1,
-        max_value=10.0,
-        value=3.0,
+        0.1, 10.0, 3.0,
         step=0.1
     )
 
 with col_atr3:
     asym_mode = st.selectbox(
         "Stratégie de range",
-        [
-            "Stratégie neutre",
-            "Coup de pouce bull",
-            "Coup de pouce bear",
-            "Custom"
-        ]
+        ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
     )
 
-# ======================= CALCULS =======================
-range_total_pct = atr_usd_1 * atr_mult * 100
-low = 1 - (atr_usd_1 * atr_mult)
-high = 1 + (atr_usd_1 * atr_mult)
-
 # ======================= RÉCAP AFFICHAGE =======================
-st.markdown(
-    f"""
-    <div style="font-size:16px;font-weight:600;line-height:1.6em;">
-        ATR 1 : {atr_usd_1:.6f}$ → {atr_usd_1*100:.2f}%<br>
-        Multiplicateur : x{atr_mult:.2f}<br>
-        Range total : {range_total_pct:.2f}%<br>
-        Low : {low:.8f} | High : {high:.8f}<br>
-        Variation : -{range_total_pct:.2f}% / +{range_total_pct:.2f}%
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("""
+<div style="font-size:16px;font-weight:600;line-height:1.6em;"> 
+    ATR 1 : 100.000000$ → 10000.00%<br>
+    Multiplicateur : x3.00<br>
+    Range total : 30000.00%<br>
+    Low : -299.00000000 | High : 301.00000000<br>
+    Variation : -30000.00% / +30000.00%
+</div>
+""", unsafe_allow_html=True)
 
-# ======================= ATR 2 (OPTIONNEL) =======================
-st.markdown("---")
-
-if st.button("Activer / Désactiver ATR 2"):
-    st.session_state.use_atr2 = not st.session_state.use_atr2
-
-if st.session_state.use_atr2:
-    st.info("ATR 2 activé (logique à compléter)")
 
 
 
