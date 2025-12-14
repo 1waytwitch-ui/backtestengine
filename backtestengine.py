@@ -166,81 +166,91 @@ if st.session_state.show_disclaimer:
     </div>
     """, unsafe_allow_html=True)
 
+# -----------------------
+# CODE SECRET
+# -----------------------
 SECRET_CODE = "AMM"
 
-# Session
+# Initialisation de l'état de connexion
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
+# -----------------------
+# OVERLAY ACCÈS SÉCURISÉ
+# -----------------------
 if not st.session_state.authenticated:
 
-    st.markdown(
-        """
-        <style>
-        .login-card {
-            background: #020617;
-            padding: 2rem;
-            border-radius: 14px;
-            max-width: 380px;
-            margin: 3rem auto;
-            box-shadow: 0 20px 40px rgba(0,0,0,.4);
-            border: 1px solid #1f2937;
-        }
+    st.markdown("""
+    <style>
+    /* Carte centrale */
+    .login-card {
+        background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+        padding: 28px 30px;
+        border-radius: 18px;
+        max-width: 420px;
+        margin: 3rem auto;
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
+    }
 
-        .login-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: .4rem;
-        }
+    .login-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: white !important;
+        text-align: center;
+        margin-bottom: 6px;
+    }
 
-        .login-subtitle {
-            font-size: .85rem;
-            color: #9CA3AF;
-            text-align: center;
-            margin-bottom: 1.2rem;
-        }
+    .login-subtitle {
+        font-size: 14px;
+        color: #d1d5db;
+        text-align: center;
+        margin-bottom: 18px;
+    }
 
-        .elite-button {
-            display: block;
-            text-align: center;
-            background: linear-gradient(135deg, #f59e0b, #facc15);
-            color: #111827;
-            font-weight: 700;
-            padding: 0.7rem;
-            border-radius: 10px;
-            text-decoration: none;
-            margin-bottom: 1.2rem;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
+    .login-buttons {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 18px;
+    }
 
-        .elite-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(250, 204, 21, 0.4);
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+    .elite-btn {
+        background-color: #facc15;
+        color: #111827 !important;
+        font-size: 16px;
+        font-weight: 700;
+        text-decoration: none !important;
+        padding: 10px 18px;
+        border-radius: 14px;
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
 
-    st.markdown(
-        f"""
-        <div class="login-card">
-            <div class="login-title">Accès sécurisé</div>
-            <div class="login-subtitle">
-                Réservé à la Team Élité KBOUR Crypto<br>
-                Code dans <b>DEFI Académie</b>
-            </div>
+    .elite-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(250, 204, 21, 0.4);
+    }
+    </style>
 
-            <a class="elite-button"
-               href="https://www.youtube.com/channel/UCZL_vS9bsLI4maA4Oja9zyg/join"
-               target="_blank">
+    <div class="login-card">
+        <div class="login-title">Accès sécurisé</div>
+        <div class="login-subtitle">
+            Réservé aux membres de la <b>Team Élité KBOUR Crypto</b><br>
+            Code disponible dans <b>DEFI Académie</b>
+        </div>
+
+        <div class="login-buttons">
+            <a href="https://www.youtube.com/channel/UCZL_vS9bsLI4maA4Oja9zyg/join"
+               target="_blank"
+               class="elite-btn">
                Rejoindre la Team Élité
             </a>
-        """,
-        unsafe_allow_html=True
-    )
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
+    # -----------------------
+    # CHAMP CODE SECRET
+    # -----------------------
     code = st.text_input("Code d'accès", type="password")
 
     if st.button("Valider", use_container_width=True):
@@ -249,9 +259,6 @@ if not st.session_state.authenticated:
             st.rerun()
         else:
             st.error("Code incorrect")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
     st.stop()
 
 # ----------------------------- LAYOUT -----------------------------
