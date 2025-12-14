@@ -745,15 +745,19 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ---- Gestion état ATR secondaire ----
+if "use_atr2" not in st.session_state:
+    st.session_state.use_atr2 = False
+
 col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
 
 with col_atr1:
     atr_usd = st.number_input(
-        "ATR 14 ($)",
+        "ATR 1 - 14 ($)",
         value=100.0,
         min_value=0.01,
         step=1.0,
-        help="Valeur ATR 14 ($) en daily (indicateur)"
+        help="ATR 14 du premier actif"
     )
 
 with col_atr2:
@@ -761,7 +765,7 @@ with col_atr2:
         "Multiplicateur ATR",
         0.5, 10.0, 3.0,
         step=0.25,
-        help="Largeur du range = ATR × multiplicateur"
+        help="Largeur du range = ATR total × multiplicateur"
     )
 
 with col_atr3:
@@ -770,17 +774,35 @@ with col_atr3:
         ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
     )
 
-# ---- Prix de référence ATR (manuel) ----
+# ---- Bouton ajout ATR secondaire ----
+if st.button("Ajouter un second ATR (paire volatile)"):
+    st.session_state.use_atr2 = not st.session_state.use_atr2
+
+# ---- ATR secondaire ----
+atr_usd_2 = 0.0
+if st.session_state.use_atr2:
+    atr_usd_2 = st.number_input(
+        "ATR 2 - 14 ($)",
+        value=50.0,
+        min_value=0.01,
+        step=1.0,
+        help="ATR 14 du second actif"
+    )
+
+# ---- ATR total ----
+atr_total_usd = atr_usd + atr_usd_2
+
+# ---- Prix de référence ATR ----
 asset_price = st.number_input(
     "Prix de l'actif utilisé pour l'ATR ($)",
     min_value=0.0001,
     value=float(P_deposit),
     step=1.0,
-    help="Prix réel de l'actif pour convertir l'ATR $ en %"
+    help="Prix de référence pour convertir l'ATR $ en %"
 )
 
-# ---- Conversion ATR $ → % (basée sur le prix de l'actif) ----
-atr_pct = (atr_usd / asset_price) * 100
+# ---- Conversion ATR $ → % ----
+atr_pct = (atr_total_usd / asset_price) * 100
 
 # ---- Calcul du range total ----
 range_total_pct = atr_pct * atr_mult
@@ -799,15 +821,15 @@ else:
     with cw2:
         high_weight = 1 - low_weight
 
-# ---- Calcul prix bas / haut (en $) ----
+# ---- Calcul prix bas / haut ----
 atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
 atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
 
-# ---- Conversion du range en % (affichage) ----
+# ---- Conversion % affichage ----
 low_pct_display = (atr_low / P_deposit - 1) * 100
 high_pct_display = (atr_high / P_deposit - 1) * 100
 
-# ---- Affichage ATR ----
+# ---- Affichage ----
 st.markdown(f"""
 <div style="
     background-color:#27F5A9;
@@ -819,11 +841,13 @@ st.markdown(f"""
     text-align:center;
 ">
 
-<h4 style="margin:0 0 10px 0;">Range basé sur ATR</h4>
+<h4 style="margin:0 0 10px 0;">Range basé sur ATR combiné</h4>
 
 <div style="font-size:16px;font-weight:600;line-height:1.6em;">
-ATR 14 : {atr_usd:.2f}$ | ATR (%) : {atr_pct:.2f}% | Multiplicateur : x{atr_mult:.2f}<br>
-Prix actif ATR : {asset_price:.2f}$<br>
+ATR 1 : {atr_usd:.2f}$<br>
+ATR 2 : {atr_usd_2:.2f}$<br>
+ATR total : {atr_total_usd:.2f}$ | ATR (%) : {atr_pct:.2f}%<br>
+Multiplicateur : x{atr_mult:.2f}<br>
 Range total : {range_total_pct:.2f}%<br>
 <span style='color:#ff9f1c;'>ATR Low : {atr_low:.2f}$ | ATR High : {atr_high:.2f}$</span><br>
 Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
