@@ -752,7 +752,7 @@ if "use_atr2" not in st.session_state:
 col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
 
 with col_atr1:
-    atr_usd = st.number_input(
+    atr_usd_1 = st.number_input(
         "ATR 1 - 14 ($)",
         value=172.0,
         min_value=0.00000001,
@@ -763,8 +763,8 @@ with col_atr1:
 with col_atr2:
     atr_mult = st.slider(
         "Multiplicateur ATR",
-        0.5, 10.0, 3.0,
-        step=0.25
+        0.1, 10.0, 3.0,
+        step=0.1
     )
 
 with col_atr3:
@@ -777,16 +777,25 @@ with col_atr3:
 if st.button("Ajouter un second ATR (paire volatile)"):
     st.session_state.use_atr2 = not st.session_state.use_atr2
 
-# ---- Prix actif 1 ----
+# ---- Prix paire ----
+pair_price = st.number_input(
+    "Prix actuel de la paire",
+    min_value=0.00000001,
+    value=0.03458,
+    step=0.00000001,
+    format="%.8f"
+)
+
+# ---- Actif 1 ----
 price_asset_1 = st.number_input(
     "Prix de l'actif 1 ($)",
     min_value=0.00000001,
-    value=float(P_deposit),
+    value=3119.0,
     step=0.0001,
     format="%.8f"
 )
 
-# ---- ATR secondaire ----
+# ---- ATR 2 et actif 2 ----
 atr_usd_2 = 0.0
 price_asset_2 = 0.0
 
@@ -802,20 +811,22 @@ if st.session_state.use_atr2:
     price_asset_2 = st.number_input(
         "Prix de l'actif 2 ($)",
         min_value=0.00000001,
-        value=price_asset_1,
+        value=90200.0,
         step=0.0001,
         format="%.8f"
     )
 
-# ---- Conversion ATR $ → % par actif ----
-atr_pct_1 = (atr_usd / price_asset_1) * 100
-atr_pct_2 = (atr_usd_2 / price_asset_2) * 100 if st.session_state.use_atr2 else 0
+# ======================= CALCULS =======================
 
-# ---- ATR total normalisé ----
-atr_pct = atr_pct_1 + atr_pct_2
+# ---- Volatilité relative ----
+vol_1 = atr_usd_1 / price_asset_1
+vol_2 = atr_usd_2 / price_asset_2 if st.session_state.use_atr2 else 0.0
+
+# ---- Volatilité paire ----
+vol_pair = vol_1 + vol_2
 
 # ---- Range ----
-range_total_pct = atr_pct * atr_mult
+range_total_pct = vol_pair * atr_mult
 
 # ---- Asymétrie ----
 if asym_mode == "Stratégie neutre":
@@ -827,18 +838,38 @@ elif asym_mode == "Coup de pouce bear":
 else:
     cw1, cw2 = st.columns(2)
     with cw1:
-        low_weight = st.slider("Poids bas (%)", 0, 100, 40) / 100
+        low_weight = st.slider("Poids bas (%)", 0, 100, 50) / 100
     with cw2:
         high_weight = 1 - low_weight
 
 # ---- Prix bas / haut ----
-atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
-atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
+atr_low = pair_price * (1 - range_total_pct * low_weight * 2)
+atr_high = pair_price * (1 + range_total_pct * high_weight * 2)
 
-low_pct_display = (atr_low / P_deposit - 1) * 100
-high_pct_display = (atr_high / P_deposit - 1) * 100
+low_pct_display = (atr_low / pair_price - 1) * 100
+high_pct_display = (atr_high / pair_price - 1) * 100
 
-# ---- Affichage ----
+# ======================= AFFICHAGE =======================
+
+if not st.session_state.use_atr2:
+    display_block = f"""
+    ATR 1 : {atr_usd_1:.6f}$ → {vol_1*100:.2f}%<br>
+    Multiplicateur : x{atr_mult:.2f}<br>
+    Range total : {range_total_pct*100:.2f}%<br>
+    Pair Low : {atr_low:.8f} | Pair High : {atr_high:.8f}<br>
+    Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
+    """
+else:
+    display_block = f"""
+    ATR 1 : {atr_usd_1:.6f}$ → {vol_1*100:.2f}%<br>
+    ATR 2 : {atr_usd_2:.6f}$ → {vol_2*100:.2f}%<br>
+    ATR pair : {(vol_pair*100):.2f}%<br>
+    Multiplicateur : x{atr_mult:.2f}<br>
+    Range total : {range_total_pct*100:.2f}%<br>
+    Pair Low : {atr_low:.8f} | Pair High : {atr_high:.8f}<br>
+    Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
+    """
+
 st.markdown(f"""
 <div style="
     background-color:#27F5A9;
@@ -850,15 +881,11 @@ st.markdown(f"""
     text-align:center;
 ">
 
-<h4>Range basé sur ATR combiné normalisé</h4>
+<h4 style="margin:0 0 10px 0;">Range basé sur ATR paire</h4>
 
-ATR 1 : {atr_usd:.6f}$ → {atr_pct_1:.2f}%<br>
-ATR 2 : {atr_usd_2:.6f}$ → {atr_pct_2:.2f}%<br>
-ATR total : {atr_pct:.2f}%<br>
-Multiplicateur : x{atr_mult:.2f}<br>
-Range total : {range_total_pct:.2f}%<br>
-ATR Low : {atr_low:.4f}$ | ATR High : {atr_high:.4f}$<br>
-Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
+<div style="font-size:16px;font-weight:600;line-height:1.6em;">
+{display_block}
+</div>
 </div>
 """, unsafe_allow_html=True)
 
