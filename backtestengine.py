@@ -877,7 +877,7 @@ with col3:
 with col4:
     atr_y = st.number_input("ATR daily Y", value=3282.0, key="atr_y_pair_expert")
 
-if st.button("Calculer ATR Paire", key="calc_atr_pair_expert"):
+if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
     result = calculate_pair_atr(price_x, atr_x, price_y, atr_y)
     st.markdown(f"""
     <div style="
