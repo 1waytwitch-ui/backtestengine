@@ -162,7 +162,7 @@ if st.session_state.show_disclaimer:
         font-size: 15px;
     ">
     <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
-    Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement. Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées. L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. Le code d’accès est disponible dans le canal privé “DEFI Académie”.
+    L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. Le code d’accès est disponible dans le canal privé “DEFI Académie”. Cet outil peut comporter des approximations ou des inexactitudes. Il ne s’agit en aucun cas d’un conseil en investissement. Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. Si l’API est surchargée, certains prix devront être saisis manuellement et les suggestions de rebalances seront désactivées.
     </div>
     """, unsafe_allow_html=True)
 
