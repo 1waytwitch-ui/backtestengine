@@ -171,18 +171,14 @@ if st.session_state.show_disclaimer:
 # -----------------------
 SECRET_CODE = "AMM"
 
-# Initialisation de l'état de connexion
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
-# -----------------------
-# OVERLAY ACCÈS SÉCURISÉ
-# -----------------------
 if not st.session_state.authenticated:
 
+    # HTML + CSS overlay + bouton
     st.markdown("""
     <style>
-    /* Carte centrale */
     .login-card {
         background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
         padding: 28px 30px;
@@ -191,30 +187,12 @@ if not st.session_state.authenticated:
         margin: 3rem auto;
         border: 1px solid rgba(255,255,255,0.12);
         box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
-    }
-
-    .login-title {
-        font-size: 28px;
-        font-weight: 700;
-        color: white !important;
         text-align: center;
-        margin-bottom: 6px;
     }
-
-    .login-subtitle {
-        font-size: 14px;
-        color: #d1d5db;
-        text-align: center;
-        margin-bottom: 18px;
-    }
-
-    .login-buttons {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 18px;
-    }
-
+    .login-title { font-size: 28px; font-weight: 700; color: white !important; margin-bottom: 6px; }
+    .login-subtitle { font-size: 14px; color: #d1d5db; margin-bottom: 18px; }
     .elite-btn {
+        display: inline-block;
         background-color: #facc15;
         color: #111827 !important;
         font-size: 16px;
@@ -223,11 +201,11 @@ if not st.session_state.authenticated:
         padding: 10px 18px;
         border-radius: 14px;
         transition: transform 0.15s ease, box-shadow 0.15s ease;
+        margin-bottom: 18px;
     }
-
     .elite-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(250, 204, 21, 0.4);
+        box-shadow: 0 8px 20px rgba(250,204,21,0.4);
     }
     </style>
 
@@ -237,30 +215,24 @@ if not st.session_state.authenticated:
             Réservé aux membres de la <b>Team Élité KBOUR Crypto</b><br>
             Code disponible dans <b>DEFI Académie</b>
         </div>
-
-        <div class="login-buttons">
-            <a href="https://www.youtube.com/channel/UCZL_vS9bsLI4maA4Oja9zyg/join"
-               target="_blank"
-               class="elite-btn">
-               Rejoindre la Team Élité
-            </a>
-        </div>
+        <!-- BOUTON EXTERNE -->
+        <a href="https://www.youtube.com/channel/UCZL_vS9bsLI4maA4Oja9zyg/join" 
+           target="_blank" class="elite-btn">
+           Rejoindre la Team Élité
+        </a>
     </div>
     """, unsafe_allow_html=True)
 
-    # -----------------------
-    # CHAMP CODE SECRET
-    # -----------------------
-    code = st.text_input("Code d'accès", type="password")
-
+    # INPUT STREAMLIT séparé pour que ce soit cliquable
+    st.text_input("Code d'accès", key="secret_code", type="password")
     if st.button("Valider", use_container_width=True):
-        if code == SECRET_CODE:
+        if st.session_state.secret_code == SECRET_CODE:
             st.session_state.authenticated = True
             st.rerun()
         else:
             st.error("Code incorrect")
-    st.stop()
 
+    st.stop()
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
