@@ -174,46 +174,31 @@ if "authenticated" not in st.session_state:
 
 if not st.session_state.authenticated:
 
-    # CSS global
     st.markdown(
         """
         <style>
-        .block-container {
-            padding-top: 0rem;
-        }
-
-        /* fond sombre */
-        .login-background {
-            min-height: 100vh;
-            background: radial-gradient(circle at top, #111827, #020617);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* carte centrale */
         .login-card {
             background: #020617;
-            padding: 2.5rem;
-            border-radius: 16px;
-            max-width: 420px;
-            width: 100%;
-            box-shadow: 0 25px 50px rgba(0,0,0,.5);
-            border: 1px solid #1f2933;
+            padding: 2rem;
+            border-radius: 14px;
+            max-width: 360px;
+            margin: 3rem auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,.4);
+            border: 1px solid #1f2937;
         }
 
         .login-title {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-weight: 700;
             text-align: center;
-            margin-bottom: .5rem;
+            margin-bottom: .4rem;
         }
 
         .login-subtitle {
-            font-size: .9rem;
+            font-size: .85rem;
             color: #9CA3AF;
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.4rem;
         }
         </style>
         """,
@@ -222,18 +207,16 @@ if not st.session_state.authenticated:
 
     st.markdown(
         """
-        <div class="login-background">
-            <div class="login-card">
-                <div class="login-title">Accès sécurisé</div>
-                <div class="login-subtitle">
-                    Accès réservé à la Team Élité KBOUR Crypto<br>
-                    Code disponible dans <b>DEFI Académie</b>
-                </div>
+        <div class="login-card">
+            <div class="login-title">Accès sécurisé</div>
+            <div class="login-subtitle">
+                Réservé à la Team Élité KBOUR Crypto<br>
+                Code dans <b>DEFI Académie</b>
+            </div>
         """,
         unsafe_allow_html=True
     )
 
-    # Widgets Streamlit (cliquables)
     code = st.text_input("Code d'accès", type="password")
 
     if st.button("Valider", use_container_width=True):
@@ -243,7 +226,7 @@ if not st.session_state.authenticated:
         else:
             st.error("Code incorrect")
 
-    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.stop()
 
