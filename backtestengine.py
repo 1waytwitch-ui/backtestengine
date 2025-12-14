@@ -745,16 +745,21 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ======================= HELPERS =======================
+def is_stable(price, tolerance=0.05):
+    return abs(price - 1.0) <= tolerance
+
 # ---- Etat ATR secondaire ----
 if "use_atr2" not in st.session_state:
     st.session_state.use_atr2 = False
 
+# ======================= INPUTS =======================
 col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
 
 with col_atr1:
     atr_usd_1 = st.number_input(
         "ATR 1 - 14 ($)",
-        value=172.0,
+        value=100.0,
         min_value=0.00000001,
         step=0.0001,
         format="%.8f"
@@ -773,15 +778,15 @@ with col_atr3:
         ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
     )
 
-# ---- Bouton ATR secondaire ----
+# ---- Bouton ATR 2 ----
 if st.button("Ajouter un second ATR (paire volatile)"):
     st.session_state.use_atr2 = not st.session_state.use_atr2
 
-# ---- Prix paire ----
+# ---- Prix de la paire (toujours utilisé pour le range final) ----
 pair_price = st.number_input(
     "Prix actuel de la paire",
     min_value=0.00000001,
-    value=0.03458,
+    value=1.0,
     step=0.00000001,
     format="%.8f"
 )
@@ -790,19 +795,20 @@ pair_price = st.number_input(
 price_asset_1 = st.number_input(
     "Prix de l'actif 1 ($)",
     min_value=0.00000001,
-    value=3119.0,
+    value=float(pair_price),
     step=0.0001,
     format="%.8f"
 )
 
-# ---- ATR 2 et actif 2 ----
+# ---- Actif 2 ----
 atr_usd_2 = 0.0
 price_asset_2 = 0.0
+stable_2 = False
 
 if st.session_state.use_atr2:
     atr_usd_2 = st.number_input(
         "ATR 2 - 14 ($)",
-        value=3264.0,
+        value=0.0,
         min_value=0.00000001,
         step=0.0001,
         format="%.8f"
@@ -811,16 +817,21 @@ if st.session_state.use_atr2:
     price_asset_2 = st.number_input(
         "Prix de l'actif 2 ($)",
         min_value=0.00000001,
-        value=90200.0,
+        value=1.0,
         step=0.0001,
         format="%.8f"
     )
+
+    stable_2 = is_stable(price_asset_2)
 
 # ======================= CALCULS =======================
 
 # ---- Volatilité relative ----
 vol_1 = atr_usd_1 / price_asset_1
-vol_2 = atr_usd_2 / price_asset_2 if st.session_state.use_atr2 else 0.0
+vol_2 = 0.0
+
+if st.session_state.use_atr2 and not stable_2:
+    vol_2 = atr_usd_2 / price_asset_2
 
 # ---- Volatilité paire ----
 vol_pair = vol_1 + vol_2
@@ -852,22 +863,26 @@ high_pct_display = (atr_high / pair_price - 1) * 100
 # ======================= AFFICHAGE =======================
 
 if not st.session_state.use_atr2:
-    display_block = f"""
-    ATR 1 : {atr_usd_1:.6f}$ → {vol_1*100:.2f}%<br>
-    Multiplicateur : x{atr_mult:.2f}<br>
-    Range total : {range_total_pct*100:.2f}%<br>
-    Pair Low : {atr_low:.8f} | Pair High : {atr_high:.8f}<br>
-    Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
+    recap_html = f"""
+    <div style="font-size:16px;font-weight:600;line-height:1.6em;">
+        ATR 1 : {atr_usd_1:.6f}$ → {vol_1*100:.2f}%<br>
+        Multiplicateur : x{atr_mult:.2f}<br>
+        Range total : {range_total_pct*100:.2f}%<br>
+        Low : {atr_low:.8f} | High : {atr_high:.8f}<br>
+        Variation : {low_pct_display:.2f}% / +{high_pct_display:.2f}%
+    </div>
     """
 else:
-    display_block = f"""
-    ATR 1 : {atr_usd_1:.6f}$ → {vol_1*100:.2f}%<br>
-    ATR 2 : {atr_usd_2:.6f}$ → {vol_2*100:.2f}%<br>
-    ATR pair : {(vol_pair*100):.2f}%<br>
-    Multiplicateur : x{atr_mult:.2f}<br>
-    Range total : {range_total_pct*100:.2f}%<br>
-    Pair Low : {atr_low:.8f} | Pair High : {atr_high:.8f}<br>
-    Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
+    recap_html = f"""
+    <div style="font-size:16px;font-weight:600;line-height:1.6em;">
+        ATR 1 : {atr_usd_1:.6f}$ → {vol_1*100:.2f}%<br>
+        ATR 2 : {"Stable (ignoré)" if stable_2 else f"{atr_usd_2:.6f}$ → {vol_2*100:.2f}%"}<br>
+        ATR paire : {vol_pair*100:.2f}%<br>
+        Multiplicateur : x{atr_mult:.2f}<br>
+        Range total : {range_total_pct*100:.2f}%<br>
+        Low : {atr_low:.8f} | High : {atr_high:.8f}<br>
+        Variation : {low_pct_display:.2f}% / +{high_pct_display:.2f}%
+    </div>
     """
 
 st.markdown(f"""
@@ -880,14 +895,11 @@ st.markdown(f"""
     color:#000;
     text-align:center;
 ">
-
-<h4 style="margin:0 0 10px 0;">Range basé sur ATR paire</h4>
-
-<div style="font-size:16px;font-weight:600;line-height:1.6em;">
-{display_block}
-</div>
+<h4 style="margin-bottom:10px;">Range basé sur ATR</h4>
+{recap_html}
 </div>
 """, unsafe_allow_html=True)
+
 
 # --- GUIDE COMPLET ---
 guide_html = """
