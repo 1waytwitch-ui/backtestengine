@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
 import yfinance as yf
+import math
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 
@@ -830,6 +831,59 @@ Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
 </div>
 </div>
 """, unsafe_allow_html=True)
+
+
+# ---------------- ATR expert ----------------
+
+def calculate_pair_atr(price_x, atr_x, price_y, atr_y):
+    """
+    Calcule le range ATR d'une paire X/Y
+    :param price_x: prix actuel de l'actif X
+    :param atr_x: ATR de X
+    :param price_y: prix actuel de l'actif Y
+    :param atr_y: ATR de Y
+    :return: dict avec prix pair, ATR pair, low, high, range %
+    """
+    # Prix de la paire
+    pair_price = price_x / price_y
+    
+    # ATR relatif
+    delta_x = atr_x / price_y
+    delta_y = (price_x / (price_y ** 2)) * atr_y
+    
+    # ATR total de la paire
+    atr_pair = math.sqrt(delta_x ** 2 + delta_y ** 2)
+    
+    # Bornes
+    low = pair_price - atr_pair
+    high = pair_price + atr_pair
+    
+    # Range %
+    range_pct = (atr_pair / pair_price) * 100
+    
+    return {
+        "pair_price": pair_price,
+        "atr_pair": atr_pair,
+        "low": low,
+        "high": high,
+        "range_pct": range_pct
+    }
+
+# ---------------- Interface ATR expert ----------------
+
+st.title("ATR mode expert")
+
+price_x = st.number_input("Prix actuel actif X", value=3111.0)
+atr_x = st.number_input("ATR daily X", value=174.0)
+price_y = st.number_input("Prix actuel actif Y", value=90113.0)
+atr_y = st.number_input("ATR daily Y", value=3282.0)
+
+if st.button("Calculer ATR Paire"):
+    result = calculate_pair_atr(price_x, atr_x, price_y, atr_y)
+    st.write(f"**Prix de la paire X/Y :** {result['pair_price']:.6f}")
+    st.write(f"**ATR de la paire :** {result['atr_pair']:.6f}")
+    st.write(f"**Low / High :** {result['low']:.6f} / {result['high']:.6f}")
+    st.write(f"**Range % :** {result['range_pct']:.2f}%")
 
 
 
