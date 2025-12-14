@@ -149,7 +149,7 @@ st.markdown("""
             Mon Telegram
         </a>
         <a href="https://shorturl.at/X3sYt" target="_blank" class="formation-btn">
-            Formation DEFI
+            Formation code DEFI
         </a>
     </div>
 </div>
