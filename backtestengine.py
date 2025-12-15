@@ -733,9 +733,9 @@ range_total_pct = atr_pct * atr_mult_default
 if asym_mode_default == "Stratégie neutre":
     low_weight, high_weight = 0.5, 0.5
 elif asym_mode_default == "Coup de pouce bull":
-    low_weight, high_weight = 0.3, 0.7
+    low_weight, high_weight = 0.2, 0.8
 elif asym_mode_default == "Coup de pouce bear":
-    low_weight, high_weight = 0.7, 0.3
+    low_weight, high_weight = 0.8, 0.2
 else:
     low_weight, high_weight = 0.5, 0.5
 
@@ -865,9 +865,9 @@ range_total_pct = atr_pct * atr_mult
 if asym_mode == "Stratégie neutre":
     low_weight, high_weight = 0.5, 0.5
 elif asym_mode == "Coup de pouce bull":
-    low_weight, high_weight = 0.3, 0.7
+    low_weight, high_weight = 0.2, 0.8
 elif asym_mode == "Coup de pouce bear":
-    low_weight, high_weight = 0.7, 0.3
+    low_weight, high_weight = 0.8, 0.2
 else:
     cw1, cw2 = st.columns(2)
     with cw1:
