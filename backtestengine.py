@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import yfinance as yf
 import math
+import streamlit.components.v1 as components
 
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
@@ -84,6 +85,25 @@ def get_market_chart(asset_id):
     except:
         return [1.0] * 30
 
+
+# ---  Updated cache_resource for Streamlit 1.18+
+@st.cache_resource(ttl=30, show_spinner=False)
+def get_market_chart_cached(asset_id):
+    try:
+        log(f"Appel API CoinGecko pour: {asset_id}", "api")
+
+        url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
+        data = requests.get(url).json()
+        prices = [p[1] for p in data.get("prices", [])]
+        prices = np.array(prices)
+        prices = prices[~np.isnan(prices)]
+        prices = prices[prices > 0]
+        return prices.tolist() if len(prices) > 0 else [1.0] * 30
+    except Exception as e:
+        log(f"Erreur {asset_id}: {str(e)}", "error")
+        return [1.0] * 30
+
+
 def compute_volatility(prices):
     if len(prices) < 2:
         return 0.0
@@ -100,6 +120,72 @@ def get_price_usd(token):
         return res[COINGECKO_IDS[token]]["usd"], True
     except:
         return 0.0, False
+
+@st.cache_resource(ttl=30, show_spinner=False)
+def get_price_usd_cached(token):
+    try:
+        log(f"Fetching price for {token} from API")
+        res = requests.get(
+            f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[token]}&vs_currencies=usd"
+        ).json()
+        return res[COINGECKO_IDS[token]]["usd"], True
+    except:
+        return 0.0, False
+
+
+def log(message, level="info", data=None):
+    """
+    Log dans la console JavaScript du navigateur
+    
+    Args:
+        message (str): Message à logger
+        level (str): "debug", "info", "warn", "error", "success", "api", "cache"
+        data (str): Données optionnelles à afficher (doit être du JSON valide ou une string)
+    
+    Exemples:
+        log("Appel API pour bitcoin", "api")
+        log("Données récupérées avec succès", "success")
+        log("Cache hit pour ethereum", "cache")
+        log("Erreur de connexion", "error")
+        log("Debug info", "debug", '{"asset": "btc", "price": 50000}')
+    """
+    timestamp = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+    
+    # Emojis selon le niveau
+    emojis = {
+        "debug": "🔍",
+        "info": "ℹ️",
+        "success": "✅",
+        "warn": "⚠️",
+        "warning": "⚠️",
+        "error": "❌",
+        "api": "📡",
+        "cache": "💾"
+    }
+    
+    # Méthode console correspondante
+    console_methods = {
+        "debug": "debug",
+        "info": "info",
+        "success": "log",
+        "warn": "warn",
+        "warning": "warn",
+        "error": "error",
+        "api": "info",
+        "cache": "info"
+    }
+    
+    emoji = emojis.get(level, "ℹ️")
+    method = console_methods.get(level, "log")
+    formatted_msg = f"[{timestamp}] {emoji} {message}"
+    
+    # Code JavaScript
+    if data:
+        js_code = f'<script>console.{method}("{formatted_msg}", {data});</script>'
+    else:
+        js_code = f'<script>console.{method}("{formatted_msg}");</script>'
+    
+    components.html(js_code, height=0)
 
 # ---- HEADER ----
 st.markdown("""
@@ -294,8 +380,8 @@ with col1:
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
     # ================== PRIX TOKEN ==================
-    priceA_usd, okA = get_price_usd(tokenA)
-    priceB_usd, okB = get_price_usd(tokenB)
+    priceA_usd, okA = get_price_usd_cached(tokenA)
+    priceB_usd, okB = get_price_usd_cached(tokenB)
 
     la, lb = st.columns(2)
     with la:
@@ -312,9 +398,9 @@ with col1:
     keyA = f"{tokenA}_prices_{datetime.date.today()}"
     keyB = f"{tokenB}_prices_{datetime.date.today()}"
     if keyA not in st.session_state:
-        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
+        st.session_state[keyA] = get_market_chart_cached(COINGECKO_IDS[tokenA])
     if keyB not in st.session_state:
-        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
+        st.session_state[keyB] = get_market_chart_cached(COINGECKO_IDS[tokenB])
     pricesA = np.array(st.session_state[keyA])
     pricesB = np.array(st.session_state[keyB])
 
