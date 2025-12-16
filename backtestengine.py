@@ -1101,3 +1101,14 @@ Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et 
 </div>
 """
 st.markdown(guide_html, unsafe_allow_html=True)
+
+
+st.set_page_config(
+    page_title="Vidéo intégrée",
+    layout="centered"
+)
+
+st.title("Atelier sur l'Impermanent Loss")
+
+st.video("https://www.youtube.com/watch?v=uQPeyXsQNrs")
+
