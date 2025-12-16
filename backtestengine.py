@@ -873,16 +873,21 @@ Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
 """, unsafe_allow_html=True)
 
 
+
 # ----------------- Définition de la fonction ATR Expert -----------------
-def calculate_pair_atr(price_x, atr_x, price_y, atr_y):
-    """Calcule le range ATR d'une paire X/Y"""
+def calculate_pair_atr(price_x, atr_x, price_y, atr_y, multiplier=1):
+    """Calcule le range ATR d'une paire X/Y avec multiplicateur"""
     pair_price = price_x / price_y
     delta_x = atr_x / price_y
     delta_y = (price_x / (price_y ** 2)) * atr_y
-    atr_pair = math.sqrt(delta_x ** 2 + delta_y ** 2)
+
+    atr_pair_raw = math.sqrt(delta_x ** 2 + delta_y ** 2)
+    atr_pair = atr_pair_raw * multiplier
+
     low = pair_price - atr_pair
     high = pair_price + atr_pair
     range_pct = (atr_pair / pair_price) * 100
+
     return {
         "pair_price": pair_price,
         "atr_pair": atr_pair,
@@ -917,8 +922,24 @@ with col3:
 with col4:
     atr_y = st.number_input("ATR daily Y", value=3282.0, key="atr_y_pair_expert")
 
+# Multiplicateur ATR
+atr_multiplier = st.slider(
+    "Multiplicateur ATR",
+    min_value=1,
+    max_value=6,
+    value=1,
+    step=1
+)
+
 if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
-    result = calculate_pair_atr(price_x, atr_x, price_y, atr_y)
+    result = calculate_pair_atr(
+        price_x,
+        atr_x,
+        price_y,
+        atr_y,
+        atr_multiplier
+    )
+
     st.markdown(f"""
     <div style="
         background-color:#FFD700;
@@ -932,7 +953,7 @@ if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
     <h4 style="margin:0 0 10px 0;">ATR Paire Volatile</h4>
     <div style="font-size:16px;font-weight:600;line-height:1.6em;">
     Prix de la paire X/Y : {result['pair_price']:.6f}<br>
-    ATR de la paire : {result['atr_pair']:.6f}<br>
+    ATR de la paire (x{atr_multiplier}) : {result['atr_pair']:.6f}<br>
     Low / High : {result['low']:.6f} / {result['high']:.6f}<br>
     Range % : ±{result['range_pct']:.2f}%
     </div>
