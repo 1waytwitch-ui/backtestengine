@@ -394,20 +394,7 @@ with col1:
         key="range_pct"
     )
 
-    # --- AFFICHAGE DES SUGGESTIONS ---
-    st.markdown(f"""
-    <div style="
-        background-color:#FFFACD;
-        border-left:6px solid #FFA500;
-        padding:12px 18px;
-        border-radius:8px;
-        margin-top:6px;
-        margin-bottom:10px;
-    ">
-    <b>Suggestion du range</b><br>
-        Range optimal : <b>{suggested_range:.2f}%</b>
-    </div>
-    """, unsafe_allow_html=True)
+  
 
     # ================= CALCUL FINAL RANGE ===============
     range_low = priceA * (1 - ratioA * range_pct / 100)
@@ -470,53 +457,7 @@ with col2:
 
     st.plotly_chart(fig_bar, width="stretch")
 
-    # ---- ANALYSE STRATEGIE ----
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
-        <h3>Analyse stratégie</h3>
-    """, unsafe_allow_html=True)
-
-    key = f"{tokenA}_prices_{datetime.date.today()}"
-    if key not in st.session_state:
-        st.session_state[key] = get_market_chart(COINGECKO_IDS[tokenA])
-    pricesA = np.array(st.session_state[key])
-
-    # --- Volatilité 7 jours
-    vol_7d = compute_volatility(pricesA[-7:])
-    suggestion = "Mini-doux"
-
-    if okA and okB:
-        if vol_7d > 0.04:
-            suggestion = "Coup de pouce"
-        elif vol_7d > 0.02:
-            suggestion = "Mini-Doux"
-    else:
-        suggestion = "Coup de pouce"
-
-    st.write(f"Vol 7j : {vol_7d*100:.2f}% — Suggestion : {suggestion}")
-
-    # ---- Suggestion stratégie ----
-    st.markdown(f"""
-    <div style="
-        background-color:#FFFACD;
-        border-left:6px solid #FFA500;
-        padding:12px 15px;
-        border-radius:6px;
-        margin-top:12px;
-        margin-bottom:12px;
-    ">
-        <b>Suggestion stratégie :</b> {suggestion}
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
+   
 # =========================== AUTOMATION ===========================
 st.markdown("""
 <div style="background: linear-gradient(135deg,#8e2de2,#4fac66);padding:20px;border-radius:12px;margin-top:20px;">
