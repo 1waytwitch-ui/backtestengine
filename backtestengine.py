@@ -1102,10 +1102,21 @@ Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et 
 """
 st.markdown(guide_html, unsafe_allow_html=True)
 
-
+# ======================= video IL =======================
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        ATELIER IMPERMANENT LOSS
+    </span>
+</div>
+""", unsafe_allow_html=True)
 st.set_page_config(layout="wide")
-
-st.title("Atelier Impermanent Loss")
 
 # colonne unique large
 col, = st.columns(1)
