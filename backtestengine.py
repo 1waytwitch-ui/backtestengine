@@ -1128,6 +1128,19 @@ with col:
 # ======================= outil atelier IL =======================
 import streamlit.components.v1 as components
 
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        CALCULATRICE IMPERMANENT LOSS
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
 st.set_page_config(layout="wide")
 
