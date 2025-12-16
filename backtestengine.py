@@ -1124,3 +1124,18 @@ col, = st.columns(1)
 with col:
     st.video("https://www.youtube.com/watch?v=uQPeyXsQNrs")
 
+
+# ======================= outil atelier IL =======================
+import streamlit.components.v1 as components
+
+
+st.set_page_config(layout="wide")
+
+desmos_url = "https://www.desmos.com/calculator/i7mnoyyqdb?lang=fr"
+
+components.iframe(
+    src=desmos_url,
+    width="100%",
+    height=700,
+    scrolling=True
+)
