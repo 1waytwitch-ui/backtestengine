@@ -275,20 +275,7 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    # --- CADRE RECAP ---
-    st.markdown(f"""
-    <div style="
-        background-color: #27F5A9;
-        border-left: 6px solid #00754A;
-        padding: 15px 20px;
-        border-radius: 8px;
-        margin: 12px 0 25px 0;
-    ">
-    <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
-    <b>Objectif :</b> {info['objectif']}<br>
-    <b>Contexte :</b> {info['contexte']}
-    </div>
-    """, unsafe_allow_html=True)
+    
 
     # --- CAPITAL ---
     capital = st.number_input("Capital (USD)", value=1000, step=50)
@@ -456,6 +443,21 @@ with col2:
     )
 
     st.plotly_chart(fig_bar, width="stretch")
+
+# --- CADRE RECAP ---
+    st.markdown(f"""
+    <div style="
+        background-color: #27F5A9;
+        border-left: 6px solid #00754A;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin: 12px 0 25px 0;
+    ">
+    <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
+    <b>Objectif :</b> {info['objectif']}<br>
+    <b>Contexte :</b> {info['contexte']}
+    </div>
+    """, unsafe_allow_html=True)
 
    
 # =========================== AUTOMATION ===========================
