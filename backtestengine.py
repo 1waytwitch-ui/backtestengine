@@ -1103,12 +1103,13 @@ Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et 
 st.markdown(guide_html, unsafe_allow_html=True)
 
 
-st.set_page_config(
-    page_title="Vidéo intégrée",
-    layout="centered"
-)
+st.set_page_config(layout="wide")
 
-st.title("Atelier sur l'Impermanent Loss")
+st.title("Atelier Impermanent Loss")
 
-st.video("https://www.youtube.com/watch?v=uQPeyXsQNrs")
+# colonne unique large
+col, = st.columns(1)
+
+with col:
+    st.video("https://www.youtube.com/watch?v=uQPeyXsQNrs")
 
