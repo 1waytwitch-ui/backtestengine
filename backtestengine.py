@@ -922,13 +922,13 @@ with col3:
 with col4:
     atr_y = st.number_input("ATR daily Y", value=3282.0, key="atr_y_pair_expert")
 
-# Multiplicateur ATR
+# Multiplicateur ATR avec pas de 0,5
 atr_multiplier = st.slider(
     "Multiplicateur ATR",
-    min_value=1,
-    max_value=6,
-    value=1,
-    step=1
+    min_value=1.0,
+    max_value=6.0,
+    value=1.0,
+    step=0.5
 )
 
 if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
@@ -959,7 +959,7 @@ if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
     </div>
     </div>
     """, unsafe_allow_html=True)
-
+    
 # --- GUIDE COMPLET ---
 guide_html = """
 <style>
