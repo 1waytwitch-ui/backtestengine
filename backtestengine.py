@@ -1104,9 +1104,20 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
 </ul>
 
 <h3 id="choisir-un-range">Choisir un range</h3>
-<p>Le choix dépend de ton objectif, de la volatilité et du marché : haussier → profits A→B, baissier → accumulation B→A, latéral → neutre ou coup de pouce.<br>
-Objectifs : saisir des fees → petit range ; limiter IL → grand range sans rebalance ou mini-doux ; DCA → ratio 100/0 ou 0/100.<br>
-Pour affiner ton range, tu peux utiliser l’ATR (Average True Range) daily. Sur TradingView, ajoute l’indicateur ATR 14 et note sa valeur actuelle. Ensuite, applique un multiplicateur pour définir la largeur du range autour du prix actuel (par exemple multiplicateur × ATR).</p>
+<p>
+Le choix dépend de ton objectif, de la volatilité et du marché : haussier → profits A→B, baissier → accumulation B→A, latéral → neutre ou coup de pouce.<br>
+Objectifs : saisir des fees → petit range ; limiter l’IL → grand range sans rebalance ou mini-doux ; DCA → ratio 100/0 ou 0/100.<br><br>
+
+Pour affiner ton range, utilise l’indicateur <strong>ATR (Average True Range)</strong> disponible sur TradingView dans la catégorie <em>Technical</em>.<br>
+L’ATR représente de manière simplifiée <strong>l’écart-type du prix d’un actif exprimé en dollars</strong> : il mesure l’amplitude moyenne des mouvements de prix sur une période donnée.<br><br>
+
+Sur l’outil, règle l’ATR en <strong>daily</strong> avec une période <strong>ATR 14</strong>, puis applique un <strong>multiplicateur</strong> afin de définir la largeur de ton range autour du prix actuel.<br>
+Par exemple : <strong>ATR × 3</strong> correspond généralement à une tenue de range d’environ <strong>1 semaine à 10 jours</strong>, selon la volatilité du marché.<br><br>
+
+Une fois le range défini, vérifie l’ATR affiché en <strong>weekly</strong> et compare-le à ton choix initial en calculant :
+<strong>borne haute − borne basse</strong>.<br>
+Ajuste ensuite ton range en confrontant ces valeurs avec les données de l'ATR14 en <strong>WEEKLY</strong> ainsi que <strong>volatilité sur 7 jours et 30 jours</strong>, afin de sélectionner le compromis le plus adapté à la tendence entre fréquence de rebalance, capture de fees et exposition au risque.
+</p>
 
 <h3 id="exemple-simple-weth-usdc">Exemple simple WETH/USDC</h3>
 <p>Capital = 1000 USD, Prix ETH = 3000, Stratégie = 50/50, Range ±20%.</p>
