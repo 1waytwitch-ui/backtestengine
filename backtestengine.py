@@ -129,20 +129,26 @@ st.markdown("""
     border-radius: 12px;
     margin-left: 10px;
 }
+.plusvalue-btn {
+    background-color: #10b981;
+}
 .guide-btn {
     background-color: #a17fff;
 }
 .telegram-btn {
-    background-color: #6c5ce7; /* optionnel, juste pour différencier */
+    background-color: #6c5ce7;
 }
 .formation-btn {
-    background-color: #f59e0b; /* nouveau bouton formation */
+    background-color: #f59e0b;
 }
 </style>
 
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div class="deFi-buttons">
+        <a href="https://plusvalueimposable.streamlit.app/" target="_blank" class="plusvalue-btn">
+            Plus-value imposable
+        </a>
         <a href="#guide" class="guide-btn">Guide</a>
         <a href="https://t.me/Pigeonchanceux" target="_blank" class="telegram-btn">
             <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:30px;height:30px;border-radius:50%; vertical-align: middle; margin-right:5px;">
