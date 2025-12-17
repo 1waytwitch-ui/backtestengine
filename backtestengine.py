@@ -640,18 +640,56 @@ st.markdown("""
 # --- Inputs compacts ---
 st.write("")
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+
 with row1_col1:
-    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001)
+    st.markdown("<span style='color:blue;font-weight:600;'>P_deposit</span>", unsafe_allow_html=True)
+    P_deposit = st.number_input(
+        "P_deposit",
+        value=3000.0,
+        format="%.6f",
+        step=0.001,
+        label_visibility="collapsed"
+    )
+
 with row1_col2:
-    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001)
+    st.markdown("<span style='color:purple;font-weight:600;'>P_now</span>", unsafe_allow_html=True)
+    P_now = st.number_input(
+        "P_now",
+        value=3000.0,
+        format="%.6f",
+        step=0.001,
+        label_visibility="collapsed"
+    )
+
 with row1_col3:
-    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.2f", step=0.01)
+    v_deposit = st.number_input(
+        "Valeur deposit (USD)",
+        value=500.0,
+        format="%.2f",
+        step=0.01
+    )
 
 row2_col1, row2_col2 = st.columns([1,1])
+
 with row2_col1:
-    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001)
+    st.markdown("<span style='color:green;font-weight:600;'>P_lower</span>", unsafe_allow_html=True)
+    P_lower = st.number_input(
+        "P_lower",
+        value=2800.0,
+        format="%.6f",
+        step=0.001,
+        label_visibility="collapsed"
+    )
+
 with row2_col2:
-    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001)
+    st.markdown("<span style='color:green;font-weight:600;'>P_upper</span>", unsafe_allow_html=True)
+    P_upper = st.number_input(
+        "P_upper",
+        value=3500.0,
+        format="%.6f",
+        step=0.001,
+        label_visibility="collapsed"
+    )
 
 # --- Calcul de L et normalisation ---
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
@@ -674,7 +712,6 @@ fig.add_trace(go.Scatter(
     name="IL(%)",
     line=dict(color="red", width=3)
 ))
-
 
 fig.add_vline(
     x=P_lower,
@@ -747,9 +784,6 @@ fig.update_layout(
 
 st.plotly_chart(fig, width="stretch")
 
-
-
-
 # --- Valeurs actuelles et L au dépôt ---
 IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
 LP_now = V_LP(P_now, L, P_lower, P_upper)
@@ -757,19 +791,17 @@ HODL_now = V_HODL(P_now, x0, y0)
 
 html_block = f"""
 <div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:18px 25px;border-radius:12px;margin-top:20px;color:#000;text-align:center;">
-
 <h3 style="margin:0 0 10px 0;">Simulation IL</h3>
-
 <div style="font-size:18px;font-weight:600;display:flex;justify-content:center;gap:35px;flex-wrap:wrap;">
     <span>IL maintenant : {IL_now:.2f}%</span>
     <span>Valeur LP : ${LP_now:,.2f}</span>
     <span>Valeur HODL : ${HODL_now:,.2f}</span>
 </div>
-
 </div>
 """
 
 st.markdown(html_block, unsafe_allow_html=True)
+
 
 
 # ======================= ATR RANGE BACKTEST =======================
