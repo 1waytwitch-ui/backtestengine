@@ -662,11 +662,13 @@ with row1_col2:
     )
 
 with row1_col3:
+    st.markdown("<span style='color:black;font-weight:600;'>Valeur deposit (USD)</span>", unsafe_allow_html=True)
     v_deposit = st.number_input(
         "Valeur deposit (USD)",
         value=500.0,
-        format="%.2f",
-        step=0.01
+        format="%.6f",
+        step=0.01,
+        label_visibility="collapsed"
     )
 
 row2_col1, row2_col2 = st.columns([1,1])
