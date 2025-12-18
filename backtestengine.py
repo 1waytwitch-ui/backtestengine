@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import yfinance as yf
 import math
+import ccxt
 
 
 st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
@@ -1225,3 +1226,140 @@ components.iframe(
     height=700,
     scrolling=True
 )
+
+
+# =====================================================
+# zone test CONFIGURATION
+# =====================================================
+exchange = ccxt.binance()
+
+TIMEFRAME = '1h'
+LIMIT = 500
+
+PAIRS = {
+    "WETH/USDC": "ETH/USDC",
+    "cbBTC/WETH": "BTC/ETH",
+    "cbBTC/USDC": "BTC/USDC",
+    "AERO/WETH": "AERO/ETH",
+    "VIRTUAL/WETH": "VIRTUAL/ETH"
+}
+
+SUPPORT_RES_LOOKBACK = 50
+BUFFER_PCT = 0.002
+
+# =====================================================
+# DATA FETCH
+# =====================================================
+def fetch_ohlc(symbol):
+    ohlc = exchange.fetch_ohlcv(symbol, timeframe=TIMEFRAME, limit=LIMIT)
+    df = pd.DataFrame(
+        ohlc,
+        columns=['timestamp', 'open', 'high', 'low', 'close', 'volume']
+    )
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+    return df
+
+# =====================================================
+# INDICATORS
+# =====================================================
+def calculate_atr(df, period=14):
+    high_low = df['high'] - df['low']
+    high_close = (df['high'] - df['close'].shift()).abs()
+    low_close = (df['low'] - df['close'].shift()).abs()
+    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    return tr.rolling(period).mean()
+
+def realized_volatility(df, window):
+    returns = np.log(df['close'] / df['close'].shift())
+    return returns.rolling(window).std() * np.sqrt(24 * window)
+
+def calculate_vwap(df):
+    return (df['close'] * df['volume']).sum() / df['volume'].sum()
+
+# =====================================================
+# SUPPORT / RESISTANCE
+# =====================================================
+def find_support_resistance(df, lookback):
+    recent = df.tail(lookback)
+    support = recent['low'].min()
+    resistance = recent['high'].max()
+    return support, resistance
+
+# =====================================================
+# LP RANGE CALCULATION
+# =====================================================
+def calculate_lp_range(
+    price,
+    atr14,
+    vol7,
+    vol30,
+    support,
+    resistance,
+    buffer_pct
+):
+    if vol30 == 0 or np.isnan(vol30):
+        vol_factor = 1
+    else:
+        vol_factor = 1 + vol7 / vol30
+
+    lower = price - atr14 * vol_factor
+    upper = price + atr14 * vol_factor
+
+    lower = max(lower, support * (1 - buffer_pct))
+    upper = min(upper, resistance * (1 + buffer_pct))
+
+    return round(lower, 6), round(upper, 6)
+
+# =====================================================
+# MAIN
+# =====================================================
+def main():
+    for pair_name, symbol in PAIRS.items():
+        try:
+            df = fetch_ohlc(symbol)
+
+            df['ATR14'] = calculate_atr(df)
+            df['VOL7'] = realized_volatility(df, 7 * 24)
+            df['VOL30'] = realized_volatility(df, 30 * 24)
+
+            price = df['close'].iloc[-1]
+            atr14 = df['ATR14'].iloc[-1]
+            vol7 = df['VOL7'].iloc[-1]
+            vol30 = df['VOL30'].iloc[-1]
+
+            vwap_value = calculate_vwap(df)
+            support, resistance = find_support_resistance(
+                df,
+                SUPPORT_RES_LOOKBACK
+            )
+
+            lower, upper = calculate_lp_range(
+                price,
+                atr14,
+                vol7,
+                vol30,
+                support,
+                resistance,
+                BUFFER_PCT
+            )
+
+            range_pct = (upper - lower) / price * 100
+
+            print("\n----------------------------------------")
+            print(f"Pair: {pair_name}")
+            print(f"Price: {price:.6f}")
+            print(f"VWAP: {vwap_value:.6f}")
+            print(f"ATR14: {atr14:.6f}")
+            print(f"Vol 7d / 30d: {vol7:.4f} / {vol30:.4f}")
+            print(f"Support / Resistance: {support:.6f} / {resistance:.6f}")
+            print(f"LP Range: {lower} -> {upper}")
+            print(f"Range width (%): {range_pct:.2f}")
+
+        except Exception as e:
+            print(f"Error processing {pair_name}: {e}")
+
+# =====================================================
+# ENTRY POINT
+# =====================================================
+if __name__ == "__main__":
+    main()
