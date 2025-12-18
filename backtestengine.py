@@ -1231,16 +1231,10 @@ components.iframe(
 # =====================================================
 # zone test CONFIGURATION
 # =====================================================
-# -----------------------------
-# CONFIG
-# -----------------------------
 TIMEFRAME = "1h"
 SUPPORT_RES_LOOKBACK = 50
 BUFFER_PCT = 0.002
 
-# -----------------------------
-# TOKEN MAPPING
-# -----------------------------
 COINGECKO_IDS = {
     "WETH": "ethereum",
     "cbBTC": "coinbase-wrapped-btc",
@@ -1265,19 +1259,15 @@ def fetch_ohlc_coingecko(token_id, days=30):
     params = {"vs_currency": "usd", "days": days, "interval": "hourly"}
     r = requests.get(url, params=params, timeout=10)
     data = r.json()
-
     if "prices" not in data:
         raise ValueError(f"No prices found for token_id: {token_id}. Response: {data}")
-
     prices = data["prices"]
     df = pd.DataFrame(prices, columns=["timestamp", "close"])
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
-
-    # Simple OHLC approximation
     df["open"] = df["close"].shift()
     df["high"] = df["close"].rolling(2).max()
     df["low"] = df["close"].rolling(2).min()
-    df["volume"] = 1  # proxy pour volume
+    df["volume"] = 1
     return df.dropna()
 
 # -----------------------------
@@ -1310,18 +1300,24 @@ st.subheader("ZONE TEST")
 
 pair = st.selectbox("Select pair", AVAILABLE_PAIRS)
 
-with st.spinner("Fetching market data..."):
+manual_mode = st.checkbox("Manual mode (enter values if API fails)")
 
+if manual_mode:
+    price = st.number_input("Current Price", value=0.0, format="%.6f")
+    atr14 = st.number_input("ATR14", value=0.0, format="%.6f")
+    vol7 = st.number_input("Volatility 7d", value=0.0, format="%.6f")
+    vol30 = st.number_input("Volatility 30d", value=0.0, format="%.6f")
+    support = st.number_input("Support", value=0.0, format="%.6f")
+    resistance = st.number_input("Resistance", value=0.0, format="%.6f")
+else:
     base, quote = pair.split("/")
-
     try:
-        # --- Fetch OHLC for base token ---
         df_base = fetch_ohlc_coingecko(COINGECKO_IDS[base])
 
-        # --- If quote is not USD, adjust ratio ---
+        # If quote != USD, adjust ratio
         if quote != "USD":
             if quote not in COINGECKO_IDS:
-                st.error(f"Quote token {quote} not recognized in Coingecko mapping")
+                st.error(f"Quote token {quote} not recognized")
                 st.stop()
             df_quote = fetch_ohlc_coingecko(COINGECKO_IDS[quote])
             df = df_base.copy()
@@ -1334,38 +1330,37 @@ with st.spinner("Fetching market data..."):
         else:
             df = df_base.copy()
 
-        # --- Indicators ---
+        price = df["close"].iloc[-1]
         atr14 = calculate_atr(df).iloc[-1]
         vol7 = realized_volatility(df, 7 * 24).iloc[-1]
         vol30 = realized_volatility(df, 30 * 24).iloc[-1]
-        price = df["close"].iloc[-1]
         vwap = calculate_vwap(df)
         support, resistance = find_support_resistance(df, SUPPORT_RES_LOOKBACK)
 
-        vol_factor = 1 if vol30 == 0 or np.isnan(vol30) else 1 + vol7 / vol30
-
-        lower = max(price - atr14 * vol_factor, support * (1 - BUFFER_PCT))
-        upper = min(price + atr14 * vol_factor, resistance * (1 + BUFFER_PCT))
-        range_pct = (upper - lower) / price * 100
-
     except Exception as e:
-        st.error(f"Failed to fetch data for {pair}: {e}")
+        st.warning(f"API fetch failed: {e}. Switch to manual mode to enter values.")
         st.stop()
+
+# -----------------------------
+# LP RANGE CALCULATION
+# -----------------------------
+vol_factor = 1 if vol30 == 0 or np.isnan(vol30) else 1 + vol7 / vol30
+lower = max(price - atr14 * vol_factor, support * (1 - BUFFER_PCT))
+upper = min(price + atr14 * vol_factor, resistance * (1 + BUFFER_PCT))
+range_pct = (upper - lower) / price * 100
 
 # -----------------------------
 # OUTPUT
 # -----------------------------
-st.write("Data source: Coingecko")
 st.dataframe(pd.DataFrame([{
     "Pair": pair,
-    "Price": round(price, 6),
-    "VWAP": round(vwap, 6),
-    "ATR14": round(atr14, 6),
-    "Vol 7d": round(vol7, 4),
-    "Vol 30d": round(vol30, 4),
-    "Support": round(support, 6),
-    "Resistance": round(resistance, 6),
-    "Lower": round(lower, 6),
-    "Upper": round(upper, 6),
-    "Range %": round(range_pct, 2)
+    "Price": round(price,6),
+    "ATR14": round(atr14,6),
+    "Vol 7d": round(vol7,4),
+    "Vol 30d": round(vol30,4),
+    "Support": round(support,6),
+    "Resistance": round(resistance,6),
+    "Lower": round(lower,6),
+    "Upper": round(upper,6),
+    "Range %": round(range_pct,2)
 }]))
