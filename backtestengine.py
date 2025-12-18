@@ -1231,135 +1231,150 @@ components.iframe(
 # =====================================================
 # zone test CONFIGURATION
 # =====================================================
-exchange = ccxt.binance()
+# =====================================================
+# LP RANGE MODULE (STREAMLIT READY)
+# =====================================================
 
-TIMEFRAME = '1h'
+import streamlit as st
+import ccxt
+import requests
+import pandas as pd
+import numpy as np
+
+# -----------------------------
+# CONFIG
+# -----------------------------
+TIMEFRAME = "1h"
 LIMIT = 500
-
-PAIRS = {
-    "WETH/USDC": "ETH/USDC",
-    "cbBTC/WETH": "BTC/ETH",
-    "cbBTC/USDC": "BTC/USDC",
-    "AERO/WETH": "AERO/ETH",
-    "VIRTUAL/WETH": "VIRTUAL/ETH"
-}
-
 SUPPORT_RES_LOOKBACK = 50
 BUFFER_PCT = 0.002
 
-# =====================================================
+exchange = ccxt.binance()
+exchange.load_markets()
+
+# -----------------------------
+# TOKEN MAPPING
+# -----------------------------
+BINANCE_PAIRS = {
+    "WETH/USDC": "ETH/USDC",
+    "cbBTC/USDC": "BTC/USDC",
+    "cbBTC/WETH": "BTC/ETH"
+}
+
+COINGECKO_IDS = {
+    "WETH": "ethereum",
+    "cbBTC": "coinbase-wrapped-btc",
+    "AERO": "aerodrome-finance",
+    "VIRTUAL": "virtual-protocol"
+}
+
+AVAILABLE_PAIRS = [
+    "WETH/USDC",
+    "cbBTC/USDC",
+    "cbBTC/WETH",
+    "AERO/WETH",
+    "VIRTUAL/WETH"
+]
+
+# -----------------------------
 # DATA FETCH
-# =====================================================
-def fetch_ohlc(symbol):
+# -----------------------------
+def fetch_ohlc_binance(symbol):
     ohlc = exchange.fetch_ohlcv(symbol, timeframe=TIMEFRAME, limit=LIMIT)
     df = pd.DataFrame(
         ohlc,
-        columns=['timestamp', 'open', 'high', 'low', 'close', 'volume']
+        columns=["timestamp", "open", "high", "low", "close", "volume"]
     )
-    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
     return df
 
-# =====================================================
+def fetch_ohlc_coingecko(token_id, days=30):
+    url = f"https://api.coingecko.com/api/v3/coins/{token_id}/market_chart"
+    params = {"vs_currency": "usd", "days": days, "interval": "hourly"}
+    r = requests.get(url, params=params, timeout=10)
+    data = r.json()
+
+    prices = data["prices"]
+    df = pd.DataFrame(prices, columns=["timestamp", "close"])
+    df["open"] = df["close"].shift()
+    df["high"] = df["close"].rolling(2).max()
+    df["low"] = df["close"].rolling(2).min()
+    df["volume"] = 1
+    return df.dropna()
+
+# -----------------------------
 # INDICATORS
-# =====================================================
+# -----------------------------
 def calculate_atr(df, period=14):
-    high_low = df['high'] - df['low']
-    high_close = (df['high'] - df['close'].shift()).abs()
-    low_close = (df['low'] - df['close'].shift()).abs()
-    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    tr = pd.concat([
+        df["high"] - df["low"],
+        (df["high"] - df["close"].shift()).abs(),
+        (df["low"] - df["close"].shift()).abs()
+    ], axis=1).max(axis=1)
     return tr.rolling(period).mean()
 
 def realized_volatility(df, window):
-    returns = np.log(df['close'] / df['close'].shift())
+    returns = np.log(df["close"] / df["close"].shift())
     return returns.rolling(window).std() * np.sqrt(24 * window)
 
 def calculate_vwap(df):
-    return (df['close'] * df['volume']).sum() / df['volume'].sum()
+    return (df["close"] * df["volume"]).sum() / df["volume"].sum()
 
-# =====================================================
-# SUPPORT / RESISTANCE
-# =====================================================
 def find_support_resistance(df, lookback):
     recent = df.tail(lookback)
-    support = recent['low'].min()
-    resistance = recent['high'].max()
-    return support, resistance
+    return recent["low"].min(), recent["high"].max()
 
-# =====================================================
-# LP RANGE CALCULATION
-# =====================================================
-def calculate_lp_range(
-    price,
-    atr14,
-    vol7,
-    vol30,
-    support,
-    resistance,
-    buffer_pct
-):
-    if vol30 == 0 or np.isnan(vol30):
-        vol_factor = 1
+# -----------------------------
+# STREAMLIT UI
+# -----------------------------
+st.divider()
+st.subheader("ZONE TEST")
+
+pair = st.selectbox("Select pair", AVAILABLE_PAIRS)
+
+with st.spinner("Fetching market data..."):
+
+    base, quote = pair.split("/")
+
+    # --- Data source selection ---
+    if pair in BINANCE_PAIRS:
+        symbol = BINANCE_PAIRS[pair]
+        df = fetch_ohlc_binance(symbol)
+        source = "Binance"
     else:
-        vol_factor = 1 + vol7 / vol30
+        df = fetch_ohlc_coingecko(COINGECKO_IDS[base])
+        source = "Coingecko"
 
-    lower = price - atr14 * vol_factor
-    upper = price + atr14 * vol_factor
+    # --- Indicators ---
+    atr14 = calculate_atr(df).iloc[-1]
+    vol7 = realized_volatility(df, 7 * 24).iloc[-1]
+    vol30 = realized_volatility(df, 30 * 24).iloc[-1]
+    price = df["close"].iloc[-1]
+    vwap = calculate_vwap(df)
+    support, resistance = find_support_resistance(df, SUPPORT_RES_LOOKBACK)
 
-    lower = max(lower, support * (1 - buffer_pct))
-    upper = min(upper, resistance * (1 + buffer_pct))
+    vol_factor = 1 if vol30 == 0 or np.isnan(vol30) else 1 + vol7 / vol30
 
-    return round(lower, 6), round(upper, 6)
+    lower = max(price - atr14 * vol_factor, support * (1 - BUFFER_PCT))
+    upper = min(price + atr14 * vol_factor, resistance * (1 + BUFFER_PCT))
 
-# =====================================================
-# MAIN
-# =====================================================
-def main():
-    for pair_name, symbol in PAIRS.items():
-        try:
-            df = fetch_ohlc(symbol)
+    range_pct = (upper - lower) / price * 100
 
-            df['ATR14'] = calculate_atr(df)
-            df['VOL7'] = realized_volatility(df, 7 * 24)
-            df['VOL30'] = realized_volatility(df, 30 * 24)
+# -----------------------------
+# OUTPUT
+# -----------------------------
+st.write(f"Data source: {source}")
 
-            price = df['close'].iloc[-1]
-            atr14 = df['ATR14'].iloc[-1]
-            vol7 = df['VOL7'].iloc[-1]
-            vol30 = df['VOL30'].iloc[-1]
+st.dataframe(pd.DataFrame([{
+    "Pair": pair,
+    "Price": round(price, 6),
+    "VWAP": round(vwap, 6),
+    "ATR14": round(atr14, 6),
+    "Vol 7d": round(vol7, 4),
+    "Vol 30d": round(vol30, 4),
+    "Support": round(support, 6),
+    "Resistance": round(resistance, 6),
+    "Lower": round(lower, 6),
+    "Upper": round(upper, 6),
+    "Range %": round(range_pct, 2)
+}]))
 
-            vwap_value = calculate_vwap(df)
-            support, resistance = find_support_resistance(
-                df,
-                SUPPORT_RES_LOOKBACK
-            )
-
-            lower, upper = calculate_lp_range(
-                price,
-                atr14,
-                vol7,
-                vol30,
-                support,
-                resistance,
-                BUFFER_PCT
-            )
-
-            range_pct = (upper - lower) / price * 100
-
-            print("\n----------------------------------------")
-            print(f"Pair: {pair_name}")
-            print(f"Price: {price:.6f}")
-            print(f"VWAP: {vwap_value:.6f}")
-            print(f"ATR14: {atr14:.6f}")
-            print(f"Vol 7d / 30d: {vol7:.4f} / {vol30:.4f}")
-            print(f"Support / Resistance: {support:.6f} / {resistance:.6f}")
-            print(f"LP Range: {lower} -> {upper}")
-            print(f"Range width (%): {range_pct:.2f}")
-
-        except Exception as e:
-            print(f"Error processing {pair_name}: {e}")
-
-# =====================================================
-# ENTRY POINT
-# =====================================================
-if __name__ == "__main__":
-    main()
