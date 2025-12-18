@@ -1231,41 +1231,22 @@ components.iframe(
 # =====================================================
 # zone test CONFIGURATION
 # =====================================================
-# =====================================================
-# LP RANGE MODULE (STREAMLIT READY)
-# =====================================================
-
-import streamlit as st
-import ccxt
-import requests
-import pandas as pd
-import numpy as np
-
 # -----------------------------
 # CONFIG
 # -----------------------------
-TIMEFRAME = "1h"
-LIMIT = 500
+TIMEFRAME = "1h"  # utilisé pour info, Coingecko hourly
 SUPPORT_RES_LOOKBACK = 50
 BUFFER_PCT = 0.002
-
-exchange = ccxt.binance()
-exchange.load_markets()
 
 # -----------------------------
 # TOKEN MAPPING
 # -----------------------------
-BINANCE_PAIRS = {
-    "WETH/USDC": "ETH/USDC",
-    "cbBTC/USDC": "BTC/USDC",
-    "cbBTC/WETH": "BTC/ETH"
-}
-
 COINGECKO_IDS = {
     "WETH": "ethereum",
     "cbBTC": "coinbase-wrapped-btc",
     "AERO": "aerodrome-finance",
-    "VIRTUAL": "virtual-protocol"
+    "VIRTUAL": "virtual-protocol",
+    "USDC": "usd-coin"
 }
 
 AVAILABLE_PAIRS = [
@@ -1279,14 +1260,6 @@ AVAILABLE_PAIRS = [
 # -----------------------------
 # DATA FETCH
 # -----------------------------
-def fetch_ohlc_binance(symbol):
-    ohlc = exchange.fetch_ohlcv(symbol, timeframe=TIMEFRAME, limit=LIMIT)
-    df = pd.DataFrame(
-        ohlc,
-        columns=["timestamp", "open", "high", "low", "close", "volume"]
-    )
-    return df
-
 def fetch_ohlc_coingecko(token_id, days=30):
     url = f"https://api.coingecko.com/api/v3/coins/{token_id}/market_chart"
     params = {"vs_currency": "usd", "days": days, "interval": "hourly"}
@@ -1295,10 +1268,12 @@ def fetch_ohlc_coingecko(token_id, days=30):
 
     prices = data["prices"]
     df = pd.DataFrame(prices, columns=["timestamp", "close"])
+    df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
+
     df["open"] = df["close"].shift()
     df["high"] = df["close"].rolling(2).max()
     df["low"] = df["close"].rolling(2).min()
-    df["volume"] = 1
+    df["volume"] = 1  # proxy pour volume
     return df.dropna()
 
 # -----------------------------
@@ -1324,7 +1299,7 @@ def find_support_resistance(df, lookback):
     return recent["low"].min(), recent["high"].max()
 
 # -----------------------------
-# STREAMLIT UI
+# UI
 # -----------------------------
 st.divider()
 st.subheader("ZONE TEST")
@@ -1335,14 +1310,18 @@ with st.spinner("Fetching market data..."):
 
     base, quote = pair.split("/")
 
-    # --- Data source selection ---
-    if pair in BINANCE_PAIRS:
-        symbol = BINANCE_PAIRS[pair]
-        df = fetch_ohlc_binance(symbol)
-        source = "Binance"
+    # --- Fetch OHLC from Coingecko ---
+    df_base = fetch_ohlc_coingecko(COINGECKO_IDS[base])
+    if quote != "USD":
+        # fallback simple si quote != USD
+        df_quote = fetch_ohlc_coingecko(COINGECKO_IDS[quote])
+        df = df_base.copy()
+        df["close"] = df_base["close"] / df_quote["close"].values[:len(df_base)]
+        df["open"] = df_base["open"] / df_quote["open"].values[:len(df_base)]
+        df["high"] = df_base["high"] / df_quote["high"].values[:len(df_base)]
+        df["low"] = df_base["low"] / df_quote["low"].values[:len(df_base)]
     else:
-        df = fetch_ohlc_coingecko(COINGECKO_IDS[base])
-        source = "Coingecko"
+        df = df_base.copy()
 
     # --- Indicators ---
     atr14 = calculate_atr(df).iloc[-1]
@@ -1362,7 +1341,7 @@ with st.spinner("Fetching market data..."):
 # -----------------------------
 # OUTPUT
 # -----------------------------
-st.write(f"Data source: {source}")
+st.write(f"Data source: Coingecko")
 
 st.dataframe(pd.DataFrame([{
     "Pair": pair,
@@ -1377,4 +1356,3 @@ st.dataframe(pd.DataFrame([{
     "Upper": round(upper, 6),
     "Range %": round(range_pct, 2)
 }]))
-
