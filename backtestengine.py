@@ -540,7 +540,7 @@ with col_trigger:
         margin-top:25px;
         margin-bottom:15px;
     ">
-        <h3>Trigger d’anticipation</h3>
+        <h3>Trigger d’anticipation (RATIO)</h3>
     </div>
     """, unsafe_allow_html=True)
 
