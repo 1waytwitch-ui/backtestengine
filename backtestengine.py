@@ -1234,7 +1234,7 @@ components.iframe(
 # -----------------------------
 # CONFIG
 # -----------------------------
-TIMEFRAME = "1h"  # utilisé pour info, Coingecko hourly
+TIMEFRAME = "1h"
 SUPPORT_RES_LOOKBACK = 50
 BUFFER_PCT = 0.002
 
@@ -1266,10 +1266,14 @@ def fetch_ohlc_coingecko(token_id, days=30):
     r = requests.get(url, params=params, timeout=10)
     data = r.json()
 
+    if "prices" not in data:
+        raise ValueError(f"No prices found for token_id: {token_id}. Response: {data}")
+
     prices = data["prices"]
     df = pd.DataFrame(prices, columns=["timestamp", "close"])
     df["timestamp"] = pd.to_datetime(df["timestamp"], unit="ms")
 
+    # Simple OHLC approximation
     df["open"] = df["close"].shift()
     df["high"] = df["close"].rolling(2).max()
     df["low"] = df["close"].rolling(2).min()
@@ -1310,39 +1314,48 @@ with st.spinner("Fetching market data..."):
 
     base, quote = pair.split("/")
 
-    # --- Fetch OHLC from Coingecko ---
-    df_base = fetch_ohlc_coingecko(COINGECKO_IDS[base])
-    if quote != "USD":
-        # fallback simple si quote != USD
-        df_quote = fetch_ohlc_coingecko(COINGECKO_IDS[quote])
-        df = df_base.copy()
-        df["close"] = df_base["close"] / df_quote["close"].values[:len(df_base)]
-        df["open"] = df_base["open"] / df_quote["open"].values[:len(df_base)]
-        df["high"] = df_base["high"] / df_quote["high"].values[:len(df_base)]
-        df["low"] = df_base["low"] / df_quote["low"].values[:len(df_base)]
-    else:
-        df = df_base.copy()
+    try:
+        # --- Fetch OHLC for base token ---
+        df_base = fetch_ohlc_coingecko(COINGECKO_IDS[base])
 
-    # --- Indicators ---
-    atr14 = calculate_atr(df).iloc[-1]
-    vol7 = realized_volatility(df, 7 * 24).iloc[-1]
-    vol30 = realized_volatility(df, 30 * 24).iloc[-1]
-    price = df["close"].iloc[-1]
-    vwap = calculate_vwap(df)
-    support, resistance = find_support_resistance(df, SUPPORT_RES_LOOKBACK)
+        # --- If quote is not USD, adjust ratio ---
+        if quote != "USD":
+            if quote not in COINGECKO_IDS:
+                st.error(f"Quote token {quote} not recognized in Coingecko mapping")
+                st.stop()
+            df_quote = fetch_ohlc_coingecko(COINGECKO_IDS[quote])
+            df = df_base.copy()
+            min_len = min(len(df_base), len(df_quote))
+            df["close"] = df_base["close"].values[:min_len] / df_quote["close"].values[:min_len]
+            df["open"] = df_base["open"].values[:min_len] / df_quote["open"].values[:min_len]
+            df["high"] = df_base["high"].values[:min_len] / df_quote["high"].values[:min_len]
+            df["low"] = df_base["low"].values[:min_len] / df_quote["low"].values[:min_len]
+            df["volume"] = 1
+        else:
+            df = df_base.copy()
 
-    vol_factor = 1 if vol30 == 0 or np.isnan(vol30) else 1 + vol7 / vol30
+        # --- Indicators ---
+        atr14 = calculate_atr(df).iloc[-1]
+        vol7 = realized_volatility(df, 7 * 24).iloc[-1]
+        vol30 = realized_volatility(df, 30 * 24).iloc[-1]
+        price = df["close"].iloc[-1]
+        vwap = calculate_vwap(df)
+        support, resistance = find_support_resistance(df, SUPPORT_RES_LOOKBACK)
 
-    lower = max(price - atr14 * vol_factor, support * (1 - BUFFER_PCT))
-    upper = min(price + atr14 * vol_factor, resistance * (1 + BUFFER_PCT))
+        vol_factor = 1 if vol30 == 0 or np.isnan(vol30) else 1 + vol7 / vol30
 
-    range_pct = (upper - lower) / price * 100
+        lower = max(price - atr14 * vol_factor, support * (1 - BUFFER_PCT))
+        upper = min(price + atr14 * vol_factor, resistance * (1 + BUFFER_PCT))
+        range_pct = (upper - lower) / price * 100
+
+    except Exception as e:
+        st.error(f"Failed to fetch data for {pair}: {e}")
+        st.stop()
 
 # -----------------------------
 # OUTPUT
 # -----------------------------
-st.write(f"Data source: Coingecko")
-
+st.write("Data source: Coingecko")
 st.dataframe(pd.DataFrame([{
     "Pair": pair,
     "Price": round(price, 6),
