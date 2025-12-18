@@ -581,12 +581,12 @@ with col_rebalance:
 
     col_b1, col_b2 = st.columns(2)
     with col_b1:
-        st.markdown("**Marché Haussier (Pump)**")
+        st.markdown("**Marché Haussier (Pump/RANGE HIGH)**")
         st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
         st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
     
     with col_b2:
-        st.markdown("**Marché Baissier (Dump)**")
+        st.markdown("**Marché Baissier (Dump/RANGE LOW)**")
         st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
         st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
 
