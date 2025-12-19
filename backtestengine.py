@@ -129,6 +129,9 @@ st.markdown("""
     border-radius: 12px;
     margin-left: 10px;
 }
+.krystal-btn {
+    background-color: #06b6d4;
+}
 .plusvalue-btn {
     background-color: #10b981;
 }
@@ -146,6 +149,9 @@ st.markdown("""
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div class="deFi-buttons">
+        <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank" class="krystal-btn">
+            Krystal
+        </a>
         <a href="https://plusvalueimposable.streamlit.app/" target="_blank" class="plusvalue-btn">
             Plus-value imposable
         </a>
