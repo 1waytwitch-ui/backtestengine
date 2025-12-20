@@ -72,26 +72,13 @@ PAIRS = [
 ]
 
 # ---- FONCTIONS ----
-@st.cache_data(ttl=3600, show_spinner=False)
+
+# Récupération des prix avec cache toutes les 10 minutes pour avoir un prix assez récent
+@st.cache_data(ttl=600, show_spinner="Appel API CoinGecko pour les prices...")
 def get_market_chart(asset_id):
     try:
-        url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
-        data = requests.get(url).json()
-        prices = [p[1] for p in data.get("prices", [])]
-        prices = np.array(prices)
-        prices = prices[~np.isnan(prices)]
-        prices = prices[prices > 0]
-        return prices.tolist() if len(prices) > 0 else [1.0] * 30
-    except:
-        return [1.0] * 30
-
-
-# ---  Updated cache_resource for Streamlit 1.18+
-@st.cache_resource(ttl=30, show_spinner=False)
-def get_market_chart_cached(asset_id):
-    try:
+        # return [1.0] * 30
         log(f"Appel API CoinGecko pour: {asset_id}", "api")
-
         url = f"https://api.coingecko.com/api/v3/coins/{asset_id}/market_chart?vs_currency=usd&days=30&interval=daily"
         data = requests.get(url).json()
         prices = [p[1] for p in data.get("prices", [])]
@@ -112,24 +99,18 @@ def compute_volatility(prices):
     returns = returns[~np.isnan(returns)]
     return float(np.std(returns))
 
+# Recupération du prix USD avec cache toutes les 10 minutes pour avoir un prix assez récent
+@st.cache_data(ttl=600, show_spinner="Fecthing price from CoinGecko...")
 def get_price_usd(token):
     try:
-        res = requests.get(
-            f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[token]}&vs_currencies=usd"
-        ).json()
-        return res[COINGECKO_IDS[token]]["usd"], True
-    except:
-        return 0.0, False
-
-@st.cache_resource(ttl=30, show_spinner=False)
-def get_price_usd_cached(token):
-    try:
         log(f"Fetching price for {token} from API")
+        # return 1.0 ,True
         res = requests.get(
             f"https://api.coingecko.com/api/v3/simple/price?ids={COINGECKO_IDS[token]}&vs_currencies=usd"
         ).json()
         return res[COINGECKO_IDS[token]]["usd"], True
-    except:
+    except Exception as e:
+        log(f"Erreur {token}: {str(e)}", "error")
         return 0.0, False
 
 
@@ -380,8 +361,8 @@ with col1:
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
     # ================== PRIX TOKEN ==================
-    priceA_usd, okA = get_price_usd_cached(tokenA)
-    priceB_usd, okB = get_price_usd_cached(tokenB)
+    priceA_usd, okA = get_price_usd(tokenA)
+    priceB_usd, okB = get_price_usd(tokenB)
 
     la, lb = st.columns(2)
     with la:
@@ -398,9 +379,9 @@ with col1:
     keyA = f"{tokenA}_prices_{datetime.date.today()}"
     keyB = f"{tokenB}_prices_{datetime.date.today()}"
     if keyA not in st.session_state:
-        st.session_state[keyA] = get_market_chart_cached(COINGECKO_IDS[tokenA])
+        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
     if keyB not in st.session_state:
-        st.session_state[keyB] = get_market_chart_cached(COINGECKO_IDS[tokenB])
+        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
     pricesA = np.array(st.session_state[keyA])
     pricesB = np.array(st.session_state[keyB])
 
