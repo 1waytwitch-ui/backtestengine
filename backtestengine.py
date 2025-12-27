@@ -1233,78 +1233,97 @@ components.iframe(
 )
 
 # ============================================================
-# GRAPH – Price vs LP / HODL / Impermanent Loss
+# Price / LP / HODL / Impermanent Loss Curve (isolated block)
 # ============================================================
 
-def impermanent_loss_ratio(price_ratio):
-    return (2 * np.sqrt(price_ratio) / (1 + price_ratio)) - 1
+import numpy as _np
+import matplotlib.pyplot as _plt
+import streamlit as _st
 
-st.markdown("---")
-st.subheader("Price Curve – LP vs HODL vs Impermanent Loss")
+_st.markdown("---")
+_st.subheader("Price vs LP / HODL / Impermanent Loss")
 
-# --- Price range ---
-price_min = price_initial * (1 + lower_pct / 100)
-price_max = price_initial * (1 + upper_pct / 100)
+# ---------- Safe local extraction ----------
+_pi = globals().get("price_initial", None)
+_pf = globals().get("price_future", None)
+_cap = globals().get("capital", None)
+_fees = globals().get("fees", None)
+_lp = globals().get("lower_pct", None)
+_up = globals().get("upper_pct", None)
 
-prices = np.linspace(price_min * 0.8, price_max * 1.2, 500)
-ratios = prices / price_initial
+# ---------- Fallback values ----------
+price_initial_local = float(_pi) if _pi is not None else 100.0
+price_future_local  = float(_pf) if _pf is not None else price_initial_local
+capital_local       = float(_cap) if _cap is not None else 1000.0
+fees_local          = float(_fees) if _fees is not None else 0.0
+lower_pct_local     = float(_lp) if _lp is not None else -5.0
+upper_pct_local     = float(_up) if _up is not None else 5.0
 
-# --- Curves ---
-il_curve = impermanent_loss_ratio(ratios)
-lp_curve = capital * (1 + il_curve + fees)
-hodl_curve = capital * ratios
+# ---------- Math ----------
+def _impermanent_loss_ratio(price_ratio: _np.ndarray) -> _np.ndarray:
+    return (2 * _np.sqrt(price_ratio) / (1 + price_ratio)) - 1
 
-# --- Plot ---
-fig, ax1 = plt.subplots(figsize=(12, 6))
-ax2 = ax1.twinx()
+# ---------- Price range ----------
+price_min = price_initial_local * (1 + lower_pct_local / 100.0)
+price_max = price_initial_local * (1 + upper_pct_local / 100.0)
 
-ax1.plot(prices, lp_curve, label="LP Value ($)", linewidth=2)
-ax1.plot(prices, hodl_curve, label="HODL Value ($)", linestyle="--")
+prices = _np.linspace(price_min * 0.8, price_max * 1.2, 500)
+ratios = prices / price_initial_local
 
-ax2.plot(prices, il_curve * 100, label="Impermanent Loss (%)", alpha=0.7)
+# ---------- Curves ----------
+il_curve = _impermanent_loss_ratio(ratios)
+lp_curve = capital_local * (1 + il_curve + fees_local)
+hodl_curve = capital_local * ratios
 
-# --- Range markers ---
-ax1.axvline(price_min, linestyle=":", linewidth=2, label="Range Start")
-ax1.axvline(price_max, linestyle=":", linewidth=2, label="Range End")
-ax1.axvline(price_future, linestyle="-.", linewidth=2, label="Future Price")
+# ---------- Plot ----------
+fig, ax_value = _plt.subplots(figsize=(12, 6))
+ax_il = ax_value.twinx()
 
-# --- Labels ---
-ax1.set_xlabel("Price")
-ax1.set_ylabel("Portfolio Value ($)")
-ax2.set_ylabel("Impermanent Loss (%)")
+ax_value.plot(prices, lp_curve, label="LP value")
+ax_value.plot(prices, hodl_curve, linestyle="--", label="HODL value")
+ax_il.plot(prices, il_curve * 100.0, alpha=0.7, label="Impermanent loss (%)")
 
-# --- Legend ---
-lines1, labels1 = ax1.get_legend_handles_labels()
-lines2, labels2 = ax2.get_legend_handles_labels()
-ax1.legend(lines1 + lines2, labels1 + labels2, loc="upper left")
+ax_value.axvline(price_min, linestyle=":", linewidth=2, label="Range start")
+ax_value.axvline(price_max, linestyle=":", linewidth=2, label="Range end")
+ax_value.axvline(price_future_local, linestyle="-.", linewidth=2, label="Future price")
 
-ax1.grid(alpha=0.3)
-st.pyplot(fig)
+ax_value.set_xlabel("Price")
+ax_value.set_ylabel("Value")
+ax_il.set_ylabel("Impermanent loss (%)")
 
-# ============================================================
-# FINAL VALUES SUMMARY
-# ============================================================
+lines1, labels1 = ax_value.get_legend_handles_labels()
+lines2, labels2 = ax_il.get_legend_handles_labels()
+ax_value.legend(lines1 + lines2, labels1 + labels2, loc="upper left")
 
-st.subheader("Final Values at Future Price")
+ax_value.grid(alpha=0.3)
+_st.pyplot(fig)
 
-il_final = impermanent_loss_ratio(price_future / price_initial)
+# ---------- Final values ----------
+_st.subheader("Final values at future price")
 
-final_lp_value = capital * (1 + il_final + fees)
-final_hodl_value = capital * (price_future / price_initial)
+final_il = _impermanent_loss_ratio(price_future_local / price_initial_local)
+final_lp = capital_local * (1 + final_il + fees_local)
+final_hodl = capital_local * (price_future_local / price_initial_local)
 
-c1, c2, c3 = st.columns(3)
+c1, c2, c3 = _st.columns(3)
 
 with c1:
-    st.metric("HODL Value", f"${final_hodl_value:,.2f}",
-              f"{(final_hodl_value/capital - 1)*100:.2f}%")
+    _st.metric(
+        "HODL value",
+        f"${final_hodl:,.2f}",
+        f"{(final_hodl / capital_local - 1) * 100:.2f}%"
+    )
 
 with c2:
-    st.metric("LP Value", f"${final_lp_value:,.2f}",
-              f"{(final_lp_value/capital - 1)*100:.2f}%")
+    _st.metric(
+        "LP value",
+        f"${final_lp:,.2f}",
+        f"{(final_lp / capital_local - 1) * 100:.2f}%"
+    )
 
 with c3:
-    st.metric("Impermanent Loss",
-              f"{il_final*100:.2f} %",
-              delta=None)
+    _st.metric(
+        "Impermanent loss",
+        f"{final_il * 100:.2f}%"
+    )
 
-st.caption("LP value includes estimated fees. Outside range → LP becomes inactive.")
