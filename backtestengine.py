@@ -1240,7 +1240,7 @@ def impermanent_loss_ratio(price_ratio):
     return (2 * np.sqrt(price_ratio) / (1 + price_ratio)) - 1
 
 st.markdown("---")
-st.subheader("📈 Price Curve – LP vs HODL vs Impermanent Loss")
+st.subheader("Price Curve – LP vs HODL vs Impermanent Loss")
 
 # --- Price range ---
 price_min = price_initial * (1 + lower_pct / 100)
