@@ -1233,97 +1233,214 @@ components.iframe(
 )
 
 # ============================================================
-# Price / LP / HODL / Impermanent Loss Curve (isolated block)
+# Configuration Streamlit
 # ============================================================
 
-import numpy as _np
-import matplotlib.pyplot as _plt
-import streamlit as _st
+st.set_page_config(
+    page_title="Calculateur de Perte Impermanente",
+    layout="wide"
+)
 
-_st.markdown("---")
-_st.subheader("Price vs LP / HODL / Impermanent Loss")
+# ============================================================
+# Valeurs par défaut sécurisées (anti NameError)
+# ============================================================
 
-# ---------- Safe local extraction ----------
-_pi = globals().get("price_initial", None)
-_pf = globals().get("price_future", None)
-_cap = globals().get("capital", None)
-_fees = globals().get("fees", None)
-_lp = globals().get("lower_pct", None)
-_up = globals().get("upper_pct", None)
+price_initial = 100.0
+price_future = 100.0
+capital = 1000.0
+fees = 0.0
+lower_pct = -5.0
+upper_pct = 5.0
 
-# ---------- Fallback values ----------
-price_initial_local = float(_pi) if _pi is not None else 100.0
-price_future_local  = float(_pf) if _pf is not None else price_initial_local
-capital_local       = float(_cap) if _cap is not None else 1000.0
-fees_local          = float(_fees) if _fees is not None else 0.0
-lower_pct_local     = float(_lp) if _lp is not None else -5.0
-upper_pct_local     = float(_up) if _up is not None else 5.0
+# ============================================================
+# Récupération des prix CoinGecko (avec cache)
+# ============================================================
 
-# ---------- Math ----------
-def _impermanent_loss_ratio(price_ratio: _np.ndarray) -> _np.ndarray:
-    return (2 * _np.sqrt(price_ratio) / (1 + price_ratio)) - 1
+PAIRES = {
+    "WETH / USDC": ("ethereum", "usd"),
+    "BTC / USDC": ("bitcoin", "usd"),
+    "WETH / cbBTC": ("ethereum", "bitcoin"),
+}
 
-# ---------- Price range ----------
-price_min = price_initial_local * (1 + lower_pct_local / 100.0)
-price_max = price_initial_local * (1 + upper_pct_local / 100.0)
+@st.cache_data(ttl=300)
+def recuperer_prix(token, devise):
+    url = "https://api.coingecko.com/api/v3/simple/price"
+    params = {"ids": token, "vs_currencies": devise}
+    reponse = requests.get(url, params=params, timeout=10)
+    reponse.raise_for_status()
+    return reponse.json()[token][devise]
 
-prices = _np.linspace(price_min * 0.8, price_max * 1.2, 500)
-ratios = prices / price_initial_local
+# ============================================================
+# Fonctions mathématiques
+# ============================================================
 
-# ---------- Curves ----------
-il_curve = _impermanent_loss_ratio(ratios)
-lp_curve = capital_local * (1 + il_curve + fees_local)
-hodl_curve = capital_local * ratios
+def perte_impermanente_ratio(ratio_prix):
+    return (2 * np.sqrt(ratio_prix) / (1 + ratio_prix)) - 1
 
-# ---------- Plot ----------
-fig, ax_value = _plt.subplots(figsize=(12, 6))
-ax_il = ax_value.twinx()
+# ============================================================
+# Interface utilisateur
+# ============================================================
 
-ax_value.plot(prices, lp_curve, label="LP value")
-ax_value.plot(prices, hodl_curve, linestyle="--", label="HODL value")
-ax_il.plot(prices, il_curve * 100.0, alpha=0.7, label="Impermanent loss (%)")
+st.title("Calculateur de Perte Impermanente (AMM)")
 
-ax_value.axvline(price_min, linestyle=":", linewidth=2, label="Range start")
-ax_value.axvline(price_max, linestyle=":", linewidth=2, label="Range end")
-ax_value.axvline(price_future_local, linestyle="-.", linewidth=2, label="Future price")
+col1, col2, col3 = st.columns(3)
 
-ax_value.set_xlabel("Price")
-ax_value.set_ylabel("Value")
-ax_il.set_ylabel("Impermanent loss (%)")
+with col1:
+    paire = st.selectbox(
+        "Paire de tokens",
+        ["WETH / USDC", "BTC / USDC", "WETH / cbBTC", "Personnalisée"]
+    )
 
-lines1, labels1 = ax_value.get_legend_handles_labels()
-lines2, labels2 = ax_il.get_legend_handles_labels()
-ax_value.legend(lines1 + lines2, labels1 + labels2, loc="upper left")
+with col2:
+    capital = st.number_input(
+        "Capital initial ($)",
+        min_value=100.0,
+        value=capital
+    )
 
-ax_value.grid(alpha=0.3)
-_st.pyplot(fig)
+with col3:
+    fees = st.number_input(
+        "Frais estimés (%)",
+        min_value=0.0,
+        value=2.3
+    ) / 100
 
-# ---------- Final values ----------
-_st.subheader("Final values at future price")
+# ============================================================
+# Prix
+# ============================================================
 
-final_il = _impermanent_loss_ratio(price_future_local / price_initial_local)
-final_lp = capital_local * (1 + final_il + fees_local)
-final_hodl = capital_local * (price_future_local / price_initial_local)
+st.subheader("Prix")
 
-c1, c2, c3 = _st.columns(3)
+api_ok = True
+
+if paire != "Personnalisée":
+    try:
+        token, devise = PAIRES[paire]
+        price_initial = recuperer_prix(token, devise)
+    except Exception:
+        api_ok = False
+
+colp1, colp2 = st.columns(2)
+
+with colp1:
+    if api_ok:
+        price_initial = st.number_input(
+            "Prix actuel",
+            value=float(price_initial)
+        )
+    else:
+        st.warning("API indisponible, saisie manuelle")
+        price_initial = st.number_input(
+            "Prix actuel",
+            value=price_initial
+        )
+
+with colp2:
+    price_future = st.number_input(
+        "Prix futur",
+        value=price_initial
+    )
+
+# ============================================================
+# Range de liquidité
+# ============================================================
+
+st.subheader("Plage de liquidité (type Uniswap v3)")
+
+r1, r2 = st.columns(2)
+
+with r1:
+    lower_pct = st.slider(
+        "Borne basse (%)",
+        min_value=-95,
+        max_value=0,
+        value=lower_pct
+    )
+
+with r2:
+    upper_pct = st.slider(
+        "Borne haute (%)",
+        min_value=0,
+        max_value=200,
+        value=upper_pct
+    )
+
+# ============================================================
+# Calculs
+# ============================================================
+
+prix_min = price_initial * (1 + lower_pct / 100)
+prix_max = price_initial * (1 + upper_pct / 100)
+
+prix = np.linspace(prix_min * 0.8, prix_max * 1.2, 500)
+ratios = prix / price_initial
+
+courbe_il = perte_impermanente_ratio(ratios)
+courbe_lp = capital * (1 + courbe_il + fees)
+courbe_hodl = capital * ratios
+
+# ============================================================
+# Graphique
+# ============================================================
+
+st.subheader("Évolution selon le prix")
+
+fig, axe_valeur = plt.subplots(figsize=(12, 6))
+axe_il = axe_valeur.twinx()
+
+axe_valeur.plot(prix, courbe_lp, label="Valeur LP")
+axe_valeur.plot(prix, courbe_hodl, linestyle="--", label="Valeur HODL")
+axe_il.plot(prix, courbe_il * 100, alpha=0.7, label="Perte impermanente (%)")
+
+axe_valeur.axvline(prix_min, linestyle=":", linewidth=2, label="Début de range")
+axe_valeur.axvline(prix_max, linestyle=":", linewidth=2, label="Fin de range")
+axe_valeur.axvline(price_future, linestyle="-.", linewidth=2, label="Prix futur")
+
+axe_valeur.set_xlabel("Prix")
+axe_valeur.set_ylabel("Valeur ($)")
+axe_il.set_ylabel("Perte impermanente (%)")
+
+l1, lab1 = axe_valeur.get_legend_handles_labels()
+l2, lab2 = axe_il.get_legend_handles_labels()
+axe_valeur.legend(l1 + l2, lab1 + lab2)
+
+axe_valeur.grid(alpha=0.3)
+
+st.pyplot(fig)
+
+# ============================================================
+# Résultats finaux
+# ============================================================
+
+st.subheader("Résultats finaux au prix futur")
+
+il_final = perte_impermanente_ratio(price_future / price_initial)
+valeur_lp_finale = capital * (1 + il_final + fees)
+valeur_hodl_finale = capital * (price_future / price_initial)
+
+c1, c2, c3 = st.columns(3)
 
 with c1:
-    _st.metric(
-        "HODL value",
-        f"${final_hodl:,.2f}",
-        f"{(final_hodl / capital_local - 1) * 100:.2f}%"
+    st.metric(
+        "Valeur HODL",
+        f"${valeur_hodl_finale:,.2f}",
+        f"{(valeur_hodl_finale / capital - 1) * 100:.2f}%"
     )
 
 with c2:
-    _st.metric(
-        "LP value",
-        f"${final_lp:,.2f}",
-        f"{(final_lp / capital_local - 1) * 100:.2f}%"
+    st.metric(
+        "Valeur LP",
+        f"${valeur_lp_finale:,.2f}",
+        f"{(valeur_lp_finale / capital - 1) * 100:.2f}%"
     )
 
 with c3:
-    _st.metric(
-        "Impermanent loss",
-        f"{final_il * 100:.2f}%"
+    st.metric(
+        "Perte impermanente",
+        f"{il_final * 100:.2f}%"
     )
+
+st.caption(
+    "Outil pédagogique. Calcul AMM simplifié, frais estimés constants."
+)
 
