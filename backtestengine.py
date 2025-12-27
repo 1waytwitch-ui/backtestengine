@@ -1232,3 +1232,79 @@ components.iframe(
     scrolling=True
 )
 
+# ============================================================
+# GRAPH – Price vs LP / HODL / Impermanent Loss
+# ============================================================
+
+def impermanent_loss_ratio(price_ratio):
+    return (2 * np.sqrt(price_ratio) / (1 + price_ratio)) - 1
+
+st.markdown("---")
+st.subheader("📈 Price Curve – LP vs HODL vs Impermanent Loss")
+
+# --- Price range ---
+price_min = price_initial * (1 + lower_pct / 100)
+price_max = price_initial * (1 + upper_pct / 100)
+
+prices = np.linspace(price_min * 0.8, price_max * 1.2, 500)
+ratios = prices / price_initial
+
+# --- Curves ---
+il_curve = impermanent_loss_ratio(ratios)
+lp_curve = capital * (1 + il_curve + fees)
+hodl_curve = capital * ratios
+
+# --- Plot ---
+fig, ax1 = plt.subplots(figsize=(12, 6))
+ax2 = ax1.twinx()
+
+ax1.plot(prices, lp_curve, label="LP Value ($)", linewidth=2)
+ax1.plot(prices, hodl_curve, label="HODL Value ($)", linestyle="--")
+
+ax2.plot(prices, il_curve * 100, label="Impermanent Loss (%)", alpha=0.7)
+
+# --- Range markers ---
+ax1.axvline(price_min, linestyle=":", linewidth=2, label="Range Start")
+ax1.axvline(price_max, linestyle=":", linewidth=2, label="Range End")
+ax1.axvline(price_future, linestyle="-.", linewidth=2, label="Future Price")
+
+# --- Labels ---
+ax1.set_xlabel("Price")
+ax1.set_ylabel("Portfolio Value ($)")
+ax2.set_ylabel("Impermanent Loss (%)")
+
+# --- Legend ---
+lines1, labels1 = ax1.get_legend_handles_labels()
+lines2, labels2 = ax2.get_legend_handles_labels()
+ax1.legend(lines1 + lines2, labels1 + labels2, loc="upper left")
+
+ax1.grid(alpha=0.3)
+st.pyplot(fig)
+
+# ============================================================
+# FINAL VALUES SUMMARY
+# ============================================================
+
+st.subheader("Final Values at Future Price")
+
+il_final = impermanent_loss_ratio(price_future / price_initial)
+
+final_lp_value = capital * (1 + il_final + fees)
+final_hodl_value = capital * (price_future / price_initial)
+
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.metric("HODL Value", f"${final_hodl_value:,.2f}",
+              f"{(final_hodl_value/capital - 1)*100:.2f}%")
+
+with c2:
+    st.metric("LP Value", f"${final_lp_value:,.2f}",
+              f"{(final_lp_value/capital - 1)*100:.2f}%")
+
+with c3:
+    st.metric("Impermanent Loss",
+              f"{il_final*100:.2f} %",
+              delta=None)
+
+st.caption("LP value includes estimated fees. Outside range → LP becomes inactive.")
