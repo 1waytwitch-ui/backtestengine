@@ -188,7 +188,7 @@ if st.session_state.show_disclaimer:
 # -----------------------
 # CODE SECRET
 # -----------------------
-SECRET_CODE = "AMM"
+SECRET_CODE = "2026"
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
