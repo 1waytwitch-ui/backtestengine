@@ -135,7 +135,7 @@ st.markdown("""
 .plusvalue-btn {
     background-color: #10b981;
 }
-.guide-btn {
+.wallet-btn {
     background-color: #a17fff;
 }
 .telegram-btn {
@@ -155,7 +155,9 @@ st.markdown("""
         <a href="https://plusvalueimposable.streamlit.app/" target="_blank" class="plusvalue-btn">
             Plus-value imposable
         </a>
-        <a href="#guide" class="guide-btn">Guide</a>
+        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank" class="wallet-btn">
+            DEFI WALLET BACKTEST
+        </a>
         <a href="https://t.me/Pigeonchanceux" target="_blank" class="telegram-btn">
             <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:30px;height:30px;border-radius:50%; vertical-align: middle; margin-right:5px;">
             Mon Telegram
@@ -166,6 +168,7 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 
 # ---- DISCLAIMER ----
