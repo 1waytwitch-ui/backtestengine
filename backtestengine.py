@@ -1290,7 +1290,7 @@ st.markdown("""
     color:#d8dbff;
     font-size:14px;
 ">
-APR estimé à partir des <b>fees historiques</b> et de la
+APR estimé à partir de <b>l'historique des fees</b> et de la
 <b>liquidité active</b> d'une pool de liquidité concentrée.
 </div>
 """, unsafe_allow_html=True)
