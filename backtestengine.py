@@ -1264,13 +1264,15 @@ def calculate_clmm_apr(
 # Interface
 # ======================
 
+st.set_page_config(layout="wide")
+
 st.markdown("""
 <div style="
     background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
     padding:20px;
     border-radius:12px;
     margin-top:20px;
-    margin-bottom:12px;
+    margin-bottom:18px;
 ">
     <span style="color:white;font-size:28px;font-weight:700;">
         APR BACKTEST
@@ -1278,10 +1280,16 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.set_page_config(layout="wide")
-
+# Intro overlay
 st.markdown("""
-<div style="color:#cfd3ff;font-size:14px;margin-bottom:20px;">
+<div style="
+    background: linear-gradient(135deg, #141a3a 0%, #1f2a5c 100%);
+    padding:14px 18px;
+    border-radius:10px;
+    margin-bottom:24px;
+    color:#d8dbff;
+    font-size:14px;
+">
 APR estimé à partir des <b>fees historiques</b> et de la
 <b>liquidité active</b> d'une pool de liquidité concentrée.
 </div>
@@ -1320,9 +1328,20 @@ apr = calculate_clmm_apr(
     period_days
 )
 
-st.header("Résultat")
+# Résultat overlay
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0f3d2e 0%, #1c6b4f 100%);
+    padding:18px;
+    border-radius:12px;
+    margin-top:24px;
+">
+    <div style="color:#c9ffe8;font-size:14px;margin-bottom:6px;">
+        APR annualisé estimé
+    </div>
+    <div style="color:white;font-size:36px;font-weight:700;">
+        {apr_value} %
+    </div>
+</div>
+""".format(apr_value=f"{apr:.2f}"), unsafe_allow_html=True)
 
-st.metric(
-    label="APR annualisé estimé",
-    value=f"{apr:.2f} %"
-)
