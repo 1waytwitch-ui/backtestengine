@@ -1270,20 +1270,22 @@ st.markdown("""
     padding:20px;
     border-radius:12px;
     margin-top:20px;
-    margin-bottom:20px;
+    margin-bottom:12px;
 ">
     <span style="color:white;font-size:28px;font-weight:700;">
         APR BACKTEST
     </span>
 </div>
 """, unsafe_allow_html=True)
+
 st.set_page_config(layout="wide")
 
 st.markdown("""
-Le backtest estime un **APR** pour une pool de liquidité
-concentrée à partir de l'**historique des fees** et de la**liqudité active**
-uniquement.
-""")
+<div style="color:#cfd3ff;font-size:14px;margin-bottom:20px;">
+APR estimé à partir des <b>fees historiques</b> et de la
+<b>liquidité active</b> d'une pool de liquidité concentrée.
+</div>
+""", unsafe_allow_html=True)
 
 st.header("Paramètres d'entrée")
 
