@@ -1234,3 +1234,93 @@ components.iframe(
     height=700,
     scrolling=True
 )
+
+# ======================
+# APR
+# ======================
+
+
+def calculate_clmm_apr(
+    fees_usd_period: float,
+    active_liquidity_usd_avg: float,
+    period_days: int
+) -> float:
+    """
+    Calcule un APR annualisé basé uniquement sur la liquidité active.
+    """
+
+    if active_liquidity_usd_avg <= 0 or period_days <= 0:
+        return 0.0
+
+    return (
+        fees_usd_period
+        / active_liquidity_usd_avg
+        * (365 / period_days)
+        * 100
+    )
+
+
+# ======================
+# Interface
+# ======================
+
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        APR BACKTEST
+    </span>
+</div>
+""", unsafe_allow_html=True)
+st.set_page_config(layout="wide")
+
+st.markdown("""
+Le backtest estime un **APR** pour une pool de liquidité
+concentrée à partir de l'**historique des fees** et de la**liqudité active**
+uniquement.
+""")
+
+st.header("Paramètres d'entrée")
+
+fees_usd_period = st.number_input(
+    "Total des fees générées sur la période (USD)",
+    min_value=0.0,
+    value=100.0,
+    step=1000.0
+)
+
+active_liquidity_usd_avg = st.number_input(
+    "Liquidité active moyenne sur la période (USD)",
+    min_value=0.0,
+    value=1000.0,
+    step=10000.0
+)
+
+period_days = st.number_input(
+    "Durée de la période (en jours)",
+    min_value=1,
+    value=30,
+    step=1
+)
+
+# ======================
+# Calcul
+# ======================
+
+apr = calculate_clmm_apr(
+    fees_usd_period,
+    active_liquidity_usd_avg,
+    period_days
+)
+
+st.header("Résultat")
+
+st.metric(
+    label="APR annualisé estimé",
+    value=f"{apr:.2f} %"
+)
