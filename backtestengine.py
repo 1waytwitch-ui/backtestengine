@@ -256,10 +256,6 @@ if not st.session_state.authenticated:
 
     st.stop()
 
-import streamlit as st
-
-import streamlit as st
-
 # =======================
 # CHECKLIST CLMM
 # =======================
@@ -291,57 +287,46 @@ for item in checklist_items:
     user_check.append(st.checkbox(item, key=item))
 
 # Bouton pour valider le questionnaire
-valide = st.button("Valider le questionnaire")
+if st.button("Valider le questionnaire"):
+    score = sum(user_check)
+    total = len(checklist_items)
 
-# Si le bouton n'est pas cliqué, on bloque l'exécution
-if not valide:
-    st.info("Veuillez compléter et valider le questionnaire pour accéder à l'application.")
-    st.stop()  # Tout le reste de l'app est caché tant que ce n'est pas validé
+    st.write(f"Niveau de compréhension : {score}/{total}")
 
-# =======================
-# Partie qui ne s'affiche qu'après validation
-# =======================
+    if score <= 8:
+        prof_color = "red"
+        prof_text = "Exposition non maîtrisée"
+    elif score <= 11:
+        prof_color = "orange"
+        prof_text = "Exposition partiellement maîtrisée"
+    else:
+        prof_color = "green"
+        prof_text = "Exposition maîtrisée"
 
-score = sum(user_check)
-total = len(checklist_items)
-
-st.write(f"Niveau de compréhension : {score}/{total}")
-
-if score <= 8:
-    prof_color = "red"
-    prof_text = "Exposition non maîtrisée"
-elif score <= 11:
-    prof_color = "orange"
-    prof_text = "Exposition partiellement maîtrisée"
-else:
-    prof_color = "green"
-    prof_text = "Exposition maîtrisée"
-
-st.markdown(
-    f"<div style='font-weight:700; color:{prof_color}; font-size:20px'>"
-    f"Profil CLMM : {prof_text}</div>",
-    unsafe_allow_html=True
-)
-
-st.progress(int(score / total * 100))
-
-if prof_text == "Exposition non maîtrisée":
-    st.warning(
-        "Votre compréhension de la liquidité concentrée est insuffisante. "
-        "Le déploiement d'une LP est fortement déconseillé sans clarification des points ci-dessus."
+    st.markdown(
+        f"<div style='font-weight:700; color:{prof_color}; font-size:20px'>"
+        f"Profil CLMM : {prof_text}</div>",
+        unsafe_allow_html=True
     )
-    st.stop()
-elif prof_text == "Exposition partiellement maîtrisée":
-    st.info(
-        "Vous pouvez utiliser l'outil, mais avec des ranges prudents et des montants limités."
-    )
-else:
-    st.success(
-        "Profil adapté à l'apport de liquidité concentrée. Vous pouvez poursuivre l'analyse."
-    )
+
+    st.progress(int(score / total * 100))
+
+    if prof_text == "Exposition non maîtrisée":
+        st.warning(
+            "Votre compréhension de la liquidité concentrée est insuffisante. "
+            "Le déploiement d'une LP est fortement déconseillé sans clarification des points ci-dessus."
+        )
+        st.stop()
+    elif prof_text == "Exposition partiellement maîtrisée":
+        st.info(
+            "Vous pouvez utiliser l'outil, mais avec des ranges prudents et des montants limités."
+        )
+    else:
+        st.success(
+            "Profil adapté à l'apport de liquidité concentrée. Vous pouvez poursuivre l'analyse."
+        )
 
 st.markdown("</div>", unsafe_allow_html=True)
-
 
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
