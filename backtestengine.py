@@ -258,6 +258,8 @@ if not st.session_state.authenticated:
 
 import streamlit as st
 
+import streamlit as st
+
 # =======================
 # CHECKLIST CLMM
 # =======================
@@ -283,9 +285,27 @@ checklist_items = [
     "Je comprends que l'APR affiché sur l'aggragateur est indicatif et non garanti"
 ]
 
+# Initialiser le flag dans session_state si ce n'est pas déjà fait
+if "checklist_validee" not in st.session_state:
+    st.session_state.checklist_validee = False
+
+# Crée les cases à cocher
 user_check = []
 for item in checklist_items:
     user_check.append(st.checkbox(item, key=item))
+
+# Bouton pour valider le questionnaire
+if st.button("Valider le questionnaire"):
+    st.session_state.checklist_validee = True  # On mémorise que c'est validé
+
+# Tant que le questionnaire n'est pas validé, on bloque tout
+if not st.session_state.checklist_validee:
+    st.info("Veuillez compléter et valider le questionnaire pour accéder à l'application.")
+    st.stop()  # Tout le reste de l'app reste caché
+
+# =======================
+# Partie qui ne s'affiche qu'après validation
+# =======================
 
 score = sum(user_check)
 total = len(checklist_items)
@@ -326,6 +346,7 @@ else:
     )
 
 st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
