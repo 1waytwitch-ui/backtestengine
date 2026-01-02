@@ -255,6 +255,75 @@ if not st.session_state.authenticated:
             st.error("Code incorrect")
 
     st.stop()
+
+# =======================
+# CHECKLIST CLMM
+# =======================
+
+st.markdown('<div class="card">', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Checklist avant utilisation de l'outil</div>', unsafe_allow_html=True)
+
+checklist_items = [
+    "Je comprends que mon capital n'est productif que lorsqu'il est dans le range",
+    "J'ai défini un range cohérent avec la volatilité actuelle et de la tendence du marché",
+    "Je sais utiliser un indicateur de volatilité (ATR14) pour mieux définir mon range",
+    "Je sais qu'un range trop étroit augmente les fees mais réduit le temps dans le range",
+    "Je sais qu'un range trop large réduit le rendement",
+    "Je sais que trop de rebalance peut nuire à mon capital à cause des pertes validées",
+    "J'ai compris à quoi correspond un trigger (ratio et temps)",
+    "Je comprends que lors d'une baisse du marché, j'accumule l'actif le plus volatile",
+    "J'accepte le risque d'exposition",
+    "J'ai évalué l'impact de l'impermanent loss relatif à mon range",
+    "Je sais estimer mes fees potentielles par rapport au risque pris",
+    "Je dispose de liquidité pour ajuster ou recentrer mon range si nécessaire",
+    "Je ne fournis de la liquidité que sur des paires que je suis prêt à détenir",
+    "Je surveille régulièrement le prix et la position dans le range / hors du range",
+    "Je comprends que l'APR affiché sur l'aggragateur est indicatif et non garanti"
+]
+
+user_check = []
+for item in checklist_items:
+    user_check.append(st.checkbox(item, key=item))
+
+score = sum(user_check)
+total = len(checklist_items)
+
+st.write(f"Niveau de compréhension : {score}/{total}")
+
+if score <= 8:
+    prof_color = "red"
+    prof_text = "Exposition non maîtrisée"
+elif score <= 11:
+    prof_color = "orange"
+    prof_text = "Exposition partiellement maîtrisée"
+else:
+    prof_color = "green"
+    prof_text = "Exposition maîtrisée"
+
+st.markdown(
+    f"<div style='font-weight:700; color:{prof_color}; font-size:20px'>"
+    f"Profil CLMM : {prof_text}</div>",
+    unsafe_allow_html=True
+)
+
+st.progress(int(score / total * 100))
+
+if prof_text == "Exposition non maîtrisée":
+    st.warning(
+        "Votre compréhension de la liquidité concentrée est insuffisante. "
+        "Le déploiement d'une LP est fortement déconseillé sans clarification des points ci-dessus."
+    )
+    st.stop()
+elif prof_text == "Exposition partiellement maîtrisée":
+    st.info(
+        "Vous pouvez utiliser l'outil, mais avec des ranges prudents et des montants limités."
+    )
+else:
+    st.success(
+        "Profil adapté à l'apport de liquidité concentrée. Vous pouvez poursuivre l'analyse."
+    )
+
+st.markdown('</div>', unsafe_allow_html=True)
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
