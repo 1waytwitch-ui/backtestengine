@@ -260,16 +260,25 @@ import streamlit as st
 
 import streamlit as st
 
+import streamlit as st
+
 # =======================
 # CHECKLIST CLMM
 # =======================
 
 st.markdown("<div class='card'>", unsafe_allow_html=True)
-st.markdown("""
-<div style="background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);padding:20px;border-radius:12px;margin-top:20px;">
-    <span style="color:white;font-size:28px;font-weight:700;">Checklist avant utilisation de l'outil</span>
-</div>
 
+# Titre coloré avec HTML corrigé
+st.markdown("""
+<div style="background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+            padding:20px; border-radius:12px; margin-top:20px;">
+    <span style='color:white; font-size:28px; font-weight:700;'>Checklist avant utilisation de l'outil</span>
+</div>
+""", unsafe_allow_html=True)
+
+# =======================
+# Items de la checklist
+# =======================
 checklist_items = [
     "Je comprends que mon capital n'est productif que lorsqu'il est dans le range",
     "J'ai défini un range cohérent avec la volatilité actuelle et de la tendence du marché",
@@ -288,28 +297,29 @@ checklist_items = [
     "Je comprends que l'APR affiché sur l'aggragateur est indicatif et non garanti"
 ]
 
-# Initialiser le flag dans session_state si ce n'est pas déjà fait
+# =======================
+# Session state pour validation
+# =======================
 if "checklist_validee" not in st.session_state:
     st.session_state.checklist_validee = False
 
-# Crée les cases à cocher
+# Création des cases à cocher
 user_check = []
 for item in checklist_items:
     user_check.append(st.checkbox(item, key=item))
 
 # Bouton pour valider le questionnaire
 if st.button("Valider le questionnaire"):
-    st.session_state.checklist_validee = True  # On mémorise que c'est validé
+    st.session_state.checklist_validee = True  # mémorise la validation
 
-# Tant que le questionnaire n'est pas validé, on bloque tout
+# Tant que le questionnaire n'est pas validé, on bloque le reste de l'app
 if not st.session_state.checklist_validee:
     st.info("Veuillez compléter et valider le questionnaire pour accéder à l'application.")
-    st.stop()  # Tout le reste de l'app reste caché
+    st.stop()
 
 # =======================
 # Partie qui ne s'affiche qu'après validation
 # =======================
-
 score = sum(user_check)
 total = len(checklist_items)
 
@@ -349,6 +359,7 @@ else:
     )
 
 st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 # ----------------------------- LAYOUT -----------------------------
