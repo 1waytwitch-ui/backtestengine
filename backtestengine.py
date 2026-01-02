@@ -260,8 +260,8 @@ if not st.session_state.authenticated:
 # CHECKLIST CLMM
 # =======================
 
-st.markdown('<div class="card">', unsafe_allow_html=True)
-st.markdown('<div class="section-title">Checklist avant utilisation de l'outil</div>', unsafe_allow_html=True)
+st.markdown("<div class='card'>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'>Checklist avant utilisation de l'outil</div>", unsafe_allow_html=True)
 
 checklist_items = [
     "Je comprends que mon capital n'est productif que lorsqu'il est dans le range",
@@ -323,7 +323,8 @@ else:
         "Profil adapté à l'apport de liquidité concentrée. Vous pouvez poursuivre l'analyse."
     )
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
