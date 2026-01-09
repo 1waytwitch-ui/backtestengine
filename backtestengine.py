@@ -1223,7 +1223,7 @@ if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
     </div>
     """, unsafe_allow_html=True)
     
-# --- GUIDE COMPLET AVEC OVERLAYS ---
+# --- GUIDE COMPLET AVEC OVERLAYS ET AUTOMATION ---
 guide_html = """
 <style>
     /* Styles généraux */
@@ -1258,68 +1258,20 @@ guide_html = """
     }
 
     /* Overlays par thème */
-    .overlay-intro {
-        background-color: #e8f5e9; /* vert clair */
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-    .overlay-concepts {
-        background-color: #e3f2fd; /* bleu clair */
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-    .overlay-strategies {
-        background-color: #fff3e0; /* orange clair */
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-    .overlay-range {
-        background-color: #f3e5f5; /* violet clair */
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-    .overlay-errors {
-        background-color: #ffebee; /* rouge clair */
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-    .overlay-conclusion {
-        background-color: #f5f5f5; /* gris clair */
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
+    .overlay-intro { background-color: #e8f5e9; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-concepts { background-color: #e3f2fd; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-strategies { background-color: #fff3e0; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-range { background-color: #f3e5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-errors { background-color: #ffebee; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-conclusion { background-color: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+
     /* Sommaire */
-    #sommaire {
-        background-color: #c8e6c9;
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 30px;
-    }
-    #sommaire h4 {
-        margin-top: 0;
-        font-weight: 700;
-        color: #388e3c;
-    }
-    #sommaire ul {
-        list-style-type: none;
-        padding-left: 10px;
-    }
-    #sommaire ul li {
-        margin-bottom: 6px;
-    }
-    #sommaire ul li a {
-        text-decoration: none;
-        color: #2e7d32;
-    }
-    #sommaire ul li a:hover {
-        text-decoration: underline;
-    }
+    #sommaire { background-color: #c8e6c9; padding: 15px; border-radius: 6px; margin-bottom: 30px; }
+    #sommaire h4 { margin-top: 0; font-weight: 700; color: #388e3c; }
+    #sommaire ul { list-style-type: none; padding-left: 10px; }
+    #sommaire ul li { margin-bottom: 6px; }
+    #sommaire ul li a { text-decoration: none; color: #2e7d32; }
+    #sommaire ul li a:hover { text-decoration: underline; }
 </style>
 
 <div id="guide">
@@ -1371,6 +1323,7 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
     <li><b>Side-line up (100/0)</b> : bas de marché, accumulation token volatile, agressif</li>
     <li><b>Side-line down (0/100)</b> : marché haussier, prise de profit naturel, agressif vers la vente</li>
 </ul>
+<p><b>Rappel automation :</b> Les triggers doivent se baser sur le RATIO (0-100). Pour une stratégie 20/80, utilisez des triggers proches de 20/80 pour rebalancer rapidement selon le nouveau prix d’entrée. Les futures ranges doivent être réglées en % pour éviter des pertes importantes si inversé.</p>
 </div>
 
 <div class="overlay-range">
@@ -1387,7 +1340,8 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
 </ul>
 
 <h3 id="rebalancer-la-position">Rebalancer la position</h3>
-<p>Quand le prix sort du range, tu deviens full A ou full B...</p>
+<p>Quand le prix sort du range, tu deviens full A ou full B...<br>
+<b>Conseils automation :</b> Si votre range actuel est très large ou trop court comparé aux futures ranges, vous aurez un décalage stratégique. Partagez uniquement des captures claires pour demander de l’aide, masquant capital et wallets. Posez-vous toujours la question : acheter plus cher un token volatil vaut-il la peine ou risque de réduire votre capital ?</p>
 
 <h3 id="courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</h3>
 <p>Le graphe montre : IL(%) en fonction du prix actuel...</p>
@@ -1421,7 +1375,7 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
 
 <div class="overlay-conclusion">
 <h3 id="conclusion">Conclusion</h3>
-<p>Ce guide t’a donné les concepts fondamentaux, des explications simples des stratégies...</p>
+<p>Ce guide t’a donné les concepts fondamentaux, des explications simples des stratégies, comment interpréter ratios, range, volatilité, lire l’IL et éviter les erreurs classiques. Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et gérer des pools concentrés avec une vision globale de la mécanique.</p>
 </div>
 
 </div>
