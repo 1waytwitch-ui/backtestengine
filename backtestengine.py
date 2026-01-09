@@ -44,20 +44,6 @@ if "show_disclaimer" not in st.session_state:
     st.session_state.show_disclaimer = True
 
 # ---- DATA ----
-
-@st.cache_data(ttl=86400)
-def resolve_coingecko_id(symbol):
-    try:
-        coins = requests.get(
-            "https://api.coingecko.com/api/v3/coins/list"
-        ).json()
-        for c in coins:
-            if c["symbol"].upper() == symbol.upper():
-                return c["id"]
-    except:
-        return None
-
-
 STRATEGIES = {
     "Neutre": {"ratio": (0.5, 0.5), "objectif": "Rester dans le range", "contexte": "Incertitude (attention à l'impermanent loss vente à perte ou rachat trop cher)"},
     "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Range efficace", "contexte": "Faible volatilité (attention à inverser en fonction du marché)"},
@@ -380,64 +366,31 @@ with col1:
     st.subheader("POOL SETUP")
 
     # --- PAIRE & STRATEGIE ---
-left, right = st.columns(2)
+    left, right = st.columns(2)
+    with left:
+        pair_labels = [f"{a}/{b}" for a, b in PAIRS]
+        selected_pair = st.radio("Paire :", pair_labels, index=0)
+    with right:
+        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
-with left:
-    st.subheader("POOL SETUP")
+    # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
+    if (
+        "last_pair" not in st.session_state
+        or st.session_state["last_pair"] != selected_pair
+    ):
+        for k in list(st.session_state.keys()):
+            if k.endswith("_prices_" + str(datetime.date.today())):
+                del st.session_state[k]
+        st.session_state["last_pair"] = selected_pair
 
-    col_tokenA, col_tokenB = st.columns(2)
+    # --- EXTRACTION STRAT ---
+    tokenA, tokenB = selected_pair.split("/")
+    info = STRATEGIES[strategy_choice]
+    ratioA, ratioB = info["ratio"]
 
-    with col_tokenA:
-        tokenA = st.text_input(
-            "Token A (actif volatil)",
-            value="WETH"
-        ).strip().upper()
-
-    with col_tokenB:
-        tokenB = st.text_input(
-            "Token B (actif de référence)",
-            value="USDC"
-        ).strip().upper()
-
-    # Résolution dynamique CoinGecko
-    if tokenA not in COINGECKO_IDS:
-        resolved_A = resolve_coingecko_id(tokenA)
-        if resolved_A:
-            COINGECKO_IDS[tokenA] = resolved_A
-
-    if tokenB not in COINGECKO_IDS:
-        resolved_B = resolve_coingecko_id(tokenB)
-        if resolved_B:
-            COINGECKO_IDS[tokenB] = resolved_B
-
-    selected_pair = f"{tokenA}/{tokenB}"
-
-
-with right:
-    strategy_choice = st.radio(
-        "Stratégie :",
-        list(STRATEGIES.keys())
-    )
-
-# --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
-if (
-    "last_pair" not in st.session_state
-    or st.session_state["last_pair"] != selected_pair
-):
-    for k in list(st.session_state.keys()):
-        if k.endswith("_prices_" + str(datetime.date.today())):
-            del st.session_state[k]
-    st.session_state["last_pair"] = selected_pair
-
-# --- EXTRACTION STRAT ---
-tokenA, tokenB = selected_pair.split("/")
-info = STRATEGIES[strategy_choice]
-ratioA, ratioB = info["ratio"]
-
-invert_market = st.checkbox("Inversion marché (bull → bear)")
-if invert_market:
-    ratioA, ratioB = ratioB, ratioA
-
+    invert_market = st.checkbox("Inversion marché (bull → bear)")
+    if invert_market:
+        ratioA, ratioB = ratioB, ratioA
 
     
 
@@ -572,11 +525,7 @@ with col2:
         <h3>PRICE / RANGE</h3>
     """, unsafe_allow_html=True)
 
-        if "priceA_usd" in locals() and priceA_usd is not None:
-    st.write(f"Prix actuel : {priceA_usd:.6f} $")
-    else:
-    st.warning("Prix du token A indisponible")
-
+    st.write(f"Prix actuel : {priceA:.6f} $")
     st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
     st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
@@ -1497,4 +1446,3 @@ st.markdown("""
     </div>
 </div>
 """.format(apr_value=f"{apr:.2f}"), unsafe_allow_html=True)
-
