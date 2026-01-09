@@ -574,7 +574,7 @@ with col2:
 
     if "priceA_usd" in locals() and priceA_usd is not None:
     st.write(f"Prix actuel : {priceA_usd:.6f} $")
-else:
+    else:
     st.warning("Prix du token A indisponible")
 
     st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
