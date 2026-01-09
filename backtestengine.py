@@ -572,7 +572,11 @@ with col2:
         <h3>PRICE / RANGE</h3>
     """, unsafe_allow_html=True)
 
-    st.write(f"Prix actuel : {priceA:.6f} $")
+    if "priceA_usd" in locals() and priceA_usd is not None:
+    st.write(f"Prix actuel : {priceA_usd:.6f} $")
+else:
+    st.warning("Prix du token A indisponible")
+
     st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
     st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
