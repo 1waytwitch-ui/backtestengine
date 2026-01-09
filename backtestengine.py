@@ -1223,7 +1223,7 @@ if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
     </div>
     """, unsafe_allow_html=True)
     
-# --- GUIDE COMPLET AVEC OVERLAYS ET AUTOMATION ---
+# --- GUIDE COMPLET ---
 guide_html = """
 <style>
     /* Styles généraux */
@@ -1236,7 +1236,7 @@ guide_html = """
     }
     #guide h2 {
         color: #222;
-        border-bottom: 2px solid #4caf50;
+        border-bottom: 2px solid #6a1b9a;
         padding-bottom: 8px;
         font-weight: 700;
     }
@@ -1257,20 +1257,20 @@ guide_html = """
         margin-bottom: 6px;
     }
 
-    /* Overlays par thème */
-    .overlay-intro { background-color: #e8f5e9; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-concepts { background-color: #e3f2fd; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-strategies { background-color: #fff3e0; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-range { background-color: #f3e5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-errors { background-color: #ffebee; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-conclusion { background-color: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    /* Overlays */
+    .overlay-intro { background-color: #6a1b9a; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-concepts { background-color: #1b5e20; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-strategies { background-color: #ff6f00; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-range { background-color: #8e24aa; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-errors { background-color: #d32f2f; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    .overlay-conclusion { background-color: #757575; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
 
     /* Sommaire */
-    #sommaire { background-color: #c8e6c9; padding: 15px; border-radius: 6px; margin-bottom: 30px; }
-    #sommaire h4 { margin-top: 0; font-weight: 700; color: #388e3c; }
+    #sommaire { background-color: #512da8; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 30px; }
+    #sommaire h4 { margin-top: 0; font-weight: 700; color: #ffffff; }
     #sommaire ul { list-style-type: none; padding-left: 10px; }
     #sommaire ul li { margin-bottom: 6px; }
-    #sommaire ul li a { text-decoration: none; color: #2e7d32; }
+    #sommaire ul li a { text-decoration: none; color: #ffd54f; }
     #sommaire ul li a:hover { text-decoration: underline; }
 </style>
 
@@ -1323,7 +1323,7 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
     <li><b>Side-line up (100/0)</b> : bas de marché, accumulation token volatile, agressif</li>
     <li><b>Side-line down (0/100)</b> : marché haussier, prise de profit naturel, agressif vers la vente</li>
 </ul>
-<p><b>Rappel automation :</b> Les triggers doivent se baser sur le RATIO (0-100). Pour une stratégie 20/80, utiliser des triggers proches de 20/80 provequera un rebalance trop rapide en rapport au nouveau prix d’entrée. Les futures ranges doivent être réglées en % pour éviter des pertes importantes si vous inversez.</p>
+<p><b>Rappel automation :</b> Les triggers doivent se baser sur le RATIO (0-100). Pour une stratégie 20/80, utiliser des triggers proches de 20/80 pour rebalancer selon le nouveau prix d’entrée. Les futures ranges doivent être réglées en % pour éviter des pertes importantes.</p>
 </div>
 
 <div class="overlay-range">
