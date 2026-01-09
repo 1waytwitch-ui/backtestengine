@@ -1223,32 +1223,32 @@ if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
     </div>
     """, unsafe_allow_html=True)
     
-# --- GUIDE COMPLET ---
+# --- GUIDE COMPLET AVEC OVERLAYS DEGRADÉS FLASHY ET AUTOMATION ---
 guide_html = """
 <style>
     /* Styles généraux */
     #guide {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #222222;
+        color: #ffffff;  /* Texte blanc par défaut */
         margin-top: 40px;
         padding: 20px;
         border-radius: 8px;
     }
     #guide h2 {
-        color: #222;
+        color: #ffffff;
         border-bottom: 2px solid #6a1b9a;
         padding-bottom: 8px;
         font-weight: 700;
     }
     #guide h3 {
-        color: #333333;
+        color: #ffffff;
         margin-top: 20px;
         font-weight: 600;
     }
     #guide p, #guide li {
         line-height: 1.5em;
         font-size: 15px;
-        color: #444;
+        color: #ffffff; /* texte blanc */
     }
     #guide ul {
         margin-left: 20px;
@@ -1257,16 +1257,40 @@ guide_html = """
         margin-bottom: 6px;
     }
 
-    /* Overlays */
-    .overlay-intro { background-color: #6a1b9a; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-concepts { background-color: #1b5e20; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-strategies { background-color: #ff6f00; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-range { background-color: #8e24aa; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-errors { background-color: #d32f2f; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
-    .overlay-conclusion { background-color: #757575; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+    /* Overlays par thème avec dégradés flashy */
+    .overlay-intro { 
+        background: linear-gradient(135deg, #8e24aa, #6a1b9a); 
+        padding: 15px; border-radius: 6px; margin-bottom: 20px; 
+    }
+    .overlay-concepts { 
+        background: linear-gradient(135deg, #2e7d32, #1b5e20); 
+        padding: 15px; border-radius: 6px; margin-bottom: 20px; 
+    }
+    .overlay-strategies { 
+        background: linear-gradient(135deg, #ff9800, #ff6f00); 
+        padding: 15px; border-radius: 6px; margin-bottom: 20px; 
+    }
+    .overlay-range { 
+        background: linear-gradient(135deg, #ab47bc, #8e24aa); 
+        padding: 15px; border-radius: 6px; margin-bottom: 20px; 
+    }
+    .overlay-errors { 
+        background: linear-gradient(135deg, #e53935, #d32f2f); 
+        padding: 15px; border-radius: 6px; margin-bottom: 20px; 
+    }
+    .overlay-conclusion { 
+        background: linear-gradient(135deg, #616161, #424242); 
+        padding: 15px; border-radius: 6px; margin-bottom: 20px; 
+    }
 
     /* Sommaire */
-    #sommaire { background-color: #512da8; color: #ffffff; padding: 15px; border-radius: 6px; margin-bottom: 30px; }
+    #sommaire { 
+        background: linear-gradient(135deg, #6a1b9a, #512da8); 
+        color: #ffffff; 
+        padding: 15px; 
+        border-radius: 6px; 
+        margin-bottom: 30px; 
+    }
     #sommaire h4 { margin-top: 0; font-weight: 700; color: #ffffff; }
     #sommaire ul { list-style-type: none; padding-left: 10px; }
     #sommaire ul li { margin-bottom: 6px; }
@@ -1382,28 +1406,6 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
 """
 st.markdown(guide_html, unsafe_allow_html=True)
 
-
-# ======================= video IL =======================
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
-">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        ATELIER IMPERMANENT LOSS
-    </span>
-</div>
-""", unsafe_allow_html=True)
-st.set_page_config(layout="wide")
-
-# colonne unique large
-col, = st.columns(1)
-
-with col:
-    st.video("https://www.youtube.com/watch?v=uQPeyXsQNrs")
 
 
 # ======================= outil atelier IL =======================
