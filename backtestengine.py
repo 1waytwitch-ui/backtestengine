@@ -380,58 +380,64 @@ with col1:
     st.subheader("POOL SETUP")
 
     # --- PAIRE & STRATEGIE ---
-    left, right = st.columns(2)
-    with left:
-        st.subheader("POOL SETUP")
+left, right = st.columns(2)
 
-col_tokenA, col_tokenB = st.columns(2)
+with left:
+    st.subheader("POOL SETUP")
 
-with col_tokenA:
-    tokenA = st.text_input(
-        "Token A (actif volatil)",
-        value="WETH"
-    ).strip().upper()
+    col_tokenA, col_tokenB = st.columns(2)
 
-with col_tokenB:
-    tokenB = st.text_input(
-        "Token B (actif de référence)",
-        value="USDC"
-    ).strip().upper()
+    with col_tokenA:
+        tokenA = st.text_input(
+            "Token A (actif volatil)",
+            value="WETH"
+        ).strip().upper()
 
-# Résolution dynamique CoinGecko
-if tokenA not in COINGECKO_IDS:
-    resolved_A = resolve_coingecko_id(tokenA)
-    if resolved_A:
-        COINGECKO_IDS[tokenA] = resolved_A
+    with col_tokenB:
+        tokenB = st.text_input(
+            "Token B (actif de référence)",
+            value="USDC"
+        ).strip().upper()
 
-if tokenB not in COINGECKO_IDS:
-    resolved_B = resolve_coingecko_id(tokenB)
-    if resolved_B:
-        COINGECKO_IDS[tokenB] = resolved_B
+    # Résolution dynamique CoinGecko
+    if tokenA not in COINGECKO_IDS:
+        resolved_A = resolve_coingecko_id(tokenA)
+        if resolved_A:
+            COINGECKO_IDS[tokenA] = resolved_A
 
-selected_pair = f"{tokenA}/{tokenB}"
+    if tokenB not in COINGECKO_IDS:
+        resolved_B = resolve_coingecko_id(tokenB)
+        if resolved_B:
+            COINGECKO_IDS[tokenB] = resolved_B
 
-    with right:
-        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
+    selected_pair = f"{tokenA}/{tokenB}"
 
-    # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
-    if (
-        "last_pair" not in st.session_state
-        or st.session_state["last_pair"] != selected_pair
-    ):
-        for k in list(st.session_state.keys()):
-            if k.endswith("_prices_" + str(datetime.date.today())):
-                del st.session_state[k]
-        st.session_state["last_pair"] = selected_pair
 
-    # --- EXTRACTION STRAT ---
-    tokenA, tokenB = selected_pair.split("/")
-    info = STRATEGIES[strategy_choice]
-    ratioA, ratioB = info["ratio"]
+with right:
+    strategy_choice = st.radio(
+        "Stratégie :",
+        list(STRATEGIES.keys())
+    )
 
-    invert_market = st.checkbox("Inversion marché (bull → bear)")
-    if invert_market:
-        ratioA, ratioB = ratioB, ratioA
+# --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
+if (
+    "last_pair" not in st.session_state
+    or st.session_state["last_pair"] != selected_pair
+):
+    for k in list(st.session_state.keys()):
+        if k.endswith("_prices_" + str(datetime.date.today())):
+            del st.session_state[k]
+    st.session_state["last_pair"] = selected_pair
+
+# --- EXTRACTION STRAT ---
+tokenA, tokenB = selected_pair.split("/")
+info = STRATEGIES[strategy_choice]
+ratioA, ratioB = info["ratio"]
+
+invert_market = st.checkbox("Inversion marché (bull → bear)")
+if invert_market:
+    ratioA, ratioB = ratioB, ratioA
+
 
     
 
