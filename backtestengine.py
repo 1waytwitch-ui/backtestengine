@@ -1303,7 +1303,7 @@ Krystal, Vfat, aperture... <b>sont uniquement des agrégateurs de positions</b> 
 
 <div class="overlay-concepts">
 <h3 id="cest-quoi-fournir-de-la-liquidite">C’est quoi fournir de la liquidité ?</h3>
-<p>Quand tu fournis de la liquidité à une pool (ex : WETH/USDC), tu apportes <b>deux tokens en même temps</b>. En échange, tu deviens <b>market maker</b> et touches des <b>frais de trading</b>.<br>
+<p>Quand tu fournis de la liquidité à une pool (ex : WETH/USDC), tu apportes <b>deux tokens en même temps</b>. En échange, tu deviens <b>market maker</b> et touches des <b>trading fees</b>.<br>
 Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range → tu deviens <b>full Token A</b> ou <b>full Token B</b>. Ta position s’ajuste automatiquement : <b>quand le prix baisse, tu accumules le token le plus volatile</b> ; à l’inverse, <b>quand le prix monte, tu revends progressivement ce token volatile.</b></p>
 
 <h3 id="concepts-fondamentaux">Concepts fondamentaux</h3>
@@ -1323,7 +1323,7 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
     <li><b>Side-line up (100/0)</b> : bas de marché, accumulation token volatile, agressif</li>
     <li><b>Side-line down (0/100)</b> : marché haussier, prise de profit naturel, agressif vers la vente</li>
 </ul>
-<p><b>Rappel automation :</b> Les triggers doivent se baser sur le RATIO (0-100). Pour une stratégie 20/80, utilisez des triggers proches de 20/80 pour rebalancer rapidement selon le nouveau prix d’entrée. Les futures ranges doivent être réglées en % pour éviter des pertes importantes si inversé.</p>
+<p><b>Rappel automation :</b> Les triggers doivent se baser sur le RATIO (0-100). Pour une stratégie 20/80, utiliser des triggers proches de 20/80 provequera un rebalance trop rapide en rapport au nouveau prix d’entrée. Les futures ranges doivent être réglées en % pour éviter des pertes importantes si vous inversez.</p>
 </div>
 
 <div class="overlay-range">
@@ -1341,7 +1341,7 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
 
 <h3 id="rebalancer-la-position">Rebalancer la position</h3>
 <p>Quand le prix sort du range, tu deviens full A ou full B...<br>
-<b>Conseils automation :</b> Si votre range actuel est très large ou trop court comparé aux futures ranges, vous aurez un décalage stratégique. Partagez uniquement des captures claires pour demander de l’aide, masquant capital et wallets. Posez-vous toujours la question : acheter plus cher un token volatil vaut-il la peine ou risque de réduire votre capital ?</p>
+<b>Conseils pour le range :</b> Si votre range actuel est très large ou trop court comparé aux futures ranges, vous aurez un décalage stratégique. Posez-vous toujours la question : acheter plus cher ou vendre à perte un token volatile vaut-il la peine ou cela risque de réduire votre capital ?</p>
 
 <h3 id="courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</h3>
 <p>Le graphe montre : IL(%) en fonction du prix actuel...</p>
