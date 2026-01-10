@@ -1301,7 +1301,23 @@ guide_html = """
 
 <div id="guide">
 
-<h2>Guide - Fournir de la liquidité concentrée</h2>
+
+
+st.set_page_config(layout="wide")
+
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:18px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        Guide - Fournir de la liquidité concentrée
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
 <div class="overlay-intro">
 <p>Bienvenue !<br>
