@@ -1238,7 +1238,7 @@ guide_html = """
 
     #guide h2 {
         color: #ffffff;
-        border-bottom: 2px solid #FFD700;
+        border-bottom: 2px solid #1DE9B6;
         padding-bottom: 8px;
         font-weight: 700;
     }
@@ -1265,11 +1265,11 @@ guide_html = """
     }
 
     /* ========================= */
-    /* Overlays (soft gold tone) */
+    /* Overlays (turquoise theme) */
     /* ========================= */
 
     .overlay-intro {
-        background: linear-gradient(135deg, #FFE27A, #FFD700, #E6C85C);
+        background: linear-gradient(135deg, #66F0C8, #1DE9B6, #14B38A);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
@@ -1277,7 +1277,7 @@ guide_html = """
     }
 
     .overlay-concepts {
-        background: linear-gradient(135deg, #FFD700, #E6C200, #CFAF3D);
+        background: linear-gradient(135deg, #1DE9B6, #14B38A, #0F7A5F);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
@@ -1285,7 +1285,7 @@ guide_html = """
     }
 
     .overlay-strategies {
-        background: linear-gradient(135deg, #FFF1B3, #FFD700, #E0C35A);
+        background: linear-gradient(135deg, #A0F7DD, #1DE9B6, #0F7A5F);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
@@ -1293,7 +1293,7 @@ guide_html = """
     }
 
     .overlay-range {
-        background: linear-gradient(135deg, #FFE58F, #FFD700);
+        background: linear-gradient(135deg, #66F0C8, #1DE9B6);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
@@ -1309,7 +1309,7 @@ guide_html = """
     }
 
     .overlay-conclusion {
-        background: linear-gradient(135deg, #FFD700, #E6C200);
+        background: linear-gradient(135deg, #1DE9B6, #14B38A);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
@@ -1321,7 +1321,7 @@ guide_html = """
     /* ========= */
 
     #sommaire {
-        background: linear-gradient(135deg, #FFE58F, #FFD700, #E6C85C);
+        background: linear-gradient(135deg, #A0F7DD, #1DE9B6, #14B38A);
         color: #ffffff;
         padding: 15px;
         border-radius: 6px;
@@ -1352,6 +1352,7 @@ guide_html = """
         text-decoration: underline;
     }
 </style>
+
 
 
 <div id="guide">
