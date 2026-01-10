@@ -1260,25 +1260,25 @@ guide_html = """
 
     /* Overlays */
     .overlay-intro {
-        background: linear-gradient(135deg, #8e24aa, #6a1b9a);
+        background: linear-gradient(135deg, #FFD700, #E6B800, #B8860B);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
     }
     .overlay-concepts {
-        background: linear-gradient(135deg, #2e7d32, #1b5e20);
+        background: linear-gradient(135deg, #FFD700, #C9A000, #3A2F00);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
     }
     .overlay-strategies {
-        background: linear-gradient(135deg, #ff9800, #ff6f00);
+        background: linear-gradient(135deg, #FFE066, #FFD700, #E6AC00);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
     }
     .overlay-range {
-        background: linear-gradient(135deg, #ab47bc, #8e24aa);
+        background: linear-gradient(135deg, #FFD700, #E6C200);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
@@ -1290,7 +1290,7 @@ guide_html = """
         margin-bottom: 20px;
     }
     .overlay-conclusion {
-        background: linear-gradient(135deg, #616161, #424242);
+        background: linear-gradient(135deg, #FFD700, #FFB000);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
@@ -1298,7 +1298,7 @@ guide_html = """
 
     /* Sommaire */
     #sommaire {
-        background: linear-gradient(135deg, #6a1b9a, #512da8);
+        background: linear-gradient(135deg, #FFD700, #E6B800, #B8860B);
         color: #ffffff;
         padding: 15px;
         border-radius: 6px;
