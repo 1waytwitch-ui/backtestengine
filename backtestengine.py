@@ -1230,15 +1230,14 @@ guide_html = """
     /* Styles généraux */
     #guide {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #e6edf3;
-        background: #0e1117;
+        color: #ffffff;  /* Texte blanc par défaut */
         margin-top: 40px;
         padding: 20px;
         border-radius: 8px;
     }
     #guide h2 {
         color: #ffffff;
-        border-bottom: 2px solid #4f9cff;
+        border-bottom: 2px solid #6a1b9a;
         padding-bottom: 8px;
         font-weight: 700;
     }
@@ -1250,7 +1249,7 @@ guide_html = """
     #guide p, #guide li {
         line-height: 1.5em;
         font-size: 15px;
-        color: #e6edf3;
+        color: #ffffff; /* texte blanc */
     }
     #guide ul {
         margin-left: 20px;
@@ -1261,53 +1260,43 @@ guide_html = """
 
     /* Overlays*/
     .overlay-intro { 
-        background: linear-gradient(135deg, #1b1f2a, #23283a); 
+        background: linear-gradient(135deg, #8e24aa, #6a1b9a); 
         padding: 15px; border-radius: 6px; margin-bottom: 20px; 
     }
     .overlay-concepts { 
-        background: linear-gradient(135deg, #1e3a2f, #162c23); 
+        background: linear-gradient(135deg, #2e7d32, #1b5e20); 
         padding: 15px; border-radius: 6px; margin-bottom: 20px; 
     }
     .overlay-strategies { 
-        background: linear-gradient(135deg, #3a2a12, #2b1f0d); 
+        background: linear-gradient(135deg, #ff9800, #ff6f00); 
         padding: 15px; border-radius: 6px; margin-bottom: 20px; 
     }
     .overlay-range { 
-        background: linear-gradient(135deg, #2a2340, #1e1933); 
+        background: linear-gradient(135deg, #ab47bc, #8e24aa); 
         padding: 15px; border-radius: 6px; margin-bottom: 20px; 
     }
     .overlay-errors { 
-        background: linear-gradient(135deg, #3a1e1e, #2a1515); 
+        background: linear-gradient(135deg, #e53935, #d32f2f); 
         padding: 15px; border-radius: 6px; margin-bottom: 20px; 
     }
     .overlay-conclusion { 
-        background: linear-gradient(135deg, #2a2f3a, #1e222b); 
+        background: linear-gradient(135deg, #616161, #424242); 
         padding: 15px; border-radius: 6px; margin-bottom: 20px; 
     }
 
     /* Sommaire */
     #sommaire { 
-        background: linear-gradient(135deg, #1b1f2a, #23283a); 
+        background: linear-gradient(135deg, #6a1b9a, #512da8); 
         color: #ffffff; 
         padding: 15px; 
         border-radius: 6px; 
         margin-bottom: 30px; 
     }
-    #sommaire h4 { 
-        margin-top: 0; 
-        font-weight: 700; 
-        color: #4f9cff; 
-    }
+    #sommaire h4 { margin-top: 0; font-weight: 700; color: #ffffff; }
     #sommaire ul { list-style-type: none; padding-left: 10px; }
     #sommaire ul li { margin-bottom: 6px; }
-    #sommaire ul li a { 
-        text-decoration: none; 
-        color: #2ecc71; 
-    }
-    #sommaire ul li a:hover { 
-        text-decoration: underline; 
-        color: #6ee7b7; 
-    }
+    #sommaire ul li a { text-decoration: none; color: #ffd54f; }
+    #sommaire ul li a:hover { text-decoration: underline; }
 </style>
 
 <div id="guide">
@@ -1337,11 +1326,87 @@ Krystal, Vfat, aperture... <b>sont uniquement des agrégateurs de positions</b> 
 </div>
 </div>
 
-<!-- TOUT LE TEXTE ORIGINAL SUIT STRICTEMENT SANS MODIFICATION -->
+<div class="overlay-concepts">
+<h3 id="cest-quoi-fournir-de-la-liquidite">C’est quoi fournir de la liquidité ?</h3>
+<p>Quand tu fournis de la liquidité à une pool (ex : WETH/USDC), tu apportes <b>deux tokens en même temps</b>. En échange, tu deviens <b>market maker</b> et touches des <b>trading fees</b>.<br>
+Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range → tu deviens <b>full Token A</b> ou <b>full Token B</b>. Ta position s’ajuste automatiquement : <b>quand le prix baisse, tu accumules le token le plus volatile</b> ; à l’inverse, <b>quand le prix monte, tu revends progressivement ce token volatile.</b></p>
+
+<h3 id="concepts-fondamentaux">Concepts fondamentaux</h3>
+<ul>
+    <li><b>Ratio</b> : proportion entre Token A (volatile) et Token B (stable ou moins volatile). Exemple : 50/50 = neutre, 20/80 = défensif, 95/5 = agressif.</li>
+    <li><b>Range</b> : zone de prix où ton capital est actif. Range serré = plus de fees mais plus de rebalances et IL possible.</li>
+    <li><b>Impermanent Loss (IL)</b> : perte que tu aurais évitée si tu avais conservé tes tokens. Plus le prix s’éloigne, plus l’IL augmente.</li>
+</ul>
+</div>
+
+<div class="overlay-strategies">
+<h3 id="strategies-possibles">Stratégies possibles</h3>
+<ul>
+    <li><b>Neutre (50/50)</b> : marché incertain, stable et simple, risque IL si gros mouvement</li>
+    <li><b>Coup de pouce (20/80)</b> : marché calme, protège du token volatil, défensif</li>
+    <li><b>Mini-doux (10/90)</b> : anticipation de tendance, minimise IL, très défensif</li>
+    <li><b>Side-line up (100/0)</b> : bas de marché, accumulation token volatile, agressif</li>
+    <li><b>Side-line down (0/100)</b> : marché haussier, prise de profit naturel, agressif vers la vente</li>
+</ul>
+<p><b>Rappel automation :</b> Les triggers doivent se baser sur le RATIO (0-100). Pour une stratégie 20/80, utiliser des triggers proches de 20/80 pour rebalancer selon le nouveau prix d’entrée. Les futures ranges doivent être réglées en % pour éviter des pertes importantes.</p>
+</div>
+
+<div class="overlay-range">
+<h3 id="choisir-un-range">Choisir un range</h3>
+<p>Le choix dépend de ton objectif, de la volatilité et du marché...</p>
+
+<h3 id="exemple-simple-weth-usdc">Exemple simple WETH/USDC</h3>
+<p>Capital = 1000 USD, Prix ETH = 3000, Stratégie = 50/50, Range ±20%.</p>
+<ul>
+    <li>Répartition : 500 USD ETH, 500 USD USDC</li>
+    <li>Range bas ≈ 2700, Range haut ≈ 3300</li>
+    <li>Si prix = 3300 → plus riche en USDC, fees générés</li>
+    <li>Si prix = 2700 → plus d’ETH, fees générés</li>
+</ul>
+
+<h3 id="rebalancer-la-position">Rebalancer la position</h3>
+<p>Quand le prix sort du range, tu deviens full A ou full B...<br>
+<b>Conseils pour le range :</b> Si votre range actuel est très large ou trop court comparé aux futures ranges, vous aurez un décalage stratégique. Posez-vous toujours la question : acheter plus cher ou vendre à perte un token volatile vaut-il la peine ou cela risque de réduire votre capital ?</p>
+
+<h3 id="courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</h3>
+<p>Le graphe montre : IL(%) en fonction du prix actuel...</p>
+
+<h3 id="strategie-lp-rentable">Quand une stratégie LP est rentable ?</h3>
+<ul>
+    <li>Frais gagnés > impermanent loss</li>
+    <li>Prix ne sort pas trop vite du range</li>
+    <li>Stratégie cohérente avec l’objectif (DCA, prise de profit, accumulation…)</li>
+</ul>
+</div>
+
+<div class="overlay-errors">
+<h3 id="erreurs-de-debutant">Erreurs de débutant</h3>
+<ul>
+    <li>Range trop serré : rebalances fréquents, coûts d’opportunité, IL amplifiée</li>
+    <li>Oublier que l’IL existe : fees ne compensent pas toujours IL</li>
+    <li>Choisir un range sans regarder la volatilité : volatilité 7j et 30j clé, pas de stratégie “set and forget”</li>
+</ul>
+
+<h3 id="astuces-et-autonomie">Astuces et autonomie des choix</h3>
+<ul>
+    <li>Commencer avec un faible capital et un range large</li>
+    <li>Utiliser des stratégies asymétriques si marché directionnel</li>
+    <li>Vérifier la volatilité 7j et 30j</li>
+    <li>Ne pas déposer tout le capital d’un coup</li>
+    <li>Surveiller la courbe IL après dépôt</li>
+    <li>Utiliser le dex pour déposer la liquidité (expert)</li>
+</ul>
+</div>
+
+<div class="overlay-conclusion">
+<h3 id="conclusion">Conclusion</h3>
+<p>Ce guide t’a donné les concepts fondamentaux, des explications simples des stratégies, comment interpréter ratios, range, volatilité, lire l’IL et éviter les erreurs classiques. Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et gérer des pools concentrés avec une vision globale de la mécanique.</p>
+</div>
 
 </div>
 """
 st.markdown(guide_html, unsafe_allow_html=True)
+
 
 
 
