@@ -1301,7 +1301,7 @@ guide_html = """
     }
 
     .overlay-errors {
-        background: linear-gradient(135deg, #e53935, #c62828);
+        background: linear-gradient(135deg, #66F0C8, #1DE9B6);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
