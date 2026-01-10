@@ -1230,100 +1230,129 @@ guide_html = """
     /* Styles généraux */
     #guide {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #ffffff;  /* Texte blanc par défaut */
+        color: #ffffff;  /* Texte blanc global */
         margin-top: 40px;
         padding: 20px;
         border-radius: 8px;
     }
+
     #guide h2 {
         color: #ffffff;
-        border-bottom: 2px solid #6a1b9a;
+        border-bottom: 2px solid #FFD700;
         padding-bottom: 8px;
         font-weight: 700;
     }
+
     #guide h3 {
         color: #ffffff;
         margin-top: 20px;
         font-weight: 600;
     }
-    #guide p, #guide li {
+
+    #guide p,
+    #guide li {
         line-height: 1.5em;
         font-size: 15px;
-        color: #ffffff;
+        color: #ffffff;  /* Texte blanc partout */
     }
+
     #guide ul {
         margin-left: 20px;
     }
+
     #guide ul li {
         margin-bottom: 6px;
     }
 
-    /* Overlays */
+    /* ========================= */
+    /* Overlays (soft gold tone) */
+    /* ========================= */
+
     .overlay-intro {
-        background: linear-gradient(135deg, #FFD700, #E6B800, #B8860B);
+        background: linear-gradient(135deg, #FFE27A, #FFD700, #E6C85C);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
+        color: #ffffff;
     }
+
     .overlay-concepts {
-        background: linear-gradient(135deg, #FFD700, #C9A000, #3A2F00);
+        background: linear-gradient(135deg, #FFD700, #E6C200, #CFAF3D);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
+        color: #ffffff;
     }
+
     .overlay-strategies {
-        background: linear-gradient(135deg, #FFE066, #FFD700, #E6AC00);
+        background: linear-gradient(135deg, #FFF1B3, #FFD700, #E0C35A);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
+        color: #ffffff;
     }
+
     .overlay-range {
+        background: linear-gradient(135deg, #FFE58F, #FFD700);
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        color: #ffffff;
+    }
+
+    .overlay-errors {
+        background: linear-gradient(135deg, #e53935, #c62828);
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        color: #ffffff;
+    }
+
+    .overlay-conclusion {
         background: linear-gradient(135deg, #FFD700, #E6C200);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 20px;
-    }
-    .overlay-errors {
-        background: linear-gradient(135deg, #e53935, #d32f2f);
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
-    }
-    .overlay-conclusion {
-        background: linear-gradient(135deg, #FFD700, #FFB000);
-        padding: 15px;
-        border-radius: 6px;
-        margin-bottom: 20px;
+        color: #ffffff;
     }
 
-    /* Sommaire */
+    /* ========= */
+    /* Sommaire  */
+    /* ========= */
+
     #sommaire {
-        background: linear-gradient(135deg, #FFD700, #E6B800, #B8860B);
+        background: linear-gradient(135deg, #FFE58F, #FFD700, #E6C85C);
         color: #ffffff;
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 30px;
     }
+
     #sommaire h4 {
         margin-top: 0;
         font-weight: 700;
         color: #ffffff;
     }
+
     #sommaire ul {
         list-style-type: none;
         padding-left: 10px;
     }
+
     #sommaire ul li {
         margin-bottom: 6px;
     }
+
     #sommaire ul li a {
         text-decoration: none;
-        color: #ffd54f;
+        color: #ffffff;  /* liens blancs aussi */
     }
+
     #sommaire ul li a:hover {
         text-decoration: underline;
     }
 </style>
+
 
 <div id="guide">
 
