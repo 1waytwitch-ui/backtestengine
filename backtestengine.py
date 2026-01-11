@@ -1383,6 +1383,16 @@ Ajuste ensuite ton range en confrontant ces valeurs avec les données de l'ATR14
 <p>Quand le prix sort du range, tu deviens full A ou full B, tu ne gagnes plus de fees. Ta LP = simple “bag” de tokens, il faut repositionner la liquidité.<br>
 L'app calcule combien de fois le prix est sorti dans le passé et en simulation future, et ajuste automatiquement le range.</p>
 
+<h4>Rappel sur l’automation et le rebalancement</h4>
+<ul>
+  <li>Les triggers doivent toujours se baser sur le <strong>RATIO</strong>, jamais sur % ou $. Ils vont de 0 à 100 et déclenchent le rebalancement en bout de range. Par exemple, pour une stratégie 20/80, placez vos triggers proches de 20/80 pour rebalancer rapidement selon le nouveau prix d’entrée.</li>
+  <li>Lors de l’utilisation des <strong>futures ranges</strong> (option avancée), réglez-les correctement en %. Un trigger placé sur le prix le plus haut dans un marché haussier conservera surtout l’USDC. Si inversé, vous risquez de valider des pertes importantes (~80%).</li>
+  <li>Si votre range actuel est très large ou trop court comparé aux futures ranges, vous aurez un décalage de stratégie, ce qui peut produire des performances en dents de scie.</li>
+  <li><strong>Conseil pratique :</strong> Pour toute question sur vos réglages, partagez uniquement des captures claires de l’édition de l’automation et de la stratégie, en masquant les données sensibles (capital, wallets).</li>
+  <li><strong>Attention sur vos décisions :</strong> Avant d’acheter du token A (volatile) à un prix supérieur au point de rebalance, demandez-vous si vous êtes prêt à vendre pour limiter la perte. Inversement, si vous êtes exposé en USDC ou token B (moins volatile), acheter beaucoup du token volatil plus cher peut réduire votre capital et amplifier vos pertes à la baisse.</li>
+</ul>
+
+
 <h3 id="courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</h3>
 <p>Le graphe montre : IL(%) en fonction du prix actuel, ligne pour prix de dépôt, ligne pour prix actuel, range bas/haut.<br>
 Interprétation : minimum de la courbe = prix de dépôt ; plus on s’éloigne, plus IL augmente ; IL=0 seulement si prix reste identique.</p>
