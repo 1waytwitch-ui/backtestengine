@@ -609,6 +609,7 @@ with col2:
         margin-bottom:25px;
     ">
         <h3>PRICE / RANGE</h3>
+    </div>
     """, unsafe_allow_html=True)
 
     st.write(f"Prix actuel : {priceA:.6f} $")
@@ -618,76 +619,63 @@ with col2:
     # === GAUGE A/B ===
     fig_bar = go.Figure()
 
-fig_bar.add_trace(go.Bar(
-    x=[ratioA * 100],
-    y=[tokenA],
-    orientation="h",
-    marker=dict(color="#FF8C00"),
-    name=tokenA
-))
+    fig_bar.add_trace(go.Bar(
+        x=[ratioA * 100],
+        y=[""],
+        orientation="h",
+        marker=dict(color="#FF8C00"),
+        showlegend=False
+    ))
 
-fig_bar.add_trace(go.Bar(
-    x=[ratioB * 100],
-    y=[tokenB],
-    orientation="h",
-    marker=dict(color="#6A5ACD"),
-    name=tokenB
-))
+    fig_bar.add_trace(go.Bar(
+        x=[ratioB * 100],
+        y=[""],
+        orientation="h",
+        marker=dict(color="#6A5ACD"),
+        showlegend=False
+    ))
 
-fig_bar.update_layout(
-    barmode="stack",
-    height=120,
-    title=dict(
-        text="Répartition A / B (%)",
-        font=dict(color="#ffffff", size=16)
-    ),
-    margin=dict(l=10, r=10, t=40, b=20),
+    fig_bar.update_layout(
+        barmode="stack",
+        height=90,
+        margin=dict(l=0, r=0, t=10, b=10),
 
-    xaxis=dict(
-        range=[0, 100],
-        title=dict(
-            text="Pourcentage",
-            font=dict(color="#ffffff")
+        xaxis=dict(
+            range=[0, 100],
+            tickfont=dict(color="#ffffff", size=10),
+            gridcolor="rgba(255,255,255,0.08)",
+            title=None
         ),
-        tickfont=dict(color="#ffffff"),
-        gridcolor="rgba(255,255,255,0.1)"
-    ),
 
-    yaxis=dict(
-        showticklabels=False,
-        tickfont=dict(color="#ffffff")
-    ),
+        yaxis=dict(showticklabels=False),
 
-    legend=dict(
-        font=dict(color="#ffffff"),
-        bgcolor="rgba(0,0,0,0)"
-    ),
+        plot_bgcolor="#0b0f0e",
+        paper_bgcolor="#0b0f0e",
+        font=dict(color="#ffffff", size=10)
+    )
 
-    plot_bgcolor="#0b0f0e",
-    paper_bgcolor="#0b0f0e",
+    st.plotly_chart(fig_bar, use_container_width=True)
 
-    font=dict(color="#ffffff")
-)
+    # --- CADRE RECAP ---
+    st.markdown(
+        f"""
+        <div style="
+            background: rgba(29,233,182,0.15);
+            border-left: 6px solid #1de9b6;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 8px;
+            color: #e5e7eb;
+            font-size: 13px;
+        ">
+            <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
+            <b>Objectif :</b> {info['objectif']}<br>
+            <b>Contexte :</b> {info['contexte']}
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-st.plotly_chart(fig_bar, use_container_width=True)
-
-# --- CADRE RECAP ---
-st.markdown(
-    f"""
-    <div style="
-        background-color: #27F5A9;
-        border-left: 6px solid #00754A;
-        padding: 15px 20px;
-        border-radius: 8px;
-        margin: 12px 0 25px 0;
-    ">
-        <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
-        <b>Objectif :</b> {info['objectif']}<br>
-        <b>Contexte :</b> {info['contexte']}
-    </div>
-    """,
-    unsafe_allow_html=True
-)
 
 
 # =========================== AUTOMATION ===========================
