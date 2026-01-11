@@ -440,7 +440,16 @@ col1, col2 = st.columns([1.3, 1])
 # ============================== GAUCHE ==============================
 with col1:
 
-    st.subheader("POOL SETUP")
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>POOL SETUP</h3>
+    """, unsafe_allow_html=True)
 
     # --- PAIRE & STRATEGIE ---
     left, right = st.columns(2)
