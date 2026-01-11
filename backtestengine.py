@@ -14,11 +14,11 @@ st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
 # ---- STYLES GÉNÉRAUX ----
 st.markdown("""
 <style>
-.stApp {background-color: #FFFFFF !important; color: #000000 !important;}
+.stApp {background-color: ##1de9b6 !important; color: #000000 !important;}
 h1, h2, h3, h4 {color: #000000 !important;}
 .stTextInput input, .stNumberInput input {
     background-color: #F0F0F0 !important; 
-    color: #000000 !important;
+    color: #ffffff  !important;
     border: 1px solid #000000 !important;
 }
 .stButton button {
