@@ -672,7 +672,7 @@ fig_bar.update_layout(
 st.plotly_chart(fig_bar, use_container_width=True)
 
 # --- CADRE RECAP ---
-    st.markdown(f"""
+        st.markdown(f"""
     <div style="
         background-color: #27F5A9;
         border-left: 6px solid #00754A;
