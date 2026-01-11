@@ -616,51 +616,48 @@ with col2:
     st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
     st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
-   # === GAUGE A/B ===
-fig_bar = go.Figure()
+    # === GAUGE A/B ===
+    fig_bar = go.Figure()
 
-fig_bar.add_trace(go.Bar(
-    x=[ratioA * 100],
-    y=[tokenA],
-    orientation="h",
-    marker=dict(color="#FF8C00"),
-    name=tokenA,
-    showlegend=False
-))
+    fig_bar.add_trace(go.Bar(
+        x=[ratioA * 100],
+        y=[tokenA],
+        orientation="h",
+        marker=dict(color="#FF8C00"),
+        name=tokenA,
+        showlegend=False
+    ))
 
-fig_bar.add_trace(go.Bar(
-    x=[ratioB * 100],
-    y=[tokenB],
-    orientation="h",
-    marker=dict(color="#6A5ACD"),
-    name=tokenB,
-    showlegend=False
-))
+    fig_bar.add_trace(go.Bar(
+        x=[ratioB * 100],
+        y=[tokenB],
+        orientation="h",
+        marker=dict(color="#6A5ACD"),
+        name=tokenB,
+        showlegend=False
+    ))
 
-fig_bar.update_layout(
-    height=120,
-    margin=dict(l=10, r=10, t=10, b=10),
+    fig_bar.update_layout(
+        height=120,
+        margin=dict(l=10, r=10, t=10, b=10),
 
-    xaxis=dict(
-        range=[0, 100],
-        tickfont=dict(color="#ffffff", size=10),
-        title=None,
-        gridcolor="rgba(255,255,255,0.08)"
-    ),
+        xaxis=dict(
+            range=[0, 100],
+            tickfont=dict(color="#ffffff", size=10),
+            title=None,
+            gridcolor="rgba(255,255,255,0.08)"
+        ),
 
-    yaxis=dict(
-        tickfont=dict(color="#ffffff", size=11)
-    ),
+        yaxis=dict(
+            tickfont=dict(color="#ffffff", size=11)
+        ),
 
-    plot_bgcolor="#0b0f0e",
-    paper_bgcolor="#0b0f0e",
-    font=dict(color="#ffffff", size=11)
-)
+        plot_bgcolor="#0b0f0e",
+        paper_bgcolor="#0b0f0e",
+        font=dict(color="#ffffff", size=11)
+    )
 
-st.plotly_chart(fig_bar, use_container_width=True)
-
-
-    with col2:
+    st.plotly_chart(fig_bar, use_container_width=True)
 
     # --- CADRE RECAP ---
     st.markdown(
@@ -681,7 +678,6 @@ st.plotly_chart(fig_bar, use_container_width=True)
         """,
         unsafe_allow_html=True
     )
-
 
 
 
