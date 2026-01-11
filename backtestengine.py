@@ -618,34 +618,58 @@ with col2:
     # === GAUGE A/B ===
     fig_bar = go.Figure()
 
-    fig_bar.add_trace(go.Bar(
-        x=[ratioA * 100],
-        y=[f"{tokenA}"],
-        orientation="h",
-        marker=dict(color="#FF8C00"),
-        name=tokenA
-    ))
+fig_bar.add_trace(go.Bar(
+    x=[ratioA * 100],
+    y=[tokenA],
+    orientation="h",
+    marker=dict(color="#FF8C00"),
+    name=tokenA
+))
 
-    fig_bar.add_trace(go.Bar(
-        x=[ratioB * 100],
-        y=[f"{tokenB}"],
-        orientation="h",
-        marker=dict(color="#6A5ACD"),
-        name=tokenB
-    ))
+fig_bar.add_trace(go.Bar(
+    x=[ratioB * 100],
+    y=[tokenB],
+    orientation="h",
+    marker=dict(color="#6A5ACD"),
+    name=tokenB
+))
 
-    fig_bar.update_layout(
-        barmode="stack",
-        height=120,
-        title="Répartition A / B (%)",
-        margin=dict(l=10, r=10, t=40, b=20),
-        xaxis=dict(range=[0, 100], title="Pourcentage"),
-        yaxis=dict(showticklabels=False),
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)"
-    )
+fig_bar.update_layout(
+    barmode="stack",
+    height=120,
+    title=dict(
+        text="Répartition A / B (%)",
+        font=dict(color="#ffffff", size=16)
+    ),
+    margin=dict(l=10, r=10, t=40, b=20),
 
-    st.plotly_chart(fig_bar, width="stretch")
+    xaxis=dict(
+        range=[0, 100],
+        title=dict(
+            text="Pourcentage",
+            font=dict(color="#ffffff")
+        ),
+        tickfont=dict(color="#ffffff"),
+        gridcolor="rgba(255,255,255,0.1)"
+    ),
+
+    yaxis=dict(
+        showticklabels=False,
+        tickfont=dict(color="#ffffff")
+    ),
+
+    legend=dict(
+        font=dict(color="#ffffff"),
+        bgcolor="rgba(0,0,0,0)"
+    ),
+
+    plot_bgcolor="#0b0f0e",
+    paper_bgcolor="#0b0f0e",
+
+    font=dict(color="#ffffff")
+)
+
+st.plotly_chart(fig_bar, use_container_width=True)
 
 # --- CADRE RECAP ---
     st.markdown(f"""
