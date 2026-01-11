@@ -1304,7 +1304,6 @@ guide_html = """
 
 <div id="guide">
 
-<h2>Guide - Fournir de la liquidité concentrée</h2>
 
 <!-- Texte d'introduction -->
 <p>Bienvenue !<br>
