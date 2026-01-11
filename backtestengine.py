@@ -927,6 +927,7 @@ IL_curve = (LP_values / HODL_values - 1) * 100
 # --- Graphique IL(%) ---
 fig = go.Figure()
 
+# Ligne IL
 fig.add_trace(go.Scatter(
     x=prices,
     y=IL_curve,
@@ -935,6 +936,7 @@ fig.add_trace(go.Scatter(
     line=dict(color="red", width=3)
 ))
 
+# Vlines et annotations
 fig.add_vline(
     x=P_lower,
     line=dict(color="green", width=2, dash="dot"),
@@ -991,20 +993,37 @@ fig.add_annotation(
     yshift=-10
 )
 
-fig.update_xaxes(range=[min(prices), max(prices)])
-fig.update_yaxes(tickformat=".2f", automargin=True)
-
-fig.update_layout(
-    height=380,
-    title="Impermanent Loss (%)",
-    xaxis_title="Prix",
-    yaxis_title="IL (%)",
-    margin=dict(l=70, r=40, t=50, b=40),
-    plot_bgcolor="rgba(245,245,245,0.6)",
-    paper_bgcolor="rgba(0,0,0,0)"
+# Axes
+fig.update_xaxes(
+    range=[min(prices), max(prices)],
+    title="Prix",
+    title_font=dict(color="white", size=14),
+    tickfont=dict(color="white", size=12),
+    gridcolor="rgba(255,255,255,0.1)"
+)
+fig.update_yaxes(
+    tickformat=".2f",
+    automargin=True,
+    title="IL (%)",
+    title_font=dict(color="white", size=14),
+    tickfont=dict(color="white", size=12),
+    gridcolor="rgba(255,255,255,0.1)"
 )
 
-st.plotly_chart(fig, width="stretch")
+# Layout
+fig.update_layout(
+    height=380,
+    title=dict(
+        text="Impermanent Loss (%)",
+        font=dict(color="white", size=16)
+    ),
+    margin=dict(l=70, r=40, t=50, b=40),
+    plot_bgcolor="#173a57",
+    paper_bgcolor="#173a57",
+    font=dict(color="white")
+)
+
+st.plotly_chart(fig, use_container_width=True)
 
 # --- Valeurs actuelles et L au dépôt ---
 IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
