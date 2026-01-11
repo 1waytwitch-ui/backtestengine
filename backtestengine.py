@@ -1013,12 +1013,12 @@ HODL_now = V_HODL(P_now, x0, y0)
 
 html_block = f"""
 <div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:18px 25px;border-radius:12px;margin-top:20px;color:#000;text-align:center;">
-<h3 style="margin:0 0 10px 0;">Simulation IL</h3>
-<div style="font-size:18px;font-weight:600;display:flex;justify-content:center;gap:35px;flex-wrap:wrap;">
-    <span>IL maintenant : {IL_now:.2f}%</span>
-    <span>Valeur LP : ${LP_now:,.2f}</span>
-    <span>Valeur HODL : ${HODL_now:,.2f}</span>
-</div>
+    <h3 style="margin:0 0 10px 0;color:#000;">Simulation IL</h3>
+    <div style="font-size:18px;font-weight:600;display:flex;justify-content:center;gap:35px;flex-wrap:wrap;">
+        <span style="color:#000;">IL maintenant : {IL_now:.2f}%</span>
+        <span style="color:#000;">Valeur LP : ${LP_now:,.2f}</span>
+        <span style="color:#000;">Valeur HODL : ${HODL_now:,.2f}</span>
+    </div>
 </div>
 """
 
