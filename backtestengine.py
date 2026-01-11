@@ -1349,7 +1349,7 @@ if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
 # --- GUIDE COMPLET ---
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    background-color:#173a57;
     padding:20px;
     border-radius:12px;
     margin-top:20px;
@@ -1367,28 +1367,20 @@ guide_html = """
     /* Styles généraux */
     #guide {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #222222;
+        color: #ffffff;
         margin-top: 40px;
         padding: 20px;
-        background-color: #f9f9f9;
+        background-color: #173a57;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
     }
-    #guide h2 {
-        color: #222;
-        border-bottom: 2px solid #4caf50;
-        padding-bottom: 8px;
-        font-weight: 700;
-    }
-    #guide h3 {
-        color: #333333;
-        margin-top: 30px;
-        font-weight: 600;
+    #guide h2, #guide h3, #guide h4 {
+        color: #ffffff;
     }
     #guide p, #guide li {
         line-height: 1.5em;
         font-size: 15px;
-        color: #444;
+        color: #ffffff;
     }
     #guide ul {
         margin-left: 20px;
@@ -1398,7 +1390,7 @@ guide_html = """
     }
     /* Sommaire */
     #sommaire {
-        background-color: #e8f5e9;
+        background-color: rgba(255,255,255,0.05);
         padding: 15px;
         border-radius: 6px;
         margin-bottom: 30px;
@@ -1406,7 +1398,7 @@ guide_html = """
     #sommaire h4 {
         margin-top: 0;
         font-weight: 700;
-        color: #388e3c;
+        color: #ffffff;
     }
     #sommaire ul {
         list-style-type: none;
@@ -1417,7 +1409,7 @@ guide_html = """
     }
     #sommaire ul li a {
         text-decoration: none;
-        color: #2e7d32;
+        color: #ffffff;
     }
     #sommaire ul li a:hover {
         text-decoration: underline;
@@ -1425,6 +1417,7 @@ guide_html = """
 </style>
 
 <div id="guide">
+
 
 
 <!-- Texte d'introduction -->
