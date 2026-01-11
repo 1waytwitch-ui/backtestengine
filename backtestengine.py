@@ -1414,8 +1414,6 @@ Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et 
 
 
 
-
-
 # ======================= video IL =======================
 st.markdown("""
 <div style="
