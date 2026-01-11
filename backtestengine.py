@@ -652,8 +652,8 @@ with col2:
             tickfont=dict(color="#ffffff", size=11)
         ),
 
-        plot_bgcolor="#0b0f0e",
-        paper_bgcolor="#0b0f0e",
+        plot_bgcolor="#00785a",
+        paper_bgcolor="#00785a",
         font=dict(color="#ffffff", size=11)
     )
 
