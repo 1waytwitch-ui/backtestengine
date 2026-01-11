@@ -672,7 +672,8 @@ fig_bar.update_layout(
 st.plotly_chart(fig_bar, use_container_width=True)
 
 # --- CADRE RECAP ---
-        st.markdown(f"""
+st.markdown(
+    f"""
     <div style="
         background-color: #27F5A9;
         border-left: 6px solid #00754A;
@@ -680,12 +681,13 @@ st.plotly_chart(fig_bar, use_container_width=True)
         border-radius: 8px;
         margin: 12px 0 25px 0;
     ">
-    <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
-    <b>Objectif :</b> {info['objectif']}<br>
-    <b>Contexte :</b> {info['contexte']}
+        <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
+        <b>Objectif :</b> {info['objectif']}<br>
+        <b>Contexte :</b> {info['contexte']}
     </div>
-    """, unsafe_allow_html=True)
-
+    """,
+    unsafe_allow_html=True
+)
 
 
 # =========================== AUTOMATION ===========================
