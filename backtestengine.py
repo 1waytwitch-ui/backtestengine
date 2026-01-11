@@ -5,39 +5,116 @@ import datetime
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.io as pio
 import yfinance as yf
 import math
 
+# ===================== CONFIG PAGE =====================
+st.set_page_config(
+    page_title="LP STRATÉGIES BACKTEST ENGINE",
+    layout="wide"
+)
 
-st.set_page_config(page_title="LP STRATÉGIES BACKTEST ENGINE ", layout="wide")
+# ===================== PLOTLY DARK =====================
+pio.templates.default = "plotly_dark"
 
-# ---- STYLES GÉNÉRAUX ----
+# ===================== DARK THEME GLOBAL =====================
 st.markdown("""
 <style>
-.stApp {background-color: #0b0f0e !important; color: #000000 !important;}
-h1, h2, h3, h4 {color: #000000 !important;}
-.stTextInput input, .stNumberInput input {
-    background-color: #1de9b6 !important; 
-    color: #ffffff  !important;
-    border: 1px solid #000000 !important;
+
+/* ================= ROOT ================= */
+:root {
+    --bg-main: #0b0f0e;
+    --bg-card: #121716;
+    --bg-soft: #181f1e;
+    --accent: #1de9b6;
+    --accent-soft: rgba(29,233,182,0.15);
+    --text-main: #e5e7eb;
+    --text-muted: #9ca3af;
+    --border-soft: rgba(255,255,255,0.08);
 }
+
+/* ================= APP ================= */
+.stApp {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+/* ================= TITRES ================= */
+h1, h2, h3, h4, h5 {
+    color: var(--text-main) !important;
+}
+
+/* ================= TEXTE ================= */
+p, span, label {
+    color: var(--text-main);
+}
+
+/* ================= INPUTS ================= */
+.stTextInput input,
+.stNumberInput input,
+.stSelectbox div[data-baseweb="select"],
+.stMultiSelect div,
+.stDateInput input {
+    background-color: var(--bg-soft) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-soft) !important;
+    border-radius: 10px;
+}
+
+/* Placeholder */
+.stTextInput input::placeholder {
+    color: var(--text-muted);
+}
+
+/* ================= CHECKBOX / RADIO ================= */
+.stCheckbox label,
+.stRadio label {
+    color: var(--text-main) !important;
+}
+
+/* ================= BUTTONS ================= */
 .stButton button {
-    background-color: #000000 !important;
-    color: #FFFFFF !important;
+    background: linear-gradient(135deg, #1de9b6, #14b8a6);
+    color: #062b23 !important;
+    border-radius: 14px;
+    font-weight: 700;
+    border: none;
+    padding: 0.6em 1.4em;
 }
+
+.stButton button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(29,233,182,0.35);
+}
+
+/* ================= ALERTS ================= */
+.stAlert {
+    background-color: var(--bg-soft);
+    color: var(--text-main);
+    border-left: 5px solid var(--accent);
+}
+
+/* ================= PROGRESS ================= */
+.stProgress > div > div {
+    background-color: var(--accent);
+}
+
+/* ================= SCROLLBAR ================= */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-thumb {
+    background: #1de9b6;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-track {
+    background: #0b0f0e;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-# ---- FORCE DARK MODE ----
-st.markdown("""
-<style>
-.stRadio label, .stRadio div, 
-.stSelectbox label, .stSelectbox div,
-.stCheckbox label, .stCheckbox div {
-    color: #000000 !important;
-}
-</style>
-""", unsafe_allow_html=True)
 
 # ---- INIT ----
 if "show_disclaimer" not in st.session_state:
