@@ -1383,9 +1383,9 @@ Ajuste ensuite ton range en confrontant ces valeurs avec les données de l'ATR14
 <p>Quand le prix sort du range, tu deviens full A ou full B, tu ne gagnes plus de fees. Ta LP = simple “bag” de tokens, il faut repositionner la liquidité.<br>
 L'app calcule combien de fois le prix est sorti dans le passé et en simulation future, et ajuste automatiquement le range.</p>
 
-<h4>Rappel sur l’automation et le rebalancement</h4>
+<h4>Rappel sur l’automation et les rebalances</h4>
 <ul>
-  <li>Les triggers doivent toujours se baser sur le <strong>RATIO</strong>, jamais sur % ou $. Ils vont de 0 à 100 et déclenchent le rebalancement en bout de range. Par exemple, pour une stratégie 20/80, placez vos triggers proches de 20/80 pour rebalancer rapidement selon le nouveau prix d’entrée.</li>
+  <li>Les triggers doivent toujours se baser sur le <strong>RATIO</strong>, jamais sur % ou $. Ils vont de 0 à 100 et déclenchent les rebalances en bout de range. Par exemple, pour une stratégie 20/80, placez vos triggers proches de 20/80 pour rebalancer rapidement selon le nouveau prix d’entrée.</li>
   <li>Lors de l’utilisation des <strong>futures ranges</strong> (option avancée), réglez-les correctement en %. Un trigger placé sur le prix le plus haut dans un marché haussier conservera surtout l’USDC. Si inversé, vous risquez de valider des pertes importantes (~80%).</li>
   <li>Si votre range actuel est très large ou trop court comparé aux futures ranges, vous aurez un décalage de stratégie, ce qui peut produire des performances en dents de scie.</li>
   <li><strong>Conseil pratique :</strong> Pour toute question sur vos réglages, partagez uniquement des captures claires de l’édition de l’automation et de la stratégie, en masquant les données sensibles (capital, wallets).</li>
