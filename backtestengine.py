@@ -254,27 +254,28 @@ if st.session_state.show_disclaimer:
     <div style="
         background-color: #fff3cd;
         border-left: 6px solid #ffca2c;
-        padding: 18px 22px;
+        padding: 15px 20px;
         border-radius: 8px;
+        color: #000;
         margin-bottom: 25px;
-        color: #000000 !important;
-        font-size: 16px;
-        font-weight: 700;
-        line-height: 1.6;
+        font-size: 15px;
     ">
-        ⚠️ DISCLAIMER IMPORTANT<br><br>
+    <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
 
-        Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie de farming automatisée peut perdre malgré des APY élevés.
-        <br><br>
+    <b style="font-size:16px;">
+    Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie de farming automatisée peut perdre malgré des APY élevés.
+    <br><br>
 
-        L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto.
-        Le code d’accès est disponible dans le canal privé “DEFI Académie”.
-        Cet outil peut comporter des approximations ou des inexactitudes.
-        Il ne s’agit en aucun cas d’un conseil en investissement.
-        Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé.
-        Si l’API est surchargée, certains prix devront être saisis manuellement !
+    L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. 
+    Le code d’accès est disponible dans le canal privé “DEFI Académie”. 
+    Cet outil peut comporter des approximations ou des inexactitudes. 
+    Il ne s’agit en aucun cas d’un conseil en investissement. 
+    Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. 
+    Si l’API est surchargée, certains prix devront être saisis manuellement !
+     </b>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
