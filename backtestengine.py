@@ -265,8 +265,8 @@ if st.session_state.show_disclaimer:
     <b style="
     font-size:16px;
     text-decoration: underline;
-    text-decoration-thickness: 4px;
-    text-underline-offset: 5px;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 4px;
 ">
     Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie de farming automatisée peut perdre malgré des APY élevés.
 </b>
