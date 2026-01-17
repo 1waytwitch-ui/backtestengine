@@ -262,10 +262,15 @@ if st.session_state.show_disclaimer:
     ">
     <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
 
-    <b style="font-size:16px;">
+    <b style="
+    font-size:16px;
+    text-decoration: underline;
+    text-decoration-thickness: 4px;
+    text-underline-offset: 5px;
+">
     Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie de farming automatisée peut perdre malgré des APY élevés.
-    </b>
-    <br><br>
+</b>
+<br><br>
 
      <b style="font-size:16px;">
     L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. 
