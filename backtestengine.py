@@ -258,23 +258,24 @@ if st.session_state.show_disclaimer:
         border-radius: 8px;
         color: #000;
         margin-bottom: 25px;
-        font-size: 15px;
+        font-size: 16px;
+        font-weight: bold;
+        line-height: 1.5;
     ">
-    <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
+    ⚠️ DISCLAIMER IMPORTANT<br><br>
 
-    <b style="font-size:16px;">
     Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie de farming automatisée peut perdre malgré des APY élevés.
-    </b>
     <br><br>
 
-    L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. 
-    Le code d’accès est disponible dans le canal privé “DEFI Académie”. 
-    Cet outil peut comporter des approximations ou des inexactitudes. 
-    Il ne s’agit en aucun cas d’un conseil en investissement. 
-    Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. 
+    L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto.
+    Le code d’accès est disponible dans le canal privé “DEFI Académie”.
+    Cet outil peut comporter des approximations ou des inexactitudes.
+    Il ne s’agit en aucun cas d’un conseil en investissement.
+    Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé.
     Si l’API est surchargée, certains prix devront être saisis manuellement !
     </div>
     """, unsafe_allow_html=True)
+
 
 # -----------------------
 # CODE SECRET
