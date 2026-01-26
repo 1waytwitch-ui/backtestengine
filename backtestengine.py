@@ -1607,8 +1607,11 @@ components.iframe(
 # ======================= BE LP =======================
 import streamlit as st
 
+st.set_page_config(layout="wide")
+
 st.title("Calculateur de Break-Even LP")
 
+# --- Type de paire ---
 pair_type = st.selectbox(
     "Type de paire",
     ["Volatile / Stable", "Double Volatile"]
@@ -1650,19 +1653,30 @@ st.divider()
 pnl = value - capital
 break_even_price = (capital - effective_b) / qty_a
 
-# --- Résultats en ligne ---
-r1, r2, r3 = st.columns(3)
+# --- Overlay résultat ---
+bg_color = "#2EF2A2" if pnl >= 0 else "#FF6B6B"
 
-with r1:
-    st.metric("Valeur actuelle ($)", round(value, 2))
+overlay_html = f"""
+<div style="
+    background: {bg_color};
+    padding: 40px;
+    border-radius: 18px;
+    text-align: center;
+    margin-top: 30px;
+    color: #000;
+">
+    <h3>Résultat Break-Even LP</h3>
 
-with r2:
-    st.metric("P&L ($)", round(pnl, 2))
+    <p style="font-size: 18px;">
+        Valeur actuelle : <b>{value:.2f} $</b> &nbsp;&nbsp;|&nbsp;&nbsp;
+        P&L : <b>{pnl:.2f} $</b> &nbsp;&nbsp;|&nbsp;&nbsp;
+        Break-even Token A : <b>{break_even_price:.2f} $</b>
+    </p>
 
-with r3:
-    st.metric("Break-even Token A ($)", round(break_even_price, 2))
+    <p style="font-size: 13px; margin-top: 15px;">
+        Break-even valide tant que la position reste dans le range
+    </p>
+</div>
+"""
 
-st.info(
-    "Break-even valide tant que la position reste dans le range."
-)
-
+st.markdown(overlay_html, unsafe_allow_html=True)
