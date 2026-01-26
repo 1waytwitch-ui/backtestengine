@@ -1636,31 +1636,67 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.subheader("METRICS")
-    capital = st.number_input("Capital engagé ($)", value=6400.0)
-    fees = st.number_input("Fees accumulés ($)", value=140.0)
+    capital = st.number_input(
+        "Capital engagé ($)",
+        value=6400.0,
+        step=0.01,
+        format="%.2f"
+    )
+    fees = st.number_input(
+        "Fees accumulés ($)",
+        value=140.0,
+        step=0.01,
+        format="%.2f"
+    )
 
 with col2:
     st.subheader("Token A")
-    qty_a = st.number_input("Quantité", value=1.5)
-    price_a = st.number_input("Prix actuel ($)", value=2950.0)
+    qty_a = st.number_input(
+        "Quantité",
+        value=1.5,
+        step=0.0001,
+        format="%.6f"
+    )
+    price_a = st.number_input(
+        "Prix actuel ($)",
+        value=2950.0,
+        step=0.01,
+        format="%.2f"
+    )
 
 with col3:
     if pair_type == "Volatile / Stable":
         st.subheader("Token B (Stable)")
-        stable_amount = st.number_input("Montant ($)", value=1500.0)
+        stable_amount = st.number_input(
+            "Montant ($)",
+            value=1500.0,
+            step=0.01,
+            format="%.2f"
+        )
 
         value = qty_a * price_a + stable_amount
         effective_b = stable_amount + fees
 
     else:
         st.subheader("Token B (Volatile)")
-        qty_b = st.number_input("Quantité", value=0.5)
-        price_b = st.number_input("Prix actuel ($)", value=2000.0)
+        qty_b = st.number_input(
+            "Quantité",
+            value=0.5,
+            step=0.0001,
+            format="%.6f"
+        )
+        price_b = st.number_input(
+            "Prix actuel ($)",
+            value=2000.0,
+            step=0.01,
+            format="%.2f"
+        )
 
         value = qty_a * price_a + qty_b * price_b
         effective_b = qty_b * price_b + fees
 
 st.divider()
+
 
 # ======================= CALCULS =======================
 
