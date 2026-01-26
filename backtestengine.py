@@ -1697,10 +1697,12 @@ with col3:
 
 st.divider()
 
-
 # ======================= CALCULS =======================
 
 pnl = value - capital
+pnl_to_be = capital - value
+pnl_pct = (value / capital - 1) * 100
+
 break_even_a = (capital - effective_b) / qty_a
 
 break_even_b = None
@@ -1712,28 +1714,34 @@ bg_color = "#FF6B6B" if pnl < 0 else "#2EF2A2"
 # ======================= OVERLAY =======================
 
 if pair_type == "Double Volatile":
-    overlay_html = f"""<div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
-    <h3>Résultat Break-Even LP</h3>
-    <p style="font-size:18px;">
-        Valeur actuelle : <b>{value:.2f} $</b><br><br>
-        Break-even Token A (P<sub>B</sub> constant) : <b>{break_even_a:.2f} $</b><br>
-        Break-even Token B (P<sub>A</sub> constant) : <b>{break_even_b:.2f} $</b>
-    </p>
-    <p style="font-size:13px;margin-top:15px;">
-        Break-even conditionnel : dépend du prix de l’autre actif
-    </p>
-    </div>"""
+    overlay_html = f"""
+    <div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
+        <h3>Résultat Break-Even LP</h3>
+        <p style="font-size:18px;">
+            Valeur actuelle : <b>{value:.2f} $</b><br><br>
+            P&L actuelle : <b>{pnl:.2f} $</b> ({pnl_pct:.2f} %)<br>
+            P&L restante pour BE : <b>{pnl_to_be:.2f} $</b><br><br>
+            Break-even Token A : <b>{break_even_a:.2f} $</b><br>
+            Break-even Token B : <b>{break_even_b:.2f} $</b>
+        </p>
+        <p style="font-size:13px;margin-top:15px;">
+            Break-even conditionnel : dépend du prix de l’autre actif
+        </p>
+    </div>
+    """
 else:
-    overlay_html = f"""<div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
-    <h3>Résultat Break-Even LP</h3>
-    <p style="font-size:18px;">
-        Valeur actuelle : <b>{value:.2f} $</b>&nbsp;&nbsp;|&nbsp;&nbsp;
-        P&L : <b>{pnl:.2f} $</b>&nbsp;&nbsp;|&nbsp;&nbsp;
-        Break-even Token A : <b>{break_even_a:.2f} $</b>
-    </p>
-    <p style="font-size:13px;margin-top:15px;">
-        Break-even valide tant que la position reste dans le range
-    </p>
-    </div>"""
+    overlay_html = f"""
+    <div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
+        <h3>Résultat Break-Even LP</h3>
+        <p style="font-size:18px;">
+            Valeur actuelle : <b>{value:.2f} $</b>&nbsp;&nbsp;|&nbsp;&nbsp;
+            P&L : <b>{pnl:.2f} $</b>&nbsp;&nbsp;({pnl_pct:.2f} %)&nbsp;&nbsp;|&nbsp;&nbsp;
+            Break-even Token A : <b>{break_even_a:.2f} $</b>
+        </p>
+        <p style="font-size:13px;margin-top:15px;">
+            Break-even valide tant que la position reste dans le range
+        </p>
+    </div>
+    """
 
 st.markdown(overlay_html, unsafe_allow_html=True)
