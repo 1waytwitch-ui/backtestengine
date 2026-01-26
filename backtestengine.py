@@ -1605,9 +1605,9 @@ components.iframe(
 )
 
 # ======================= BE LP =======================
-st.title("Calculateur de Break-Even LP")
+import streamlit as st
 
-st.markdown("Outil de calcul automatique du break-even d'une position LP")
+st.title("Calculateur de Break-Even LP")
 
 pair_type = st.selectbox(
     "Type de paire",
@@ -1616,41 +1616,53 @@ pair_type = st.selectbox(
 
 st.divider()
 
-capital = st.number_input("Capital engagé ($)", value=6400.0)
-fees = st.number_input("Fees accumulés ($)", value=140.0)
+# --- Colonnes principales ---
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.subheader("Paramètres")
+    capital = st.number_input("Capital engagé ($)", value=6400.0)
+    fees = st.number_input("Fees accumulés ($)", value=140.0)
+
+with col2:
+    st.subheader("Token A")
+    qty_a = st.number_input("Quantité", value=1.5)
+    price_a = st.number_input("Prix actuel ($)", value=2950.0)
+
+with col3:
+    if pair_type == "Volatile / Stable":
+        st.subheader("Token B (Stable)")
+        stable_amount = st.number_input("Montant ($)", value=1500.0)
+
+        value = qty_a * price_a + stable_amount
+        effective_b = stable_amount + fees
+    else:
+        st.subheader("Token B (Volatile)")
+        qty_b = st.number_input("Quantité", value=0.5)
+        price_b = st.number_input("Prix actuel ($)", value=2000.0)
+
+        value = qty_a * price_a + qty_b * price_b
+        effective_b = qty_b * price_b + fees
 
 st.divider()
 
-st.subheader("Token A")
-qty_a = st.number_input("Quantité Token A", value=1.5)
-price_a = st.number_input("Prix actuel Token A ($)", value=2950.0)
-
-if pair_type == "Volatile / Stable":
-    st.subheader("Token B (Stable)")
-    stable_amount = st.number_input("Montant Token B ($)", value=1500.0)
-
-    value = qty_a * price_a + stable_amount
-    effective_b = stable_amount + fees
-
-else:
-    st.subheader("Token B (Volatile)")
-    qty_b = st.number_input("Quantité Token B", value=0.5)
-    price_b = st.number_input("Prix actuel Token B ($)", value=2000.0)
-
-    value = qty_a * price_a + qty_b * price_b
-    effective_b = qty_b * price_b + fees
-
-st.divider()
-
+# --- Calculs ---
 pnl = value - capital
 break_even_price = (capital - effective_b) / qty_a
 
-st.subheader("Résultats")
+# --- Résultats en ligne ---
+r1, r2, r3 = st.columns(3)
 
-st.metric("Valeur actuelle ($)", round(value, 2))
-st.metric("P&L actuel ($)", round(pnl, 2))
-st.metric("Prix de break-even Token A ($)", round(break_even_price, 2))
+with r1:
+    st.metric("Valeur actuelle ($)", round(value, 2))
+
+with r2:
+    st.metric("P&L ($)", round(pnl, 2))
+
+with r3:
+    st.metric("Break-even Token A ($)", round(break_even_price, 2))
 
 st.info(
-    "Le break-even inclut l’impermanent loss tant que la position reste dans le range."
+    "Break-even valide tant que la position reste dans le range."
 )
+
