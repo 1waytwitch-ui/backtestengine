@@ -1608,6 +1608,7 @@ components.iframe(
 
 st.set_page_config(layout="wide")
 
+# --- Header ---
 st.markdown("""
 <div style="
     background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
@@ -1622,6 +1623,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# --- Type de paire ---
 pair_type = st.selectbox(
     "Type de paire",
     ["Volatile / Stable", "Double Volatile"]
@@ -1629,12 +1631,13 @@ pair_type = st.selectbox(
 
 st.divider()
 
+# --- Colonnes ---
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.subheader("METRICS")
-    capital = st.number_input("Capital engagé ($)", value=6400)
-    fees = st.number_input("Fees accumulés ($)", value=140)
+    capital = st.number_input("Capital engagé ($)", value=6400.0)
+    fees = st.number_input("Fees accumulés ($)", value=140.0)
 
 with col2:
     st.subheader("Token A")
@@ -1645,33 +1648,56 @@ with col3:
     if pair_type == "Volatile / Stable":
         st.subheader("Token B (Stable)")
         stable_amount = st.number_input("Montant ($)", value=1500.0)
+
         value = qty_a * price_a + stable_amount
         effective_b = stable_amount + fees
+
     else:
         st.subheader("Token B (Volatile)")
         qty_b = st.number_input("Quantité", value=0.5)
         price_b = st.number_input("Prix actuel ($)", value=2000.0)
+
         value = qty_a * price_a + qty_b * price_b
         effective_b = qty_b * price_b + fees
 
 st.divider()
 
+# ======================= CALCULS =======================
+
 pnl = value - capital
-break_even_price = (capital - effective_b) / qty_a
+break_even_a = (capital - effective_b) / qty_a
+
+break_even_b = None
+if pair_type == "Double Volatile":
+    break_even_b = (capital - (qty_a * price_a) - fees) / qty_b
 
 bg_color = "#FF6B6B" if pnl < 0 else "#2EF2A2"
 
-overlay_html = f"""<div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
-<h3>Résultat Break-Even LP</h3>
-<p style="font-size:18px;">
-Valeur actuelle : <b>{value:.2f} $</b>&nbsp;&nbsp;|&nbsp;&nbsp;
-P&L : <b>{pnl:.2f} $</b>&nbsp;&nbsp;|&nbsp;&nbsp;
-Break-even Token A : <b>{break_even_price:.2f} $</b>
-</p>
-<p style="font-size:13px;margin-top:15px;">
-Break-even valide tant que la position reste dans le range
-</p>
-</div>"""
+# ======================= OVERLAY =======================
+
+if pair_type == "Double Volatile":
+    overlay_html = f"""<div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
+    <h3>Résultat Break-Even LP</h3>
+    <p style="font-size:18px;">
+        Valeur actuelle : <b>{value:.2f} $</b><br><br>
+        Break-even Token A (P<sub>B</sub> constant) : <b>{break_even_a:.2f} $</b><br>
+        Break-even Token B (P<sub>A</sub> constant) : <b>{break_even_b:.2f} $</b>
+    </p>
+    <p style="font-size:13px;margin-top:15px;">
+        Break-even conditionnel : dépend du prix de l’autre actif
+    </p>
+    </div>"""
+else:
+    overlay_html = f"""<div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
+    <h3>Résultat Break-Even LP</h3>
+    <p style="font-size:18px;">
+        Valeur actuelle : <b>{value:.2f} $</b>&nbsp;&nbsp;|&nbsp;&nbsp;
+        P&L : <b>{pnl:.2f} $</b>&nbsp;&nbsp;|&nbsp;&nbsp;
+        Break-even Token A : <b>{break_even_a:.2f} $</b>
+    </p>
+    <p style="font-size:13px;margin-top:15px;">
+        Break-even valide tant que la position reste dans le range
+    </p>
+    </div>"""
 
 st.markdown(overlay_html, unsafe_allow_html=True)
-
