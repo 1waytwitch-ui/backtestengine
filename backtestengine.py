@@ -1100,7 +1100,7 @@ st.markdown("""
     margin-bottom:18px;
 ">
     <span style="color:white;font-size:28px;font-weight:700;">
-        APR BACKTEST
+        CALCULATRICE APR
     </span>
 </div>
 """, unsafe_allow_html=True)
@@ -1182,7 +1182,7 @@ st.markdown("""
     margin-bottom:20px;
 ">
     <span style="color:white;font-size:28px;font-weight:700;">
-        ATR RANGE BACKTEST
+        ATR PAIRE VOLATILE STABLE
     </span>
 </div>
 """, unsafe_allow_html=True)
@@ -1307,7 +1307,7 @@ st.markdown("""
     margin-bottom:20px;
 ">
     <span style="color:white;font-size:28px;font-weight:700;">
-        ATR PAIRE VOLATILE
+        ATR PAIRE DOUBLE VOLATILE
     </span>
 </div>
 """, unsafe_allow_html=True)
@@ -1372,7 +1372,7 @@ st.markdown("""
     margin-bottom:18px;
 ">
     <span style="color:white;font-size:28px;font-weight:700;">
-        Guide - Fournir de la liquidité concentrée
+        GUIDE - ENGAGER DU CAPITAL SUR LP
     </span>
 </div>
 """, unsafe_allow_html=True)
