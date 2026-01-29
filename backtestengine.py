@@ -1781,7 +1781,7 @@ with col2:
 with col3:
     P_max = st.number_input("Prix max de la plage actuelle", value=3600.0)
 with col4:
-    L_total = st.number_input("Liquidité totale cible (en token0 équivalent)", value=10.0)
+    L_total = st.number_input("Liquidité totale cible (en tokenA équivalent)", value=10.0)
 
 pool_type = st.selectbox(
     "Type de pool",
@@ -1807,30 +1807,30 @@ sqrt_P_max = math.sqrt(new_P_max)
 sqrt_P_current = math.sqrt(P_current)
 
 # =======================
-# Calcul des montants de token0 et token1
+# Calcul des montants de tokenA et tokenB
 # =======================
 def calc_tokens(L, P_current, P_min, P_max):
     sqrt_P_min = math.sqrt(P_min)
     sqrt_P_max = math.sqrt(P_max)
     sqrt_P_current = math.sqrt(P_current)
     
-    if P_current < P_min:  # tout en token0
-        token0 = L
-        token1 = 0
-    elif P_current > P_max:  # tout en token1
-        token0 = 0
-        token1 = L
+    if P_current < P_min:  # tout en tokenA
+        tokenA = L
+        tokenB = 0
+    elif P_current > P_max:  # tout en tokenB
+        tokenA = 0
+        tokenB = L
     else:
-        token0 = L * (sqrt_P_max - sqrt_P_current) / (sqrt_P_current * sqrt_P_max)
-        token1 = L * (sqrt_P_current - sqrt_P_min)
-    return token0, token1
+        tokenA = L * (sqrt_P_max - sqrt_P_current) / (sqrt_P_current * sqrt_P_max)
+        tokenB = L * (sqrt_P_current - sqrt_P_min)
+    return tokenA, tokenB
 
-token0, token1 = calc_tokens(L_total, P_current, new_P_min, new_P_max)
+tokenA, tokenB = calc_tokens(L_total, P_current, new_P_min, new_P_max)
 
 # =======================
 # Affichage des résultats
 # =======================
 st.header("Résultat du Refill")
 st.write(f"Nouvelle plage suggérée : [{new_P_min:.2f}, {new_P_max:.2f}]")
-st.write(f"Token0 à injecter : {token0:.6f}")
-st.write(f"Token1 à injecter : {token1:.6f}")
+st.write(f"TokenA à injecter : {tokenA:.6f}")
+st.write(f"TokenB à injecter : {tokenB:.6f}")
