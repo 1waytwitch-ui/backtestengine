@@ -1745,3 +1745,85 @@ else:
     """
 
 st.markdown(overlay_html, unsafe_allow_html=True)
+
+
+# ======================= Recharger LP =======================
+
+st.set_page_config(layout="wide")
+
+# --- Header ---
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        Recharger une stratégie (en phase de test)
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+# =======================
+# Entrée des données
+# =======================
+st.header("Paramètres de la LP")
+
+P_current = st.number_input("Prix actuel du token (ex: USDC/WETH)", value=3500.0)
+P_min = st.number_input("Prix min de la plage actuelle", value=3400.0)
+P_max = st.number_input("Prix max de la plage actuelle", value=3600.0)
+L_total = st.number_input("Liquidité totale cible (en token0 équivalent)", value=10.0)
+
+pool_type = st.selectbox(
+    "Type de pool",
+    ("Stable", "Volatile", "Double Volatile")
+)
+
+# Paramètres par type de pool
+if pool_type == "Stable":
+    delta = 0.005  # 0.5% plage autour du prix
+elif pool_type == "Volatile":
+    delta = 0.03   # 3% plage autour du prix
+else:  # Double Volatile
+    delta = 0.05   # 5% plage autour du prix
+
+# =======================
+# Recalcul nouvelle plage autour du prix actuel
+# =======================
+new_P_min = P_current * (1 - delta)
+new_P_max = P_current * (1 + delta)
+
+sqrt_P_min = math.sqrt(new_P_min)
+sqrt_P_max = math.sqrt(new_P_max)
+sqrt_P_current = math.sqrt(P_current)
+
+# =======================
+# Calcul des montants de token0 et token1
+# =======================
+def calc_tokens(L, P_current, P_min, P_max):
+    sqrt_P_min = math.sqrt(P_min)
+    sqrt_P_max = math.sqrt(P_max)
+    sqrt_P_current = math.sqrt(P_current)
+    
+    if P_current < P_min:  # tout en token0
+        token0 = L
+        token1 = 0
+    elif P_current > P_max:  # tout en token1
+        token0 = 0
+        token1 = L
+    else:
+        token0 = L * (sqrt_P_max - sqrt_P_current) / (sqrt_P_current * sqrt_P_max)
+        token1 = L * (sqrt_P_current - sqrt_P_min)
+    return token0, token1
+
+token0, token1 = calc_tokens(L_total, P_current, new_P_min, new_P_max)
+
+# =======================
+# Affichage des résultats
+# =======================
+st.header("Résultat du Refill")
+st.write(f"Nouvelle plage suggérée : [{new_P_min:.2f}, {new_P_max:.2f}]")
+st.write(f"Token0 à injecter : {token0:.6f}")
+st.write(f"Token1 à injecter : {token1:.6f}")
