@@ -1761,7 +1761,7 @@ st.markdown("""
     margin-bottom:20px;
 ">
     <span style="color:white;font-size:28px;font-weight:700;">
-        Recharger une stratégie (en phase de test)
+        Recharger une stratégie (TEST EN COURS NE PAS UTILISER)
     </span>
 </div>
 """, unsafe_allow_html=True)
