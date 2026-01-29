@@ -1771,10 +1771,17 @@ st.markdown("""
 # =======================
 st.header("Paramètres de la LP")
 
-P_current = st.number_input("Prix actuel du token (ex: USDC/WETH)", value=3500.0)
-P_min = st.number_input("Prix min de la plage actuelle", value=3400.0)
-P_max = st.number_input("Prix max de la plage actuelle", value=3600.0)
-L_total = st.number_input("Liquidité totale cible (en token0 équivalent)", value=10.0)
+# Création de colonnes pour les inputs
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    P_current = st.number_input("Prix actuel du token (ex: USDC/WETH)", value=3500.0)
+with col2:
+    P_min = st.number_input("Prix min de la plage actuelle", value=3400.0)
+with col3:
+    P_max = st.number_input("Prix max de la plage actuelle", value=3600.0)
+with col4:
+    L_total = st.number_input("Liquidité totale cible (en token0 équivalent)", value=10.0)
 
 pool_type = st.selectbox(
     "Type de pool",
