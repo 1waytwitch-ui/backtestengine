@@ -1749,6 +1749,9 @@ st.markdown(overlay_html, unsafe_allow_html=True)
 
 # ======================= Recharger LP =======================
 
+import streamlit as st
+import math
+
 st.set_page_config(layout="wide")
 
 # --- Header ---
@@ -1828,9 +1831,19 @@ def calc_tokens(L, P_current, P_min, P_max):
 tokenA, tokenB = calc_tokens(L_total, P_current, new_P_min, new_P_max)
 
 # =======================
+# Calcul des proportions en %
+# =======================
+total_value = tokenA + tokenB
+if total_value > 0:
+    percA = (tokenA / total_value) * 100
+    percB = (tokenB / total_value) * 100
+else:
+    percA = percB = 0
+
+# =======================
 # Affichage des résultats
 # =======================
 st.header("Résultat du Refill")
 st.write(f"Nouvelle plage suggérée : [{new_P_min:.2f}, {new_P_max:.2f}]")
-st.write(f"TokenA à injecter : {tokenA:.6f}")
-st.write(f"TokenB à injecter : {tokenB:.6f}")
+st.write(f"TokenA à injecter : {tokenA:.6f} ({percA:.2f} %)")
+st.write(f"TokenB à injecter : {tokenB:.6f} ({percB:.2f} %)")
