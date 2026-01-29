@@ -1778,13 +1778,13 @@ st.header("Paramètres de la LP")
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    P_current = st.number_input("Prix actuel du token (ex: USDC/WETH)", value=3500.0)
+    P_current = st.number_input("Prix actuel du token (USDC/WETH)", value=3500.0)
 with col2:
     P_min = st.number_input("Prix min de la plage actuelle", value=3400.0)
 with col3:
     P_max = st.number_input("Prix max de la plage actuelle", value=3600.0)
 with col4:
-    L_total = st.number_input("Liquidité totale cible (en tokenA équivalent)", value=10.0)
+    L_total = st.number_input("Liquidité totale cible (en tokenA équivalent, WETH)", value=10.0)
 
 pool_type = st.selectbox(
     "Type de pool",
@@ -1810,7 +1810,7 @@ sqrt_P_max = math.sqrt(new_P_max)
 sqrt_P_current = math.sqrt(P_current)
 
 # =======================
-# Calcul des montants de tokenA et tokenB
+# Calcul des montants de tokenA (WETH) et tokenB (USDC)
 # =======================
 def calc_tokens(L, P_current, P_min, P_max):
     sqrt_P_min = math.sqrt(P_min)
@@ -1831,12 +1831,12 @@ def calc_tokens(L, P_current, P_min, P_max):
 tokenA, tokenB = calc_tokens(L_total, P_current, new_P_min, new_P_max)
 
 # =======================
-# Calcul des proportions en %
+# Calcul des proportions en % (en nombre de tokens)
 # =======================
-total_value = tokenA + tokenB
-if total_value > 0:
-    percA = (tokenA / total_value) * 100
-    percB = (tokenB / total_value) * 100
+total_tokens = tokenA + tokenB
+if total_tokens > 0:
+    percA = (tokenA / total_tokens) * 100
+    percB = (tokenB / total_tokens) * 100
 else:
     percA = percB = 0
 
@@ -1845,5 +1845,7 @@ else:
 # =======================
 st.header("Résultat du Refill")
 st.write(f"Nouvelle plage suggérée : [{new_P_min:.2f}, {new_P_max:.2f}]")
-st.write(f"TokenA à injecter : {tokenA:.6f} ({percA:.2f} %)")
-st.write(f"TokenB à injecter : {tokenB:.6f} ({percB:.2f} %)")
+st.write(f"TokenA à injecter : {tokenA:.6f} WETH ({percA:.2f} % du total en tokens)")
+st.write(f"TokenB à injecter : {tokenB:.6f} USDC ({percB:.2f} % du total en tokens)")
+
+st.info("Les montants sont en **nombre de tokens**, pas en valeur USD. Pour tokenA (WETH), la valeur en USDC = TokenA * Prix actuel.")
