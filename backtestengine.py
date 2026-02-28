@@ -1749,6 +1749,7 @@ st.markdown(overlay_html, unsafe_allow_html=True)
 
 # ======================= Less IL =======================
 
+
 st.set_page_config(layout="wide")
 
 # --- Header ---
@@ -1788,30 +1789,29 @@ with col5:
 
 # --- CALCULATIONS ---
 
+# Racines carrées
 sqrt_P_current = math.sqrt(P_current)
 sqrt_P_low = math.sqrt(P_low)
 sqrt_P_high = math.sqrt(P_high)
 sqrt_new_P_low = math.sqrt(new_P_low)
 
-# Liquidity proportionnelle
-L = 1
+# Ratio pour zero swap
 ratio = ((sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)) / (sqrt_P_current - sqrt_P_low)
 
+# Calcul nouvelle borne haute pour zero swap
 denominator = sqrt_P_current - sqrt_new_P_low
 rhs = ratio * denominator
-
 sqrt_new_P_high = sqrt_P_current / (1 - rhs * sqrt_P_current)
 new_P_high = sqrt_new_P_high ** 2
 
 # --- Quantités réelles selon montant investi ---
-# Calcul proportionnel aux prix
-# On suppose 50/50 initialement
-amount_tokenB_invested = invested_amount / 2
-amount_tokenA_invested = (invested_amount / 2) / P_current
+# 50/50 initialement
+amount_tokenA_total = (invested_amount / 2) / P_current
+amount_tokenB_total = invested_amount / 2
 
-# Composition tokenA/tokenB
-amount_tokenA = amount_tokenA_invested * ((sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high))
-amount_tokenB = amount_tokenB_invested * (sqrt_P_current - sqrt_P_low)
+# Composition actuelle dans le range
+amount_tokenA_in_range = amount_tokenA_total * ((sqrt_P_high - sqrt_P_current) / (sqrt_P_high - sqrt_P_low))
+amount_tokenB_in_range = amount_tokenB_total * ((sqrt_P_current - sqrt_P_low) / (sqrt_P_high - sqrt_P_low))
 
 # --- Résultats ---
 st.subheader("Résultats Zero Swap Rebalance")
@@ -1820,6 +1820,6 @@ st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
 st.write(f"Prix actuel : {P_current} $")
 st.write(f"Borne basse initiale : {P_low} $ → Nouvelle borne basse : {new_P_low} $")
 
-st.write(f"Composition actuelle en quantité réelle : {tokenA}: {amount_tokenA:.6f}, {tokenB}: {amount_tokenB:.2f}")
+st.write(f"Composition actuelle en quantité réelle dans le range : {tokenA}: {amount_tokenA_in_range:.6f}, {tokenB}: {amount_tokenB_in_range:.2f}")
 
 st.caption("Modèles et calculs simplifiés, proportionnel à l'investissement initial.")
