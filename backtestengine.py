@@ -1879,13 +1879,22 @@ if P_low < P_rebalance < P_high:
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
 
-# --- Résumé des calculs (infobulle unique avec LaTeX) ---
-with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
-    st.markdown(r"""
-| Calcul                             | Formule                                                                                                                                                               |
-| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| New Tight Plow                     | \( \text{New Tight Plow} = P_{\text{rebalance}} \cdot (1 - \text{tighten\_percent}/100) \)                                                                            |
-| ratio A/B                          | \( \text{ratio} = \frac{\sqrt{P_\text{high}} - \sqrt{P}}{\sqrt{P} \cdot \sqrt{P_\text{high}} \cdot (\sqrt{P} - \sqrt{P_\text{low}})} \)                                |
-| New P High (borne haute zéro-swap) | \( \sqrt{\text{New P High}} = \frac{\sqrt{P}}{1 - \text{ratio} \cdot \sqrt{P} \cdot (\sqrt{P} - \sqrt{P_L^\text{new}})} , \quad \text{New P High} = (\sqrt{\text{New P High}})^2 \) \) |
-| New Tight P High                   | \( \sqrt{\text{New Tight P High}} = \frac{\sqrt{P_\text{rebalance}}}{1 - \text{ratio\_reb} \cdot \sqrt{P_\text{rebalance}} \cdot (\sqrt{P_\text{rebalance}} - \sqrt{\text{New Tight Plow}})}, \quad \text{New Tight P High} = (\sqrt{\text{New Tight P High}})^2 \) \) |
-""", unsafe_allow_html=True)
+st.markdown("---")
+with st.expander("📖 Résumé complet des formules utilisées (Zero Swap Rebalance)"):
+    st.markdown(r"### New Tight Plow")
+    st.latex(r"New Tight Plow = P_{\mathrm{rebalance}} \cdot \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)")
+
+    st.markdown(r"### ratio A/B")
+    st.latex(r"\mathrm{ratio} = \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}{\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}")
+
+    st.markdown(r"### New P High (borne haute zéro-swap)")
+    st.latex(r"""
+    \sqrt{\mathrm{New\ P\ High}} = \frac{\sqrt{P}}{1 - \mathrm{ratio} \cdot \sqrt{P} \cdot \left(\sqrt{P} - \sqrt{P_L^\mathrm{new}}\right)}, \quad
+    \mathrm{New\ P\ High} = \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
+    """)
+
+    st.markdown(r"### New Tight P High")
+    st.latex(r"""
+    \sqrt{\mathrm{New\ Tight\ P\ High}} = \frac{\sqrt{P_\mathrm{rebalance}}}{1 - \mathrm{ratio}_\mathrm{reb} \cdot \sqrt{P_\mathrm{rebalance}} \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}, \quad
+    \mathrm{New\ Tight\ P\ High} = \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
+    """)
