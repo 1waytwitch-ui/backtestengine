@@ -1832,7 +1832,7 @@ st.write(
     f"Borne haute initiale : {P_high} $  →  Nouvelle borne haute : {new_P_high:.2f} $"
 )
 
-st.markdown("---")
+
 st.subheader("Resserrement du range (si retour dans range initial)")
 
 # Nouveau prix au moment du resserrement
