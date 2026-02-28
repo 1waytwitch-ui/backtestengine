@@ -1749,9 +1749,6 @@ st.markdown(overlay_html, unsafe_allow_html=True)
 
 # ======================= Less IL =======================
 
-import streamlit as st
-import math
-
 st.set_page_config(layout="wide")
 
 # --- Header ---
@@ -1769,60 +1766,59 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- INPUTS ---
-st.sidebar.header("Entrées de la paire")
+# =================== CALCULATRICE EN BAS / WIDESCREEN ===================
 
-pair_type = st.sidebar.selectbox(
+st.markdown("### Entrées de la paire")
+
+# Inputs directement sur la page (widescreen, pas sidebar)
+pair_type = st.selectbox(
     "Type de pool",
     ("Volatile/Stable", "Double Volatile")
 )
 
-token0 = st.sidebar.text_input("Token 0", "WETH")
-token1 = st.sidebar.text_input("Token 1", "USDC")
+token0 = st.text_input("Token 0", "WETH")
+token1 = st.text_input("Token 1", "USDC")
 
-P_current = st.sidebar.number_input("Prix actuel (P)", value=1850.0, step=1.0)
-P_low = st.sidebar.number_input("Borne basse initiale (Plow)", value=1800.0, step=1.0)
-P_high = st.sidebar.number_input("Borne haute initiale (Phigh)", value=2100.0, step=1.0)
-
-new_P_low = st.sidebar.number_input("Nouvelle borne basse (New Plow)", value=1600.0, step=1.0)
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    P_current = st.number_input("Prix actuel (P)", value=1850.0, step=1.0)
+with col2:
+    P_low = st.number_input("Borne basse initiale (Plow)", value=1800.0, step=1.0)
+with col3:
+    P_high = st.number_input("Borne haute initiale (Phigh)", value=2100.0, step=1.0)
+with col4:
+    new_P_low = st.number_input("Nouvelle borne basse (New Plow)", value=1600.0, step=1.0)
 
 # --- CALCULATIONS ---
 
-# Racines carrées
 sqrt_P_current = math.sqrt(P_current)
 sqrt_P_low = math.sqrt(P_low)
 sqrt_P_high = math.sqrt(P_high)
 sqrt_new_P_low = math.sqrt(new_P_low)
 
-# Liquidity L est proportionnelle, on prend 1 pour simplification
-# Ratio actuel token0/token1
+# Liquidity simplifiée L=1
 ratio = ((sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)) / (sqrt_P_current - sqrt_P_low)
 
-# Calcul nouvelle borne haute pour zero swap
-# Equation: (x - sqrt_P_current) / (sqrt_P_current * x) / (sqrt_P_current - sqrt_new_P_low) = ratio
 denominator = sqrt_P_current - sqrt_new_P_low
-rhs = ratio * denominator  # côté droit
+rhs = ratio * denominator
 
-# On résout x - sqrt_P_current = rhs * sqrt_P_current * x
-# => x - rhs * sqrt_P_current * x = sqrt_P_current
-# => x * (1 - rhs * sqrt_P_current) = sqrt_P_current
 sqrt_new_P_high = sqrt_P_current / (1 - rhs * sqrt_P_current)
 new_P_high = sqrt_new_P_high ** 2
 
-# --- Affichage des résultats ---
+# --- Résultats ---
 st.subheader("Résultats Zero Swap Rebalance")
 st.write(f"Ratio actuel {token0}/{token1} : {ratio:.6f}")
 st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
 st.write(f"Prix actuel : {P_current} $")
 st.write(f"Borne basse initiale : {P_low} $ → Nouvelle borne basse : {new_P_low} $")
 
-# --- Composition token0/token1 au prix actuel ---
-L = 1  # simplification
+# Composition token0/token1
+L = 1
 amount_token0 = L * (sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)
 amount_token1 = L * (sqrt_P_current - sqrt_P_low)
 st.write(f"Composition actuelle : {token0}: {amount_token0:.6f}, {token1}: {amount_token1:.2f}")
 
-# --- Info selon type de pool ---
+# Info type de pool
 if pair_type == "Volatile/Stable":
     st.info("Volatile/Stable : ranges moyens → expand & squeeze efficace")
 else:
