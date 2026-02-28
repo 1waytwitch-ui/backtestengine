@@ -1823,7 +1823,14 @@ st.subheader("Résultats Zero Swap Rebalance")
 st.write(f"Ratio actuel {tokenA}/{tokenB} : {ratio:.10f}")
 st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
 st.write(f"Prix actuel : {P_current} $")
-st.write(f"Borne basse initiale : {P_low} $ → Nouvelle borne basse : {new_P_low} $")
+
+st.write(
+    f"Borne basse initiale : {P_low} $  →  Nouvelle borne basse : {new_P_low} $"
+)
+
+st.write(
+    f"Borne haute initiale : {P_high} $  →  Nouvelle borne haute : {new_P_high:.2f} $"
+)
 
 st.markdown("---")
 st.subheader("Resserrement du range (si retour dans range initial)")
