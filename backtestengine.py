@@ -1774,7 +1774,7 @@ st.markdown("### Entrées de la paire")
 tokenA = st.text_input("Token A", "WETH")
 tokenB = st.text_input("Token B", "USDC")
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 with col1:
     P_current = st.number_input("Prix actuel (P)", value=1850.0, step=1.0)
 with col2:
@@ -1783,6 +1783,8 @@ with col3:
     P_high = st.number_input("Borne haute initiale (Phigh)", value=2100.0, step=1.0)
 with col4:
     new_P_low = st.number_input("Nouvelle borne basse (New Plow)", value=1600.0, step=1.0)
+with col5:
+    invested_amount = st.number_input("Montant investi initialement (en $)", value=1950.0, step=1.0)
 
 # --- CALCULATIONS ---
 
@@ -1791,7 +1793,8 @@ sqrt_P_low = math.sqrt(P_low)
 sqrt_P_high = math.sqrt(P_high)
 sqrt_new_P_low = math.sqrt(new_P_low)
 
-# Liquidity simplifiée L=1
+# Liquidity proportionnelle
+L = 1
 ratio = ((sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)) / (sqrt_P_current - sqrt_P_low)
 
 denominator = sqrt_P_current - sqrt_new_P_low
@@ -1800,6 +1803,16 @@ rhs = ratio * denominator
 sqrt_new_P_high = sqrt_P_current / (1 - rhs * sqrt_P_current)
 new_P_high = sqrt_new_P_high ** 2
 
+# --- Quantités réelles selon montant investi ---
+# Calcul proportionnel aux prix
+# On suppose 50/50 initialement
+amount_tokenB_invested = invested_amount / 2
+amount_tokenA_invested = (invested_amount / 2) / P_current
+
+# Composition tokenA/tokenB
+amount_tokenA = amount_tokenA_invested * ((sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high))
+amount_tokenB = amount_tokenB_invested * (sqrt_P_current - sqrt_P_low)
+
 # --- Résultats ---
 st.subheader("Résultats Zero Swap Rebalance")
 st.write(f"Ratio actuel {tokenA}/{tokenB} : {ratio:.6f}")
@@ -1807,10 +1820,6 @@ st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
 st.write(f"Prix actuel : {P_current} $")
 st.write(f"Borne basse initiale : {P_low} $ → Nouvelle borne basse : {new_P_low} $")
 
-# Composition tokenA/tokenB
-L = 1
-amount_tokenA = L * (sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)
-amount_tokenB = L * (sqrt_P_current - sqrt_P_low)
-st.write(f"Composition actuelle : {tokenA}: {amount_tokenA:.6f}, {tokenB}: {amount_tokenB:.2f}")
+st.write(f"Composition actuelle en quantité réelle : {tokenA}: {amount_tokenA:.6f}, {tokenB}: {amount_tokenB:.2f}")
 
-st.caption("Modèle simplifié basé sur Uniswap v3, L=1 pour proportion.")
+st.caption("Modèles et calculs simplifiés, proportionnel à l'investissement initial.")
