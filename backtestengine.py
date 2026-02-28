@@ -1880,7 +1880,7 @@ else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
 
 st.markdown("---")
-with st.expander("📖 Résumé complet des formules utilisées (Zero Swap Rebalance)"):
+with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
     st.markdown(r"### New Tight Plow")
     st.latex(r"New Tight Plow = P_{\mathrm{rebalance}} \cdot \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)")
 
