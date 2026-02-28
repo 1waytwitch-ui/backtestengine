@@ -1767,11 +1767,10 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# =================== CALCULATRICE EN BAS / WIDESCREEN ===================
+# =================== CALCULATRICE ===================
 
 st.markdown("### Entrées de la paire")
 
-# Inputs directement sur la page (widescreen, pas sidebar)
 tokenA = st.text_input("Token A", "WETH")
 tokenB = st.text_input("Token B", "USDC")
 
@@ -1787,39 +1786,64 @@ with col4:
 with col5:
     invested_amount = st.number_input("Montant investi initialement (en $)", value=1950.0, step=1.0)
 
-# --- CALCULATIONS ---
+# --- VALIDATIONS ---
+if P_low >= P_current or P_current >= P_high:
+    st.error("Le prix actuel doit être strictement à l'intérieur du range initial.")
+    st.stop()
 
-# Racines carrées
+if new_P_low >= P_current:
+    st.error("La nouvelle borne basse doit être inférieure au prix actuel.")
+    st.stop()
+
+# --- CALCULS ---
+
 sqrt_P_current = math.sqrt(P_current)
 sqrt_P_low = math.sqrt(P_low)
 sqrt_P_high = math.sqrt(P_high)
 sqrt_new_P_low = math.sqrt(new_P_low)
 
-# Ratio pour zero swap
-ratio = ((sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)) / (sqrt_P_current - sqrt_P_low)
+# ===== Ratio exact Uniswap v3 =====
+ratio = (
+    (sqrt_P_high - sqrt_P_current)
+    / (sqrt_P_current * sqrt_P_high * (sqrt_P_current - sqrt_P_low))
+)
 
-# Calcul nouvelle borne haute pour zero swap
-denominator = sqrt_P_current - sqrt_new_P_low
-rhs = ratio * denominator
-sqrt_new_P_high = sqrt_P_current / (1 - rhs * sqrt_P_current)
+# ===== Nouvelle borne haute Zero Swap =====
+denominator = 1 - ratio * sqrt_P_current * (sqrt_P_current - sqrt_new_P_low)
+
+if denominator <= 0:
+    st.error("Configuration impossible : la nouvelle borne haute tend vers l'infini.")
+    st.stop()
+
+sqrt_new_P_high = sqrt_P_current / denominator
 new_P_high = sqrt_new_P_high ** 2
 
-# --- Quantités réelles selon montant investi ---
-# 50/50 initialement
+# --- Quantités réelles selon montant investi (approximation 50/50 initiale) ---
+
 amount_tokenA_total = (invested_amount / 2) / P_current
 amount_tokenB_total = invested_amount / 2
 
-# Composition actuelle dans le range
-amount_tokenA_in_range = amount_tokenA_total * ((sqrt_P_high - sqrt_P_current) / (sqrt_P_high - sqrt_P_low))
-amount_tokenB_in_range = amount_tokenB_total * ((sqrt_P_current - sqrt_P_low) / (sqrt_P_high - sqrt_P_low))
+amount_tokenA_in_range = amount_tokenA_total * (
+    (sqrt_P_high - sqrt_P_current) / (sqrt_P_high - sqrt_P_low)
+)
 
-# --- Résultats ---
+amount_tokenB_in_range = amount_tokenB_total * (
+    (sqrt_P_current - sqrt_P_low) / (sqrt_P_high - sqrt_P_low)
+)
+
+# --- RÉSULTATS ---
+
 st.subheader("Résultats Zero Swap Rebalance")
-st.write(f"Ratio actuel {tokenA}/{tokenB} : {ratio:.6f}")
+
+st.write(f"Ratio actuel {tokenA}/{tokenB} : {ratio:.10f}")
 st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
 st.write(f"Prix actuel : {P_current} $")
 st.write(f"Borne basse initiale : {P_low} $ → Nouvelle borne basse : {new_P_low} $")
 
-st.write(f"Composition actuelle en quantité réelle dans le range : {tokenA}: {amount_tokenA_in_range:.6f}, {tokenB}: {amount_tokenB_in_range:.2f}")
+st.write(
+    f"Composition actuelle en quantité réelle dans le range : "
+    f"{tokenA}: {amount_tokenA_in_range:.6f}, "
+    f"{tokenB}: {amount_tokenB_in_range:.2f}"
+)
 
-st.caption("Modèles et calculs simplifiés, proportionnel à l'investissement initial.")
+st.caption("Modèle basé sur les formules exactes de liquidité Uniswap v3 (zero swap rebalance).")
