@@ -1747,7 +1747,7 @@ else:
 st.markdown(overlay_html, unsafe_allow_html=True)
 
 
-# ======================= Recharger LP =======================
+# ======================= Less IL =======================
 
 import streamlit as st
 import math
@@ -1764,88 +1764,68 @@ st.markdown("""
     margin-bottom:20px;
 ">
     <span style="color:white;font-size:28px;font-weight:700;">
-        Recharger une stratégie (TEST EN COURS NE PAS UTILISER)
+        Zero Swap Rebalance
     </span>
 </div>
 """, unsafe_allow_html=True)
 
-# =======================
-# Entrée des données
-# =======================
-st.header("Paramètres de la LP")
+# --- INPUTS ---
+st.sidebar.header("Entrées de la paire")
 
-# Création de colonnes pour les inputs
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    P_current = st.number_input("Prix actuel du token (USDC/WETH)", value=3500.0)
-with col2:
-    P_min = st.number_input("Prix min de la plage actuelle", value=3400.0)
-with col3:
-    P_max = st.number_input("Prix max de la plage actuelle", value=3600.0)
-with col4:
-    L_total = st.number_input("Liquidité totale cible (en tokenA équivalent, WETH)", value=10.0)
-
-pool_type = st.selectbox(
+pair_type = st.sidebar.selectbox(
     "Type de pool",
-    ("Stable", "Volatile", "Double Volatile")
+    ("Volatile/Stable", "Double Volatile")
 )
 
-# Paramètres par type de pool
-if pool_type == "Stable":
-    delta = 0.005  # 0.5% plage autour du prix
-elif pool_type == "Volatile":
-    delta = 0.03   # 3% plage autour du prix
-else:  # Double Volatile
-    delta = 0.05   # 5% plage autour du prix
+token0 = st.sidebar.text_input("Token 0", "WETH")
+token1 = st.sidebar.text_input("Token 1", "USDC")
 
-# =======================
-# Recalcul nouvelle plage autour du prix actuel
-# =======================
-new_P_min = P_current * (1 - delta)
-new_P_max = P_current * (1 + delta)
+P_current = st.sidebar.number_input("Prix actuel (P)", value=1850.0, step=1.0)
+P_low = st.sidebar.number_input("Borne basse initiale (Plow)", value=1800.0, step=1.0)
+P_high = st.sidebar.number_input("Borne haute initiale (Phigh)", value=2100.0, step=1.0)
 
-sqrt_P_min = math.sqrt(new_P_min)
-sqrt_P_max = math.sqrt(new_P_max)
+new_P_low = st.sidebar.number_input("Nouvelle borne basse (New Plow)", value=1600.0, step=1.0)
+
+# --- CALCULATIONS ---
+
+# Racines carrées
 sqrt_P_current = math.sqrt(P_current)
+sqrt_P_low = math.sqrt(P_low)
+sqrt_P_high = math.sqrt(P_high)
+sqrt_new_P_low = math.sqrt(new_P_low)
 
-# =======================
-# Calcul des montants de tokenA (WETH) et tokenB (USDC)
-# =======================
-def calc_tokens(L, P_current, P_min, P_max):
-    sqrt_P_min = math.sqrt(P_min)
-    sqrt_P_max = math.sqrt(P_max)
-    sqrt_P_current = math.sqrt(P_current)
-    
-    if P_current < P_min:  # tout en tokenA
-        tokenA = L
-        tokenB = 0
-    elif P_current > P_max:  # tout en tokenB
-        tokenA = 0
-        tokenB = L
-    else:
-        tokenA = L * (sqrt_P_max - sqrt_P_current) / (sqrt_P_current * sqrt_P_max)
-        tokenB = L * (sqrt_P_current - sqrt_P_min)
-    return tokenA, tokenB
+# Liquidity L est proportionnelle, on prend 1 pour simplification
+# Ratio actuel token0/token1
+ratio = ((sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)) / (sqrt_P_current - sqrt_P_low)
 
-tokenA, tokenB = calc_tokens(L_total, P_current, new_P_min, new_P_max)
+# Calcul nouvelle borne haute pour zero swap
+# Equation: (x - sqrt_P_current) / (sqrt_P_current * x) / (sqrt_P_current - sqrt_new_P_low) = ratio
+denominator = sqrt_P_current - sqrt_new_P_low
+rhs = ratio * denominator  # côté droit
 
-# =======================
-# Calcul des proportions en % (en nombre de tokens)
-# =======================
-total_tokens = tokenA + tokenB
-if total_tokens > 0:
-    percA = (tokenA / total_tokens) * 100
-    percB = (tokenB / total_tokens) * 100
+# On résout x - sqrt_P_current = rhs * sqrt_P_current * x
+# => x - rhs * sqrt_P_current * x = sqrt_P_current
+# => x * (1 - rhs * sqrt_P_current) = sqrt_P_current
+sqrt_new_P_high = sqrt_P_current / (1 - rhs * sqrt_P_current)
+new_P_high = sqrt_new_P_high ** 2
+
+# --- Affichage des résultats ---
+st.subheader("Résultats Zero Swap Rebalance")
+st.write(f"Ratio actuel {token0}/{token1} : {ratio:.6f}")
+st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
+st.write(f"Prix actuel : {P_current} $")
+st.write(f"Borne basse initiale : {P_low} $ → Nouvelle borne basse : {new_P_low} $")
+
+# --- Composition token0/token1 au prix actuel ---
+L = 1  # simplification
+amount_token0 = L * (sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)
+amount_token1 = L * (sqrt_P_current - sqrt_P_low)
+st.write(f"Composition actuelle : {token0}: {amount_token0:.6f}, {token1}: {amount_token1:.2f}")
+
+# --- Info selon type de pool ---
+if pair_type == "Volatile/Stable":
+    st.info("Volatile/Stable : ranges moyens → expand & squeeze efficace")
 else:
-    percA = percB = 0
+    st.info("Double Volatile : forte volatilité → ranges larges nécessaires pour zero swap")
 
-# =======================
-# Affichage des résultats
-# =======================
-st.header("Résultat du Refill")
-st.write(f"Nouvelle plage suggérée : [{new_P_min:.2f}, {new_P_max:.2f}]")
-st.write(f"TokenA à injecter : {tokenA:.6f} WETH ({percA:.2f} % du total en tokens)")
-st.write(f"TokenB à injecter : {tokenB:.6f} USDC ({percB:.2f} % du total en tokens)")
-
-st.info("Les montants sont en **nombre de tokens**, pas en valeur USD. Pour tokenA (WETH), la valeur en USDC = TokenA * Prix actuel.")
+st.caption("Modèle simplifié basé sur Uniswap v3, L=1 pour proportion.")
