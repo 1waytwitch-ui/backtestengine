@@ -1835,7 +1835,14 @@ st.write(
 st.markdown("---")
 st.subheader("Resserrement du range (si retour dans range initial)")
 
-if P_low < P_current < P_high:
+# Nouveau prix au moment du resserrement
+P_rebalance = st.number_input(
+    "Prix actuel au moment du resserrement",
+    value=P_current,
+    step=1.0
+)
+
+if P_low < P_rebalance < P_high:
 
     tighten_percent = st.slider(
         "Largeur du nouveau range (%) autour du prix actuel",
@@ -1844,21 +1851,28 @@ if P_low < P_current < P_high:
         value=10
     )
 
-    # Nouveau Plow centré autour du prix
-    new_tight_P_low = P_current * (1 - tighten_percent / 100)
+    sqrtP_reb = math.sqrt(P_rebalance)
 
+    # Nouveau Plow centré autour du prix réel
+    new_tight_P_low = P_rebalance * (1 - tighten_percent / 100)
     sqrtNewTightPl = math.sqrt(new_tight_P_low)
 
-    # Ratio actuel (déjà calculé plus haut)
-    denominator_tight = 1 - ratio * sqrtP * (sqrtP - sqrtNewTightPl)
+    # IMPORTANT : recalcul du ratio au prix de rebalance
+    ratio_reb = (
+        (sqrtPh - sqrtP_reb)
+        / (sqrtP_reb * sqrtPh * (sqrtP_reb - sqrtPl))
+    )
+
+    denominator_tight = 1 - ratio_reb * sqrtP_reb * (sqrtP_reb - sqrtNewTightPl)
 
     if denominator_tight <= 0:
         st.warning("Range trop agressif — borne haute tend vers l'infini.")
     else:
-        sqrtNewTightPh = sqrtP / denominator_tight
+        sqrtNewTightPh = sqrtP_reb / denominator_tight
         new_tight_P_high = sqrtNewTightPh ** 2
 
         st.success("Nouveau range resserré (Zero Swap)")
+        st.write(f"Prix utilisé : {P_rebalance:.2f} $")
         st.write(f"Borne basse : {new_tight_P_low:.2f} $")
         st.write(f"Borne haute : {new_tight_P_high:.2f} $")
 
