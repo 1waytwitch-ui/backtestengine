@@ -1878,3 +1878,14 @@ if P_low < P_rebalance < P_high:
 
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
+
+# --- Résumé des calculs (infobulle unique avec LaTeX) ---
+with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
+    st.markdown(r"""
+| Calcul                             | Formule                                                                                                                                                               |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| New Tight Plow                     | \( \text{New Tight Plow} = P_{\text{rebalance}} \cdot (1 - \text{tighten\_percent}/100) \)                                                                            |
+| ratio A/B                          | \( \text{ratio} = \frac{\sqrt{P_\text{high}} - \sqrt{P}}{\sqrt{P} \cdot \sqrt{P_\text{high}} \cdot (\sqrt{P} - \sqrt{P_\text{low}})} \)                                |
+| New P High (borne haute zéro-swap) | \( \sqrt{\text{New P High}} = \frac{\sqrt{P}}{1 - \text{ratio} \cdot \sqrt{P} \cdot (\sqrt{P} - \sqrt{P_L^\text{new}})} , \quad \text{New P High} = (\sqrt{\text{New P High}})^2 \) \) |
+| New Tight P High                   | \( \sqrt{\text{New Tight P High}} = \frac{\sqrt{P_\text{rebalance}}}{1 - \text{ratio\_reb} \cdot \sqrt{P_\text{rebalance}} \cdot (\sqrt{P_\text{rebalance}} - \sqrt{\text{New Tight Plow}})}, \quad \text{New Tight P High} = (\sqrt{\text{New Tight P High}})^2 \) \) |
+""", unsafe_allow_html=True)
