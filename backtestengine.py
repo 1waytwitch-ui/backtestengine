@@ -1771,13 +1771,8 @@ st.markdown("""
 st.markdown("### Entrées de la paire")
 
 # Inputs directement sur la page (widescreen, pas sidebar)
-pair_type = st.selectbox(
-    "Type de pool",
-    ("Volatile/Stable", "Double Volatile")
-)
-
-token0 = st.text_input("Token 0", "WETH")
-token1 = st.text_input("Token 1", "USDC")
+tokenA = st.text_input("Token A", "WETH")
+tokenB = st.text_input("Token B", "USDC")
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -1807,21 +1802,15 @@ new_P_high = sqrt_new_P_high ** 2
 
 # --- Résultats ---
 st.subheader("Résultats Zero Swap Rebalance")
-st.write(f"Ratio actuel {token0}/{token1} : {ratio:.6f}")
+st.write(f"Ratio actuel {tokenA}/{tokenB} : {ratio:.6f}")
 st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
 st.write(f"Prix actuel : {P_current} $")
 st.write(f"Borne basse initiale : {P_low} $ → Nouvelle borne basse : {new_P_low} $")
 
-# Composition token0/token1
+# Composition tokenA/tokenB
 L = 1
-amount_token0 = L * (sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)
-amount_token1 = L * (sqrt_P_current - sqrt_P_low)
-st.write(f"Composition actuelle : {token0}: {amount_token0:.6f}, {token1}: {amount_token1:.2f}")
-
-# Info type de pool
-if pair_type == "Volatile/Stable":
-    st.info("Volatile/Stable : ranges moyens → expand & squeeze efficace")
-else:
-    st.info("Double Volatile : forte volatilité → ranges larges nécessaires pour zero swap")
+amount_tokenA = L * (sqrt_P_high - sqrt_P_current) / (sqrt_P_current * sqrt_P_high)
+amount_tokenB = L * (sqrt_P_current - sqrt_P_low)
+st.write(f"Composition actuelle : {tokenA}: {amount_tokenA:.6f}, {tokenB}: {amount_tokenB:.2f}")
 
 st.caption("Modèle simplifié basé sur Uniswap v3, L=1 pour proportion.")
