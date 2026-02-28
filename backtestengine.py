@@ -1825,4 +1825,35 @@ st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
 st.write(f"Prix actuel : {P_current} $")
 st.write(f"Borne basse initiale : {P_low} $ → Nouvelle borne basse : {new_P_low} $")
 
-st.caption("Calcul basé uniquement sur les formules de liquidité Uniswap v3 — Zero Swap exact.")
+st.markdown("---")
+st.subheader("Resserrement du range (si retour dans range initial)")
+
+if P_low < P_current < P_high:
+
+    tighten_percent = st.slider(
+        "Largeur du nouveau range (%) autour du prix actuel",
+        min_value=1,
+        max_value=50,
+        value=10
+    )
+
+    # Nouveau Plow centré autour du prix
+    new_tight_P_low = P_current * (1 - tighten_percent / 100)
+
+    sqrtNewTightPl = math.sqrt(new_tight_P_low)
+
+    # Ratio actuel (déjà calculé plus haut)
+    denominator_tight = 1 - ratio * sqrtP * (sqrtP - sqrtNewTightPl)
+
+    if denominator_tight <= 0:
+        st.warning("Range trop agressif — borne haute tend vers l'infini.")
+    else:
+        sqrtNewTightPh = sqrtP / denominator_tight
+        new_tight_P_high = sqrtNewTightPh ** 2
+
+        st.success("Nouveau range resserré (Zero Swap)")
+        st.write(f"Borne basse : {new_tight_P_low:.2f} $")
+        st.write(f"Borne haute : {new_tight_P_high:.2f} $")
+
+else:
+    st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
