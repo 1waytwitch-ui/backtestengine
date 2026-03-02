@@ -866,498 +866,212 @@ def V_LP(P, L, P_lower, P_upper):
 def V_HODL(P, x0, y0):
     return x0 * P + y0
 
-# --- Interface IL ---
+# ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
+
+# --- Style Terminal DeFi ---
 st.markdown("""
-<div style="background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);padding:20px;border-radius:12px;margin-top:20px;">
-    <span style="color:white;font-size:28px;font-weight:700;">IMPERMANENT LOSS</span>
+<style>
+[data-testid="stAppViewContainer"] {
+    background-color: #0b0f14;
+    color: #e6edf3;
+    font-family: "Courier New", monospace;
+}
+
+.section-title {
+    border-left: 4px solid #00ff88;
+    padding: 8px 14px;
+    margin-top: 24px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    background: rgba(0,255,136,0.05);
+    letter-spacing: 1px;
+}
+
+div[data-baseweb="input"] input {
+    background-color: #11161d !important;
+    color: #00ff88 !important;
+    border: 1px solid #1f2a36 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    font-size: 13px;
+}
+
+label { font-size: 12px !important; opacity: 0.7; }
+
+.result-card, .result-card-wide {
+    background: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: left;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
+    margin-top: 14px;
+}
+
+.result-card-wide { padding: 16px; }
+
+.result-title { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+.result-value { font-size: 18px; font-weight: 600; color: #00ff88; margin-top: 6px; }
+
+</style>
+""", unsafe_allow_html=True)
+
+# =================== HEADER ===================
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        IMPERMANENT LOSS & ATR
+    </span>
 </div>
 """, unsafe_allow_html=True)
 
-# --- Inputs compacts ---
-st.write("")
+# =================== INPUTS ===================
+st.markdown('<div class="section-title">Paramètres IL</div>', unsafe_allow_html=True)
+
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
-
 with row1_col1:
-    st.markdown("<span style='color:blue;font-weight:600;'>P_deposit</span>", unsafe_allow_html=True)
-    P_deposit = st.number_input(
-        "P_deposit",
-        value=3000.0,
-        format="%.6f",
-        step=0.001,
-        label_visibility="collapsed"
-    )
-
+    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row1_col2:
-    st.markdown("<span style='color:purple;font-weight:600;'>P_now</span>", unsafe_allow_html=True)
-    P_now = st.number_input(
-        "P_now",
-        value=3000.0,
-        format="%.6f",
-        step=0.001,
-        label_visibility="collapsed"
-    )
-
+    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row1_col3:
-    st.markdown("<span style='color:black;font-weight:600;'>Valeur deposit (USD)</span>", unsafe_allow_html=True)
-    v_deposit = st.number_input(
-        "Valeur deposit (USD)",
-        value=500.0,
-        format="%.6f",
-        step=0.01,
-        label_visibility="collapsed"
-    )
+    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.6f", step=0.01, label_visibility="collapsed")
 
 row2_col1, row2_col2 = st.columns([1,1])
-
 with row2_col1:
-    st.markdown("<span style='color:green;font-weight:600;'>P_lower</span>", unsafe_allow_html=True)
-    P_lower = st.number_input(
-        "P_lower",
-        value=2800.0,
-        format="%.6f",
-        step=0.001,
-        label_visibility="collapsed"
-    )
-
+    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row2_col2:
-    st.markdown("<span style='color:green;font-weight:600;'>P_upper</span>", unsafe_allow_html=True)
-    P_upper = st.number_input(
-        "P_upper",
-        value=3500.0,
-        format="%.6f",
-        step=0.001,
-        label_visibility="collapsed"
-    )
+    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001, label_visibility="collapsed")
 
-# --- Calcul de L et normalisation ---
+# --- Calcul IL ---
 L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
 x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
 L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
 
-# --- Grille prix ---
 prices = np.linspace(P_lower*0.8, P_upper*1.3, 400)
 LP_values = V_LP(prices, L, P_lower, P_upper)
 HODL_values = V_HODL(prices, x0, y0)
 IL_curve = (LP_values / HODL_values - 1) * 100
 
-# --- Graphique IL(%) ---
+# --- Graph IL ---
 fig = go.Figure()
+fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL(%)", line=dict(color="red", width=3)))
+for px, label, color in [(P_lower,"Low","green"), (P_upper,"High","green"), (P_deposit,"Deposit","blue"), (P_now,"Now","purple")]:
+    fig.add_vline(x=px, line=dict(color=color, width=2, dash="dot" if label in ["Low","High"] else "dash"))
+    fig.add_annotation(x=px, y=max(IL_curve) if label in ["Low","High"] else min(IL_curve),
+                       text=label, showarrow=False, font=dict(color=color, size=12),
+                       yshift=10 if label in ["Low","High"] else -10)
 
-# Ligne IL
-fig.add_trace(go.Scatter(
-    x=prices,
-    y=IL_curve,
-    mode="lines",
-    name="IL(%)",
-    line=dict(color="red", width=3)
-))
-
-# Vlines et annotations
-fig.add_vline(
-    x=P_lower,
-    line=dict(color="green", width=2, dash="dot"),
-    name="Range Low"
-)
-fig.add_annotation(
-    x=P_lower,
-    y=max(IL_curve),
-    text="Low",
-    showarrow=False,
-    font=dict(color="green", size=12),
-    yshift=10
-)
-
-fig.add_vline(
-    x=P_upper,
-    line=dict(color="green", width=2, dash="dot"),
-    name="Range High"
-)
-fig.add_annotation(
-    x=P_upper,
-    y=max(IL_curve),
-    text="High",
-    showarrow=False,
-    font=dict(color="green", size=12),
-    yshift=10
-)
-
-fig.add_vline(
-    x=P_deposit,
-    line=dict(color="blue", width=2, dash="dash"),
-    name="Price Deposit"
-)
-fig.add_annotation(
-    x=P_deposit,
-    y=min(IL_curve),
-    text="Deposit",
-    showarrow=False,
-    font=dict(color="blue", size=12),
-    yshift=-10
-)
-
-fig.add_vline(
-    x=P_now,
-    line=dict(color="purple", width=2),
-    name="Price Now"
-)
-fig.add_annotation(
-    x=P_now,
-    y=min(IL_curve),
-    text="Now",
-    showarrow=False,
-    font=dict(color="purple", size=12),
-    yshift=-10
-)
-
-# Axes
-fig.update_xaxes(
-    range=[min(prices), max(prices)],
-    title="Prix",
-    title_font=dict(color="white", size=14),
-    tickfont=dict(color="white", size=12),
-    gridcolor="rgba(255,255,255,0.1)"
-)
-fig.update_yaxes(
-    tickformat=".2f",
-    automargin=True,
-    title="IL (%)",
-    title_font=dict(color="white", size=14),
-    tickfont=dict(color="white", size=12),
-    gridcolor="rgba(255,255,255,0.1)"
-)
-
-# Layout
-fig.update_layout(
-    height=380,
-    title=dict(
-        text="Impermanent Loss (%)",
-        font=dict(color="white", size=16)
-    ),
-    margin=dict(l=70, r=40, t=50, b=40),
-    plot_bgcolor="#173a57",
-    paper_bgcolor="#173a57",
-    font=dict(color="white")
-)
-
+fig.update_xaxes(title="Prix", title_font=dict(color="white", size=14), tickfont=dict(color="white", size=12),
+                 gridcolor="rgba(255,255,255,0.1)")
+fig.update_yaxes(title="IL (%)", title_font=dict(color="white", size=14), tickfont=dict(color="white", size=12),
+                 gridcolor="rgba(255,255,255,0.1)")
+fig.update_layout(height=380, plot_bgcolor="#173a57", paper_bgcolor="#173a57",
+                  title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)))
 st.plotly_chart(fig, use_container_width=True)
 
-# --- Valeurs actuelles et L au dépôt ---
-IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
+# --- Valeurs actuelles IL ---
+IL_now = (V_LP(P_now, L, P_lower, P_upper)/V_HODL(P_now, x0, y0)-1)*100
 LP_now = V_LP(P_now, L, P_lower, P_upper)
 HODL_now = V_HODL(P_now, x0, y0)
 
-html_block = f"""
-<div style="background-color:#27F5A9;border-left:6px solid #00754A;padding:18px 25px;border-radius:12px;margin-top:20px;color:#000;text-align:center;">
-    <h3 style="margin:0 0 10px 0;color:#000;">Simulation IL</h3>
-    <div style="font-size:18px;font-weight:600;display:flex;justify-content:center;gap:35px;flex-wrap:wrap;">
-        <span style="color:#000;">IL maintenant : {IL_now:.2f}%</span>
-        <span style="color:#000;">Valeur LP : ${LP_now:,.2f}</span>
-        <span style="color:#000;">Valeur HODL : ${HODL_now:,.2f}</span>
-    </div>
-</div>
-"""
+cols = st.columns(3)
+results = [
+    ("IL maintenant (%)", f"{IL_now:.2f}%"),
+    ("Valeur LP ($)", f"${LP_now:,.2f}"),
+    ("Valeur HODL ($)", f"${HODL_now:,.2f}")
+]
+for i, (title,val) in enumerate(results):
+    with cols[i]:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">{title}</div>
+            <div class="result-value">{val}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-st.markdown(html_block, unsafe_allow_html=True)
-
-
-# ======================
-# APR
-# ======================
-
-
-def calculate_clmm_apr(
-    fees_usd_period: float,
-    active_liquidity_usd_avg: float,
-    period_days: int
-) -> float:
-    """
-    Calcule un APR annualisé basé uniquement sur la liquidité active.
-    """
-
+# --- APR ---
+def calculate_clmm_apr(fees_usd_period: float, active_liquidity_usd_avg: float, period_days: int) -> float:
     if active_liquidity_usd_avg <= 0 or period_days <= 0:
         return 0.0
+    return fees_usd_period / active_liquidity_usd_avg * (365 / period_days) * 100
 
-    return (
-        fees_usd_period
-        / active_liquidity_usd_avg
-        * (365 / period_days)
-        * 100
-    )
+st.markdown('<div class="section-title">Calcul APR</div>', unsafe_allow_html=True)
+fees_usd_period = st.number_input("Total des fees (USD)", value=100.0, step=1000.0)
+active_liquidity_usd_avg = st.number_input("Liquidité active moyenne (USD)", value=1000.0, step=10000.0)
+period_days = st.number_input("Durée (jours)", value=30, min_value=1, step=1)
 
-
-# ======================
-# Interface
-# ======================
-
-st.set_page_config(layout="wide")
-
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:18px;
-">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        CALCULATRICE APR
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
-# Intro overlay
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #141a3a 0%, #1f2a5c 100%);
-    padding:14px 18px;
-    border-radius:10px;
-    margin-bottom:24px;
-    color:#d8dbff;
-    font-size:14px;
-">
-APR estimé à partir de <b>l'historique des fees</b> et de la
-<b>liquidité active</b> d'une pool de liquidité concentrée.
-</div>
-""", unsafe_allow_html=True)
-
-st.header("Paramètres d'entrée")
-
-fees_usd_period = st.number_input(
-    "Total des fees générées sur la période (USD)",
-    min_value=0.0,
-    value=100.0,
-    step=1000.0
-)
-
-active_liquidity_usd_avg = st.number_input(
-    "Liquidité active moyenne sur la période (USD)",
-    min_value=0.0,
-    value=1000.0,
-    step=10000.0
-)
-
-period_days = st.number_input(
-    "Durée de la période (en jours)",
-    min_value=1,
-    value=30,
-    step=1
-)
-
-# ======================
-# Calcul
-# ======================
-
-apr = calculate_clmm_apr(
-    fees_usd_period,
-    active_liquidity_usd_avg,
-    period_days
-)
-
-# Résultat overlay
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0f3d2e 0%, #1c6b4f 100%);
-    padding:18px;
-    border-radius:12px;
-    margin-top:24px;
-">
-    <div style="color:#c9ffe8;font-size:14px;margin-bottom:6px;">
-        APR annualisé estimé
-    </div>
-    <div style="color:white;font-size:36px;font-weight:700;">
-        {apr_value} %
-    </div>
-</div>
-""".format(apr_value=f"{apr:.2f}"), unsafe_allow_html=True)
-
-
-
-# ======================= ATR RANGE BACKTEST =======================
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
-">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        ATR PAIRE VOLATILE STABLE
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
-col_atr1, col_atr2, col_atr3 = st.columns([1,1,1])
-
-with col_atr1:
-    atr_usd = st.number_input(
-        "ATR 14 ($)",
-        value=100.0,
-        min_value=0.01,
-        step=1.0,
-        help="Valeur ATR 14 ($) en daily (indicateur)"
-    )
-
-with col_atr2:
-    atr_mult = st.slider(
-        "Multiplicateur ATR",
-        0.5, 10.0, 3.0,
-        step=0.25,
-        help="Largeur du range = ATR × multiplicateur"
-    )
-
-with col_atr3:
-    asym_mode = st.selectbox(
-        "Stratégie de range",
-        ["Stratégie neutre", "Coup de pouce bull", "Coup de pouce bear", "Custom"]
-    )
-
-# ---- Prix de référence ATR (manuel) ----
-asset_price = st.number_input(
-    "Prix de l'actif utilisé pour l'ATR ($)",
-    min_value=0.0001,
-    value=float(P_deposit),
-    step=1.0,
-    help="Prix réel de l'actif pour convertir l'ATR $ en %"
-)
-
-# ---- Conversion ATR $ → % (basée sur le prix de l'actif) ----
-atr_pct = (atr_usd / asset_price) * 100
-
-# ---- Calcul du range total ----
-range_total_pct = atr_pct * atr_mult
-
-# ---- Gestion asymétrie ----
-if asym_mode == "Stratégie neutre":
-    low_weight, high_weight = 0.5, 0.5
-elif asym_mode == "Coup de pouce bull":
-    low_weight, high_weight = 0.2, 0.8
-elif asym_mode == "Coup de pouce bear":
-    low_weight, high_weight = 0.8, 0.2
-else:
-    cw1, cw2 = st.columns(2)
-    with cw1:
-        low_weight = st.slider("Poids bas (%)", 0, 100, 40) / 100
-    with cw2:
-        high_weight = 1 - low_weight
-
-# ---- Calcul prix bas / haut (en $) ----
-atr_low = P_deposit * (1 - range_total_pct * low_weight / 100)
-atr_high = P_deposit * (1 + range_total_pct * high_weight / 100)
-
-# ---- Conversion du range en % (affichage) ----
-low_pct_display = (atr_low / P_deposit - 1) * 100
-high_pct_display = (atr_high / P_deposit - 1) * 100
-
-# ---- Affichage ATR ----
+apr = calculate_clmm_apr(fees_usd_period, active_liquidity_usd_avg, period_days)
 st.markdown(f"""
-<div style="
-    background-color:#27F5A9;
-    border-left:6px solid #00754A;
-    padding:18px 25px;
-    border-radius:12px;
-    margin-top:15px;
-    color:#000;
-    text-align:center;
-">
-
-<h4 style="margin:0 0 10px 0;">Range basé sur ATR</h4>
-
-<div style="font-size:16px;font-weight:600;line-height:1.6em;">
-ATR 14 : {atr_usd:.2f}$ | ATR (%) : {atr_pct:.2f}% | Multiplicateur : x{atr_mult:.2f}<br>
-Prix actif ATR : {asset_price:.2f}$<br>
-Range total : {range_total_pct:.2f}%<br>
-<span style='color:#ff9f1c;'>ATR Low : {atr_low:.2f}$ | ATR High : {atr_high:.2f}$</span><br>
-Low : {low_pct_display:.2f}% | High : +{high_pct_display:.2f}%
-</div>
+<div class="result-card-wide" style="text-align:center;">
+    <div class="result-title">APR annualisé estimé</div>
+    <div class="result-value">{apr:.2f} %</div>
 </div>
 """, unsafe_allow_html=True)
 
+# --- ATR Range ---
+st.markdown('<div class="section-title">ATR Range</div>', unsafe_allow_html=True)
+col_atr1, col_atr2, col_atr3 = st.columns(3)
+with col_atr1: atr_usd = st.number_input("ATR 14 ($)", value=100.0, min_value=0.01, step=1.0)
+with col_atr2: atr_mult = st.slider("Multiplicateur ATR", 0.5,10.0,3.0, step=0.25)
+with col_atr3: asym_mode = st.selectbox("Stratégie de range", ["Neutre","Bull","Bear","Custom"])
+asset_price = st.number_input("Prix actif pour ATR ($)", value=float(P_deposit), min_value=0.0001, step=1.0)
 
+atr_pct = (atr_usd/asset_price)*100
+range_total_pct = atr_pct*atr_mult
+if asym_mode=="Neutre": low_weight,high_weight=0.5,0.5
+elif asym_mode=="Bull": low_weight,high_weight=0.2,0.8
+elif asym_mode=="Bear": low_weight,high_weight=0.8,0.2
+else:
+    cw1,cw2=st.columns(2)
+    with cw1: low_weight = st.slider("Poids bas (%)",0,100,40)/100
+    with cw2: high_weight = 1-low_weight
 
-# ----------------- Définition de la fonction ATR Expert -----------------
+atr_low = P_deposit*(1-range_total_pct*low_weight/100)
+atr_high= P_deposit*(1+range_total_pct*high_weight/100)
+low_pct_display = (atr_low/P_deposit-1)*100
+high_pct_display = (atr_high/P_deposit-1)*100
+
+st.markdown(f"""
+<div class="result-card-wide" style="text-align:center;">
+    <div class="result-title">Range basé sur ATR</div>
+    <div class="result-value">
+    ATR Low: {atr_low:.2f}$ | ATR High: {atr_high:.2f}$ | ±{range_total_pct:.2f}%</div>
+</div>
+""", unsafe_allow_html=True)
+
+# --- ATR Expert (Double Volatile) ---
+st.markdown('<div class="section-title">ATR Paire Double Volatile</div>', unsafe_allow_html=True)
+col1,col2,col3,col4=st.columns(4)
+with col1: price_x = st.number_input("Prix actuel X", value=3111.0)
+with col2: atr_x = st.number_input("ATR daily X", value=174.0)
+with col3: price_y = st.number_input("Prix actuel Y", value=90113.0)
+with col4: atr_y = st.number_input("ATR daily Y", value=3282.0)
+atr_multiplier = st.slider("Multiplicateur ATR",1.0,6.0,1.0,step=0.5)
+
 def calculate_pair_atr(price_x, atr_x, price_y, atr_y, multiplier=1):
-    """Calcule le range ATR d'une paire X/Y avec multiplicateur"""
-    pair_price = price_x / price_y
-    delta_x = atr_x / price_y
-    delta_y = (price_x / (price_y ** 2)) * atr_y
+    pair_price = price_x/price_y
+    delta_x=atr_x/price_y
+    delta_y=(price_x/(price_y**2))*atr_y
+    atr_pair=math.sqrt(delta_x**2+delta_y**2)*multiplier
+    low=pair_price-atr_pair
+    high=pair_price+atr_pair
+    range_pct=(atr_pair/pair_price)*100
+    return {"pair_price":pair_price,"atr_pair":atr_pair,"low":low,"high":high,"range_pct":range_pct}
 
-    atr_pair_raw = math.sqrt(delta_x ** 2 + delta_y ** 2)
-    atr_pair = atr_pair_raw * multiplier
-
-    low = pair_price - atr_pair
-    high = pair_price + atr_pair
-    range_pct = (atr_pair / pair_price) * 100
-
-    return {
-        "pair_price": pair_price,
-        "atr_pair": atr_pair,
-        "low": low,
-        "high": high,
-        "range_pct": range_pct
-    }
-
-# ---------------- Interface ATR EXPERT ----------------
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
-">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        ATR PAIRE DOUBLE VOLATILE
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    price_x = st.number_input("Prix actuel actif X", value=3111.0, key="price_x_pair_expert")
-with col2:
-    atr_x = st.number_input("ATR daily X", value=174.0, key="atr_x_pair_expert")
-with col3:
-    price_y = st.number_input("Prix actuel actif Y", value=90113.0, key="price_y_pair_expert")
-with col4:
-    atr_y = st.number_input("ATR daily Y", value=3282.0, key="atr_y_pair_expert")
-
-# Multiplicateur ATR avec pas de 0,5
-atr_multiplier = st.slider(
-    "Multiplicateur ATR",
-    min_value=1.0,
-    max_value=6.0,
-    value=1.0,
-    step=0.5
-)
-
-if st.button("Calculer ATR et RANGE", key="calc_atr_pair_expert"):
-    result = calculate_pair_atr(
-        price_x,
-        atr_x,
-        price_y,
-        atr_y,
-        atr_multiplier
-    )
-
+if st.button("Calculer ATR et RANGE"):
+    result = calculate_pair_atr(price_x, atr_x, price_y, atr_y, atr_multiplier)
     st.markdown(f"""
-    <div style="
-        background-color:#FFD700;
-        border-left:6px solid #FF8C00;
-        padding:18px 25px;
-        border-radius:12px;
-        margin-top:15px;
-        color:#000;
-        text-align:center;
-    ">
-    <h4 style="margin:0 0 10px 0;">ATR Paire Volatile</h4>
-    <div style="font-size:16px;font-weight:600;line-height:1.6em;">
-    Prix de la paire X/Y : {result['pair_price']:.6f}<br>
-    ATR de la paire (x{atr_multiplier}) : {result['atr_pair']:.6f}<br>
-    Low / High : {result['low']:.6f} / {result['high']:.6f}<br>
-    Range % : ±{result['range_pct']:.2f}%
-    </div>
+    <div class="result-card-wide" style="text-align:center;">
+        <div class="result-title">ATR Paire Volatile</div>
+        <div class="result-value">
+        Pair price: {result['pair_price']:.6f} | ATR: {result['atr_pair']:.6f} | Low/High: {result['low']:.6f}/{result['high']:.6f} | ±{result['range_pct']:.2f}%
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
