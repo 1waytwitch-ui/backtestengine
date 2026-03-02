@@ -1749,6 +1749,8 @@ st.markdown(overlay_html, unsafe_allow_html=True)
 
 # ======================= Less IL =======================
 
+import streamlit as st
+import math
 
 st.set_page_config(layout="wide")
 
@@ -1767,71 +1769,107 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- UI STYLE ---
+# ================= TERMINAL DEFI STYLE =================
+
 st.markdown("""
 <style>
 
-/* Sous-titres */
+/* ===== GLOBAL TERMINAL THEME ===== */
+
+[data-testid="stAppViewContainer"] {
+    background-color: #0b0f14;
+    color: #e6edf3;
+    font-family: "Courier New", monospace;
+}
+
+/* ===== SECTION TITLES ===== */
+
 .section-title {
-    background: linear-gradient(135deg, #16213e 0%, #3a1c71 100%);
-    padding:10px 16px;
-    border-radius:10px;
-    margin-top:20px;
-    margin-bottom:12px;
-    font-weight:600;
-    font-size:18px;
-    color:white;
+    border-left: 4px solid #00ff88;
+    padding: 8px 14px;
+    margin-top: 24px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    background: rgba(0,255,136,0.05);
+    letter-spacing: 1px;
 }
 
-/* Inputs compacts */
+/* ===== INPUTS ===== */
+
 div[data-baseweb="input"] input {
-    padding-top:6px !important;
-    padding-bottom:6px !important;
-    font-size:14px;
+    background-color: #11161d !important;
+    color: #00ff88 !important;
+    border: 1px solid #1f2a36 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    font-size: 13px;
 }
 
-/* Cartes résultats */
+label {
+    font-size: 12px !important;
+    opacity: 0.7;
+}
+
+/* ===== RESULT CARDS ===== */
+
 .result-card {
-    background: linear-gradient(135deg, #121826 0%, #1e2761 100%);
-    padding:16px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.05);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-    text-align:center;
+    background: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: left;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
+}
+
+.result-card:hover {
+    box-shadow: 0 0 18px rgba(0,255,136,0.15);
 }
 
 .result-title {
-    font-size:13px;
-    opacity:0.7;
+    font-size: 11px;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .result-value {
-    font-size:20px;
-    font-weight:700;
-    margin-top:6px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #00ff88;
+    margin-top: 6px;
 }
 
-/* Overlay large */
+/* ===== WIDE CARD ===== */
+
 .result-card-wide {
-    background: linear-gradient(135deg, #101522 0%, #2a1f5f 100%);
-    padding:18px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,0.05);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-    text-align:center;
-    margin-top:15px;
+    background: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 14px;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
 }
 
-/* Fix expander button color */
+/* ===== SLIDER ===== */
+
+div[data-baseweb="slider"] > div {
+    color: #00ff88 !important;
+}
+
+/* ===== EXPANDER FIX ===== */
+
 details summary {
-    color: white !important;
-    background: linear-gradient(135deg, #16213e 0%, #3a1c71 100%) !important;
-    padding:8px 12px;
-    border-radius:8px;
+    color: #00ff88 !important;
+    background-color: #11161d !important;
+    border: 1px solid #1f2a36 !important;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
 }
 
 details[open] summary {
-    color: white !important;
+    color: #00ff88 !important;
 }
 
 </style>
@@ -1841,7 +1879,6 @@ details[open] summary {
 
 st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe_allow_html=True)
 
-# Token A & B sur la même ligne
 t1, t2 = st.columns(2)
 
 with t1:
@@ -1929,7 +1966,6 @@ with r3:
     </div>
     """, unsafe_allow_html=True)
 
-# Overlay unique bornes
 st.markdown(f"""
 <div class="result-card-wide">
     <div class="result-title">Bornes</div>
@@ -2009,4 +2045,3 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     st.latex(r"New Tight Plow = P_{rebalance} (1 - tighten\_percent/100)")
     st.latex(r"ratio = \frac{\sqrt{P_{high}} - \sqrt{P}}{\sqrt{P}\sqrt{P_{high}}(\sqrt{P}-\sqrt{P_{low}})}")
     st.latex(r"\sqrt{New\ P\ High} = \frac{\sqrt{P}}{1 - ratio\sqrt{P}(\sqrt{P}-\sqrt{P_{low}^{new}})}")
-
