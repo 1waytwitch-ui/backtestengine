@@ -1766,9 +1766,56 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# --- UI STYLE ---
+st.markdown("""
+<style>
+
+/* Sous-titres cohérents avec le header */
+.section-title {
+    background: linear-gradient(135deg, #16213e 0%, #3a1c71 100%);
+    padding:10px 16px;
+    border-radius:10px;
+    margin-top:20px;
+    margin-bottom:12px;
+    font-weight:600;
+    font-size:18px;
+    color:white;
+}
+
+/* Inputs plus compacts */
+div[data-baseweb="input"] input {
+    padding-top:6px !important;
+    padding-bottom:6px !important;
+    font-size:14px;
+}
+
+/* Cartes résultats */
+.result-card {
+    background: linear-gradient(135deg, #121826 0%, #1e2761 100%);
+    padding:16px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    text-align:center;
+}
+
+.result-title {
+    font-size:13px;
+    opacity:0.7;
+}
+
+.result-value {
+    font-size:20px;
+    font-weight:700;
+    margin-top:6px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 # =================== CALCULATRICE ===================
 
-st.markdown("### Entrées de la paire")
+st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe_allow_html=True)
 
 tokenA = st.text_input("Token A", "Token A")
 tokenB = st.text_input("Token B", "Token B")
@@ -1797,8 +1844,6 @@ if price_tokenB == 0:
 
 P_current = price_tokenA / price_tokenB
 
-st.write(f"Prix relatif {tokenA}/{tokenB} : {P_current:.6f}")
-
 # --- VALIDATIONS ---
 if not (P_low < P_current < P_high):
     st.error("Le prix actuel doit être strictement à l'intérieur du range initial.")
@@ -1809,19 +1854,16 @@ if new_P_low >= P_current:
     st.stop()
 
 # --- CALCULS ---
-
 sqrtP = math.sqrt(P_current)
 sqrtPl = math.sqrt(P_low)
 sqrtPh = math.sqrt(P_high)
 sqrtNewPl = math.sqrt(new_P_low)
 
-# ===== Ratio exact de la position actuelle (indépendant du capital) =====
 ratio = (
     (sqrtPh - sqrtP)
     / (sqrtP * sqrtPh * (sqrtP - sqrtPl))
 )
 
-# ===== Nouvelle borne haute Zero Swap =====
 denominator = 1 - ratio * sqrtP * (sqrtP - sqrtNewPl)
 
 if denominator <= 0:
@@ -1831,25 +1873,47 @@ if denominator <= 0:
 sqrtNewPh = sqrtP / denominator
 new_P_high = sqrtNewPh ** 2
 
-# --- RÉSULTATS ---
+# =================== RESULTATS ===================
 
-st.subheader("Résultats Zero Swap Rebalance")
+st.markdown('<div class="section-title">Résultats Zero Swap</div>', unsafe_allow_html=True)
 
-st.write(f"Ratio actuel {tokenA}/{tokenB} : {ratio:.10f}")
-st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f}")
-st.write(f"Prix actuel : {P_current:.6f}")
+r1, r2, r3 = st.columns(3)
 
-st.write(
-    f"Borne basse initiale : {P_low}  →  Nouvelle borne basse : {new_P_low}"
-)
+with r1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Ratio {tokenA}/{tokenB}</div>
+        <div class="result-value">{ratio:.10f}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.write(
-    f"Borne haute initiale : {P_high}  →  Nouvelle borne haute : {new_P_high:.2f}"
-)
+with r2:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Nouvelle borne haute</div>
+        <div class="result-value">{new_P_high:.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.subheader("Resserrement du range (si retour dans range initial)")
+with r3:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Prix actuel</div>
+        <div class="result-value">{P_current:.6f}</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Nouveau prix au moment du resserrement
+st.markdown(f"""
+<div style="margin-top:15px; opacity:0.75;">
+Borne basse : {P_low} → {new_P_low} &nbsp;&nbsp; | &nbsp;&nbsp;
+Borne haute : {P_high} → {new_P_high:.2f}
+</div>
+""", unsafe_allow_html=True)
+
+# =================== RESSERREMENT ===================
+
+st.markdown('<div class="section-title">Resserrement du range</div>', unsafe_allow_html=True)
+
 P_rebalance = st.number_input(
     "Prix actuel au moment du resserrement",
     value=P_current,
@@ -1867,11 +1931,9 @@ if P_low < P_rebalance < P_high:
 
     sqrtP_reb = math.sqrt(P_rebalance)
 
-    # Nouveau Plow centré autour du prix réel
     new_tight_P_low = P_rebalance * (1 - tighten_percent / 100)
     sqrtNewTightPl = math.sqrt(new_tight_P_low)
 
-    # IMPORTANT : recalcul du ratio au prix de rebalance
     ratio_reb = (
         (sqrtPh - sqrtP_reb)
         / (sqrtP_reb * sqrtPh * (sqrtP_reb - sqrtPl))
@@ -1893,21 +1955,19 @@ if P_low < P_rebalance < P_high:
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
 
+# =================== FORMULES ===================
+
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
-    st.markdown(r"### New Tight Plow")
+
+    st.markdown("### New Tight Plow")
     st.latex(r"New Tight Plow = P_{\mathrm{rebalance}} \cdot \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)")
 
-    st.markdown(r"### ratio A/B")
+    st.markdown("### ratio A/B")
     st.latex(r"\mathrm{ratio} = \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}{\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}")
 
-    st.markdown(r"### New P High (borne haute zéro-swap)")
+    st.markdown("### New P High")
     st.latex(r"""
-    \sqrt{\mathrm{New\ P\ High}} = \frac{\sqrt{P}}{1 - \mathrm{ratio} \cdot \sqrt{P} \cdot \left(\sqrt{P} - \sqrt{P_L^\mathrm{new}}\right)}, \quad
-    \mathrm{New\ P\ High} = \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
-    """)
-
-    st.markdown(r"### New Tight P High")
-    st.latex(r"""
-    \sqrt{\mathrm{New\ Tight\ P\ High}} = \frac{\sqrt{P_\mathrm{rebalance}}}{1 - \mathrm{ratio}_\mathrm{reb} \cdot \sqrt{P_\mathrm{rebalance}} \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}, \quad
-    \mathrm{New\ Tight\ P\ High} = \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
+    \sqrt{\mathrm{New\ P\ High}} =
+    \frac{\sqrt{P}}
+    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot (\sqrt{P} - \sqrt{P_L^\mathrm{new}})}
     """)
