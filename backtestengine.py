@@ -619,7 +619,7 @@ with col2:
         """, unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div class="result-card-wide">
+    <div class="result-card">
         <div class="result-title">Répartition capital</div>
         <div class="result-value">
             {capitalA:.2f} USD {tokenA}  |  {capitalB:.2f} USD {tokenB}
