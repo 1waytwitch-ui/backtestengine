@@ -1088,66 +1088,92 @@ st.markdown("""
 
 guide_html = """
 <style>
-    /* Styles généraux */
+    /* ===== GUIDE TERMINAL THEME ===== */
     #guide {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        color: #ffffff;
+        font-family: "Courier New", monospace;
+        color: #e6edf3;
         margin-top: 40px;
-        padding: 20px;
-        background-color: #173a57;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+        padding: 24px;
+        background-color: #0f141b;
+        border: 1px solid #1f2a36;
+        border-radius: 12px;
+        box-shadow: 0 0 18px rgba(0,255,136,0.05);
     }
+
     #guide h2, #guide h3, #guide h4 {
-        color: #ffffff;
+        color: #00ff88;
+        margin-top: 28px;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
     }
+
     #guide p, #guide li {
-        line-height: 1.5em;
-        font-size: 15px;
-        color: #ffffff;
+        line-height: 1.6em;
+        font-size: 14px;
+        color: #c9d1d9;
     }
+
     #guide ul {
         margin-left: 20px;
     }
+
     #guide ul li {
         margin-bottom: 6px;
     }
-    /* Sommaire */
+
+    /* ===== SOMMAIRE ===== */
     #sommaire {
-        background-color: rgba(255,255,255,0.05);
-        padding: 15px;
-        border-radius: 6px;
+        background-color: rgba(0,255,136,0.05);
+        border: 1px solid #1f2a36;
+        padding: 18px;
+        border-radius: 10px;
         margin-bottom: 30px;
     }
+
     #sommaire h4 {
         margin-top: 0;
         font-weight: 700;
-        color: #ffffff;
+        color: #00ff88;
     }
+
     #sommaire ul {
         list-style-type: none;
         padding-left: 10px;
     }
+
     #sommaire ul li {
         margin-bottom: 6px;
     }
+
     #sommaire ul li a {
         text-decoration: none;
-        color: #ffffff;
+        color: #00ff88;
+        font-size: 13px;
+        opacity: 0.9;
     }
+
     #sommaire ul li a:hover {
         text-decoration: underline;
+        opacity: 1;
+    }
+
+    /* ===== EMPHASE ===== */
+    #guide b, #guide strong {
+        color: #ffffff;
+    }
+
+    #guide em {
+        color: #9cdcfe;
     }
 </style>
 
 <div id="guide">
 
-
-
 <!-- Texte d'introduction -->
 <p>Bienvenue !<br>
 Ce guide t’explique <b>pas à pas</b> comment comprendre et utiliser les stratégies de LP (Liquidity Providing) dans un AMM (automated Market Maker) concentré comme Uniswap, Aerodrome, Pancake...<br><br>
 Krystal, Vfat, aperture... <b>sont uniquement des agrégateurs de positions</b> !</p>
+
 <div id="sommaire">
 <h4>Sommaire</h4>
 <ul>
@@ -1189,13 +1215,10 @@ Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range →
 <p>
 Le choix dépend de ton objectif, de la volatilité et du marché : haussier → profits A→B, baissier → accumulation B→A, latéral → neutre ou coup de pouce.<br>
 Objectifs : saisir des fees → petit range ; limiter l’IL → grand range sans rebalance ou mini-doux ; DCA → ratio 100/0 ou 0/100.<br><br>
-
 Pour affiner ton range, utilise l’indicateur <strong>ATR (Average True Range)</strong> disponible sur TradingView dans la catégorie <em>Technical</em>.<br>
 L’ATR représente de manière simplifiée <strong>l’écart-type du prix d’un actif exprimé en dollars</strong> : il mesure l’amplitude moyenne des mouvements de prix sur une période donnée.<br><br>
-
 Sur l’outil, règle l’ATR en <strong>daily</strong> avec une période <strong>ATR 14</strong>, puis applique un <strong>multiplicateur</strong> afin de définir la largeur de ton range autour du prix actuel.<br>
 Par exemple : <strong>ATR × 3</strong> correspond généralement à une tenue de range d’environ <strong>1 semaine à 10 jours</strong>, selon la volatilité du marché.<br><br>
-
 Une fois le range défini, vérifie l’ATR affiché en <strong>weekly</strong> et compare-le à ton choix initial en calculant :
 <strong>borne haute − borne basse</strong>.<br>
 Ajuste ensuite ton range en confrontant ces valeurs avec les données de l'ATR14 en <strong>WEEKLY</strong> ainsi que <strong>volatilité sur 7 jours et 30 jours</strong>, afin de sélectionner le compromis le plus adapté à la tendence entre fréquence de rebalance, capture de fees et exposition au risque.
@@ -1209,7 +1232,6 @@ Ajuste ensuite ton range en confrontant ces valeurs avec les données de l'ATR14
     <li>Si prix = 3300 → plus riche en USDC, fees générés</li>
     <li>Si prix = 2700 → plus d’ETH, fees générés</li>
 </ul>
-
 
 <h3 id="erreurs-de-debutant">Erreurs de débutant</h3>
 <ul>
@@ -1230,7 +1252,6 @@ L'app calcule combien de fois le prix est sorti dans le passé et en simulation 
   <li><strong>Conseil pratique :</strong> Pour toute question sur vos réglages, partagez uniquement des captures claires de l’édition de l’automation et de la stratégie, en masquant les données sensibles (capital, wallets).</li>
   <li><strong>Attention sur vos décisions :</strong> Avant d’acheter du token A (volatile) à un prix supérieur au point de rebalance, demandez-vous si vous êtes prêt à vendre pour limiter la perte. Inversement, si vous êtes exposé en USDC ou token B (moins volatile), acheter beaucoup du token volatil plus cher peut réduire votre capital et amplifier vos pertes à la baisse.</li>
 </ul>
-
 
 <h3 id="courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</h3>
 <p>Le graphe montre : IL(%) en fonction du prix actuel, ligne pour prix de dépôt, ligne pour prix actuel, range bas/haut.<br>
@@ -1259,8 +1280,8 @@ Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et 
 
 </div>
 """
-st.markdown(guide_html, unsafe_allow_html=True)
 
+st.markdown(guide_html, unsafe_allow_html=True)
 
 # ======================= video IL =======================
 st.markdown("""
