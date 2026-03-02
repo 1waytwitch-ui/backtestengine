@@ -698,11 +698,8 @@ with col2:
 
 
 # =========================== AUTOMATION ===========================
-st.markdown("""
-<div style="background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);padding:20px;border-radius:12px;margin-top:20px;">
-    <span style="color:white;font-size:28px;font-weight:700;">REGLAGES AUTOMATION</span>
-</div>
-""", unsafe_allow_html=True)
+
+st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
 
 # ---- Range future / Time-buffer ----
 col_range, col_time = st.columns([2,1])
@@ -712,67 +709,60 @@ ratioA_trigger, ratioB_trigger = ratioA, ratioB
 if invert_market:
     ratioA_trigger, ratioB_trigger = ratioB_trigger, ratioA_trigger
 
-with col_range:
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-top:25px;
-        margin-bottom:15px;
-    ">
-        <h3>Range future</h3>
-    </div>
-    """, unsafe_allow_html=True)
+# ================= RANGE FUTURE =================
 
-    # Slider pour range total
+with col_range:
+
+    st.markdown('<div class="section-title">Range future</div>', unsafe_allow_html=True)
+
     range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
+
     low_offset_pct = -range_percent * 20 / 100
     high_offset_pct = range_percent * 80 / 100
+
     final_low = priceA * (1 + low_offset_pct/100)
     final_high = priceA * (1 + high_offset_pct/100)
-    st.write(f"Range : {final_low:.6f} – {final_high:.6f}")
 
-with col_time:
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-top:25px;
-        margin-bottom:15px;
-    ">
-        <h3>Time-buffer</h3>
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Range calculé</div>
+        <div class="result-value">
+            {final_low:.6f} → {final_high:.6f}
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
+
+# ================= TIME BUFFER =================
+
+with col_time:
+
+    st.markdown('<div class="section-title">Time-buffer</div>', unsafe_allow_html=True)
+
     vola = vol_30d * 100
+
     if vola < 2:
         recomand = "6 à 12 minutes"
     elif vola < 5:
         recomand = "18 à 48 minutes"
     else:
         recomand = "60 minutes et plus"
-    st.write(f"Recommandation avec la volatilité actuelle : {recomand}")
 
-# ---- Trigger d’anticipation / Rebalance avancée ----
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Recommandation</div>
+        <div class="result-value">{recomand}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ================= TRIGGER =================
+
 col_trigger, col_rebalance = st.columns(2)
 
 with col_trigger:
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-top:25px;
-        margin-bottom:15px;
-    ">
-        <h3>Trigger d’anticipation (RATIO)</h3>
-    </div>
-    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="section-title">Trigger d’anticipation (RATIO)</div>', unsafe_allow_html=True)
 
     t1, t2 = st.columns(2)
     with t1:
@@ -783,46 +773,79 @@ with col_trigger:
     rw = final_high - final_low
     trigger_low_price = final_low + (trig_low/100)*rw
     trigger_high_price = final_low + (trig_high/100)*rw
-    st.write(f"Trigger Low : {trigger_low_price:.6f}")
-    st.write(f"Trigger High : {trigger_high_price:.6f}")
+
+    r1, r2 = st.columns(2)
+
+    with r1:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Trigger Low</div>
+            <div class="result-value">{trigger_low_price:.6f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with r2:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Trigger High</div>
+            <div class="result-value">{trigger_high_price:.6f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+# ================= REBALANCE AVANCÉE =================
 
 with col_rebalance:
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-top:25px;
-        margin-bottom:15px;
-    ">
-        <h3>Rebalance avancée (futur range)</h3>
-    </div>
-    """, unsafe_allow_html=True)
 
-    # ---- Calcul du range fixe pour rebalance (toujours basé sur les ratios d’origine) ----
+    st.markdown('<div class="section-title">Rebalance avancée (futur range)</div>', unsafe_allow_html=True)
+
     off_low_pct  = -ratioA * range_percent
     off_high_pct =  ratioB * range_percent
 
     bear_low  = priceA * (1 + off_low_pct / 100)
     bear_high = priceA * (1 + off_high_pct / 100)
+
     bull_low  = priceA * (1 - off_high_pct / 100)
     bull_high = priceA * (1 - off_low_pct / 100)
 
     col_b1, col_b2 = st.columns(2)
+
     with col_b1:
-        st.markdown("**Marché Haussier (Pump/RANGE HIGH)**")
-        st.write(f"Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)")
-        st.write(f"Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)")
-    
+        st.markdown("""
+        <div class="result-card">
+            <div class="result-title">Marché Haussier (Pump)</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="result-card-wide">
+            <div class="result-title">Range</div>
+            <div class="result-value">
+                {bull_low:.6f} → {bull_high:.6f}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     with col_b2:
-        st.markdown("**Marché Baissier (Dump/RANGE LOW)**")
-        st.write(f"Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)")
-        st.write(f"Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)")
+        st.markdown("""
+        <div class="result-card">
+            <div class="result-title">Marché Baissier (Dump)</div>
+        </div>
+        """, unsafe_allow_html=True)
 
- 
+        st.markdown(f"""
+        <div class="result-card-wide">
+            <div class="result-title">Range</div>
+            <div class="result-value">
+                {bear_low:.6f} → {bear_high:.6f}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
-# --- Fonctions de calcul ---
+
+
+# =================== FONCTIONS (INCHANGÉES) ===================
+
 def compute_L(P, P_l, P_u, V):
     sqrtP = np.sqrt(P)
     sqrtPl = np.sqrt(P_l)
@@ -865,7 +888,6 @@ def V_LP(P, L, P_lower, P_upper):
 
 def V_HODL(P, x0, y0):
     return x0 * P + y0
-
 # ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
 
 # --- Style Terminal DeFi ---
