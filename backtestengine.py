@@ -1867,32 +1867,31 @@ div[data-testid="stExpander"]:hover {
 # =================== FORMULES ===================
 
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
-    
-    # Texte explicatif plus petit
+    # Texte d’intro réduit (optionnel)
     st.markdown(
-        '<div style="font-size:12px; color:#aaa; margin-bottom:6px;">'
+        '<div style="font-size:12px; color:#aaa; margin-bottom:10px; font-family: Courier, monospace;">'
         'Ces formules permettent de calculer le range, le ratio et le rebalance automatiquement.'
-        '</div>', 
-        unsafe_allow_html=True
+        '</div>', unsafe_allow_html=True
     )
 
-    st.markdown(r"### Prix courant")
+    # Titres de section en monospace, petite taille, et en blanc cassé
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Prix courant</div>', unsafe_allow_html=True)
     st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
 
-    st.markdown(r"### Racines utilisées")
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Racines utilisées</div>', unsafe_allow_html=True)
     st.latex(r"\sqrt{P}, \quad \sqrt{P_\mathrm{low}}, \quad \sqrt{P_\mathrm{high}}, \quad \sqrt{P_\mathrm{rebalance}}")
 
-    st.markdown(r"### Ratio initial A/B")
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio initial A/B</div>', unsafe_allow_html=True)
     st.latex(r"""
     \mathrm{ratio} =
     \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}
     {\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}
     """)
 
-    st.markdown(r"### New Plow (déplacement borne basse)")
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">New Plow (déplacement borne basse)</div>', unsafe_allow_html=True)
     st.latex(r"\mathrm{New\ Plow} = P_\mathrm{low}^{new}")
 
-    st.markdown(r"### Nouvelle borne haute Zero-Swap")
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle borne haute Zero-Swap</div>', unsafe_allow_html=True)
     st.latex(r"""
     \sqrt{\mathrm{New\ P\ High}} =
     \frac{\sqrt{P}}
@@ -1906,7 +1905,7 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
     """)
 
-    st.markdown(r"### Resserrement (tighten)")
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Resserrement (tighten)</div>', unsafe_allow_html=True)
     st.latex(r"""
     \mathrm{New\ Tight\ Plow}
     =
@@ -1915,7 +1914,7 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)
     """)
 
-    st.markdown(r"### Ratio recalculé au rebalance")
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio recalculé au rebalance</div>', unsafe_allow_html=True)
     st.latex(r"""
     \mathrm{ratio}_\mathrm{reb}
     =
@@ -1927,7 +1926,7 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
     """)
 
-    st.markdown(r"### Nouvelle borne haute Tight (Zero-Swap)")
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle borne haute Tight (Zero-Swap)</div>', unsafe_allow_html=True)
     st.latex(r"""
     \sqrt{\mathrm{New\ Tight\ P\ High}}
     =
