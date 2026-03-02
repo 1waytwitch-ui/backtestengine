@@ -1675,15 +1675,6 @@ label {
     margin-top: 14px;
 }
 
-.result-card-wide {
-    background: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 10px;
-    padding: 16px;
-    margin-top: 14px;
-    box-shadow: 0 0 12px rgba(0,255,136,0.05);
-}
-
 .result-title {
     font-size: 11px;
     opacity: 0.6;
@@ -1748,21 +1739,48 @@ if pair_type == "Double Volatile":
 
 # =================== RESULTATS ===================
 
-bg_color = "#FF6B6B" if pnl < 0 else "#2EF2A2"
+st.markdown('<div class="section-title">Résultats Break-Even LP</div>', unsafe_allow_html=True)
 
-overlay_html = f"""
-<div class="result-card-wide" style="background:{bg_color}; color:#000; text-align:center;">
-    <h3>Résultat Break-Even LP</h3>
-    <p style="font-size:18px;">
-        Valeur actuelle : <b>{value:.2f} $</b><br>
-        P&L : <b>{pnl:.2f} $</b> ({pnl_pct:.2f} %)<br>
-        Break-even Token A : <b>{break_even_a:.2f} $</b>
-        {'<br>Break-even Token B : <b>{:.2f} $</b>'.format(break_even_b) if pair_type=='Double Volatile' else ''}
-    </p>
-</div>
-"""
+# Création des cartes de résultats
+cards = []
 
-st.markdown(overlay_html, unsafe_allow_html=True)
+cards.append({
+    "title": "Valeur actuelle",
+    "value": f"{value:.2f} $",
+    "color": "#FF6B6B" if pnl < 0 else "#2EF2A2"
+})
+cards.append({
+    "title": "P&L",
+    "value": f"{pnl:.2f} $ ({pnl_pct:.2f}%)",
+    "color": "#FF6B6B" if pnl < 0 else "#2EF2A2"
+})
+cards.append({
+    "title": "P&L restante pour BE",
+    "value": f"{pnl_to_be:.2f} $",
+    "color": "#FF6B6B" if pnl < 0 else "#2EF2A2"
+})
+cards.append({
+    "title": "Break-even Token A",
+    "value": f"{break_even_a:.2f} $",
+    "color": "#00ff88"
+})
+if pair_type == "Double Volatile":
+    cards.append({
+        "title": "Break-even Token B",
+        "value": f"{break_even_b:.2f} $",
+        "color": "#00ff88"
+    })
+
+# Affichage en colonnes
+cols = st.columns(len(cards))
+for i, card in enumerate(cards):
+    with cols[i]:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">{card['title']}</div>
+            <div class="result-value" style="color:{card['color']};">{card['value']}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 # ======================= Less IL =======================
