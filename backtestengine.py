@@ -1847,6 +1847,66 @@ st.write(
     f"Borne haute initiale : {P_high}  →  Nouvelle borne haute : {new_P_high:.2f}"
 )
 
+# =================== GRAPH VISUEL LP ===================
+
+st.subheader("Visualisation de la valeur LP")
+
+# Génération des prix pour le graphique
+price_min = P_low * 0.7
+price_max = P_high * 1.3
+
+prices = np.linspace(price_min, price_max, 400)
+
+lp_values = []
+
+for p in prices:
+    if p <= P_low:
+        value = (P_low - P_low)  # 0 simplifié visuellement
+    elif p >= P_high:
+        value = (P_high - P_low)
+    else:
+        value = (p - P_low)
+    lp_values.append(value)
+
+lp_values = np.array(lp_values)
+
+# Normalisation visuelle
+lp_values = lp_values / max(lp_values) * 100
+
+fig = go.Figure()
+
+# Courbe LP
+fig.add_trace(go.Scatter(
+    x=prices,
+    y=lp_values,
+    mode='lines',
+    name=f"Valeur LP ({tokenA}/{tokenB})",
+))
+
+# Zone active
+fig.add_vrect(
+    x0=P_low,
+    x1=P_high,
+    fillcolor="rgba(0, 200, 150, 0.15)",
+    line_width=0,
+)
+
+# Ligne prix actuel
+fig.add_vline(
+    x=P_current,
+    line_dash="dash",
+)
+
+fig.update_layout(
+    template="plotly_dark",
+    height=500,
+    xaxis_title=f"Prix {tokenA}/{tokenB}",
+    yaxis_title="Valeur LP (normalisée)",
+    showlegend=True,
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
 st.subheader("Resserrement du range (si retour dans range initial)")
 
 # Nouveau prix au moment du resserrement
