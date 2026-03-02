@@ -1770,8 +1770,8 @@ st.markdown("""
 
 st.markdown("### Entrées de la paire")
 
-tokenA = st.text_input("Token A", "WETH")
-tokenB = st.text_input("Token B", "USDC")
+tokenA = st.text_input("Token A", "Token A")
+tokenB = st.text_input("Token B", "Token B")
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
