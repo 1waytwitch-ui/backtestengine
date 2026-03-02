@@ -1867,6 +1867,14 @@ div[data-testid="stExpander"]:hover {
 # =================== FORMULES ===================
 
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
+    
+    # Texte explicatif plus petit
+    st.markdown(
+        '<div style="font-size:12px; color:#aaa; margin-bottom:6px;">'
+        'Ces formules permettent de calculer le range, le ratio et le rebalance automatiquement.'
+        '</div>', 
+        unsafe_allow_html=True
+    )
 
     st.markdown(r"### Prix courant")
     st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
