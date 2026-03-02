@@ -1804,12 +1804,185 @@ else:
 st.markdown("""
 <style>
 
-# =================== TERMINAL OVERLAY STYLE ===================
+import streamlit as st
+import datetime
+import numpy as np
+import plotly.graph_objects as go
 
+# =================== CONFIG ===================
+PAIRS = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC")]
+STRATEGIES = {
+    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Stable", "contexte": "Marché latéral"},
+    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Défensif", "contexte": "Marché calme"},
+}
+COINGECKO_IDS = {"WETH":"weth", "USDC":"usd-coin", "CBBTC":"cbbtc", "VIRTUAL":"virtual", "AERO":"aero"}
+
+# =================== LAYOUT ===================
+col1, col2 = st.columns(2)
+
+# =================== GAUCHE ===================
+with col1:
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>POOL SETUP</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # --- PAIRE & STRATEGIE ---
+    left, right = st.columns(2)
+    with left:
+        pair_labels = [f"{a}/{b}" for a, b in PAIRS]
+        selected_pair = st.radio("Paire :", pair_labels, index=0)
+    with right:
+        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
+
+    # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
+    if ("last_pair" not in st.session_state or st.session_state["last_pair"] != selected_pair):
+        for k in list(st.session_state.keys()):
+            if k.endswith("_prices_" + str(datetime.date.today())):
+                del st.session_state[k]
+        st.session_state["last_pair"] = selected_pair
+
+    # --- EXTRACTION STRAT ---
+    tokenA, tokenB = selected_pair.split("/")
+    info = STRATEGIES[strategy_choice]
+    ratioA, ratioB = info["ratio"]
+
+    invert_market = st.checkbox("Inversion marché (bull → bear)")
+    if invert_market:
+        ratioA, ratioB = ratioB, ratioA
+
+    # --- CAPITAL ---
+    capital = st.number_input("Capital (USD)", value=1000, step=50)
+
+    # ================== PRIX TOKEN ==================
+    def get_price_usd(token):
+        # Fake function pour exemple
+        return 1.0, True
+    priceA_usd, okA = get_price_usd(tokenA)
+    priceB_usd, okB = get_price_usd(tokenB)
+
+    la, lb = st.columns(2)
+    with la:
+        if not okA:
+            priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
+    with lb:
+        if not okB:
+            priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
+
+    priceB_usd = max(priceB_usd, 1e-7)
+    priceA = priceA_usd / priceB_usd
+
+    # ================== VOLATILITÉ PAIRE ==================
+    def get_market_chart(token_id):
+        return np.random.rand(30)  # fake chart
+    keyA = f"{tokenA}_prices_{datetime.date.today()}"
+    keyB = f"{tokenB}_prices_{datetime.date.today()}"
+    if keyA not in st.session_state:
+        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
+    if keyB not in st.session_state:
+        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
+    pricesA = np.array(st.session_state[keyA])
+    pricesB = np.array(st.session_state[keyB])
+
+    def compute_pair_volatility(pricesA, pricesB):
+        min_len = min(len(pricesA), len(pricesB))
+        pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
+        mask = (pricesA > 1e-8) & (pricesB > 1e-8)
+        pricesA, pricesB = pricesA[mask], pricesB[mask]
+        if len(pricesA) < 2:
+            return 0.0
+        pair_prices = pricesA / pricesB
+        returns = np.diff(pair_prices) / pair_prices[:-1]
+        returns = returns[~np.isnan(returns)]
+        return float(np.std(returns)) if len(returns) > 0 else 0.0
+
+    if selected_pair in ["WETH/USDC", "CBBTC/USDC"]:
+        vol_30d = compute_pair_volatility(pricesA, pricesA)
+    else:
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+
+    vol_sugg = vol_30d * 100
+    suggested_range = 20
+    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=200.0, value=20.0, key="range_pct")
+
+    range_low = priceA * (1 - ratioA * range_pct / 100)
+    range_high = priceA * (1 + ratioB * range_pct / 100)
+    if invert_market:
+        range_low, range_high = range_high, range_low
+    capitalA, capitalB = capital * ratioA, capital * ratioB
+
+# =================== DROITE ===================
+with col2:
+    st.markdown("""
+    <div style="
+        background-color:#FFA700;
+        border-left:6px solid #754C00;
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>PRICE / RANGE</h3>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write(f"Prix actuel : {priceA:.6f} $")
+    st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
+    st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
+
+    # === GAUGE A/B ===
+    fig_bar = go.Figure()
+    fig_bar.add_trace(go.Bar(x=[ratioA*100], y=[tokenA], orientation="h", marker=dict(color="#FF8C00"), showlegend=False))
+    fig_bar.add_trace(go.Bar(x=[ratioB*100], y=[tokenB], orientation="h", marker=dict(color="#6A5ACD"), showlegend=False))
+    fig_bar.update_layout(height=120, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(range=[0,100], tickfont=dict(color="#ffffff", size=10), gridcolor="rgba(255,255,255,0.08)"), yaxis=dict(tickfont=dict(color="#ffffff", size=11)), plot_bgcolor="#173a57", paper_bgcolor="#173a57")
+    st.plotly_chart(fig_bar, use_container_width=True)
+
+    st.markdown(f"""
+    <div style="
+        background: rgba(29,233,182,0.15);
+        border-left: 6px solid #1de9b6;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-top: 8px;
+        color: #e5e7eb;
+        font-size: 13px;
+    ">
+        <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
+        <b>Objectif :</b> {info['objectif']}<br>
+        <b>Contexte :</b> {info['contexte']}
+    </div>
+    """, unsafe_allow_html=True)
+
+# =================== GUIDE ===================
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #1e1f29 0%, #2d2f45 40%, #3c1c5d 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:18px;
+    color:white;
+">
+    <span style="font-size:28px;font-weight:700;">
+        GUIDE - ENGAGER DU CAPITAL SUR LP
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+# Texte guide (idem que ton guide complet)
+guide_html = "<div id='guide'>Ton texte complet ici...</div>"
+st.markdown(guide_html, unsafe_allow_html=True)
+
+# =================== FORMULES ===================
+# CSS overlay terminal
 st.markdown("""
 <style>
-
-/* ===== TERMINAL EXPANDER CONTAINER ===== */
 div[data-testid="stExpander"] {
     background-color: #0f141b !important;
     border: 1px solid #1f2a36 !important;
@@ -1817,61 +1990,16 @@ div[data-testid="stExpander"] {
     box-shadow: 0 0 25px rgba(0,255,136,0.05);
     padding: 8px 12px 12px 12px;
 }
-
-/* ===== HEADER ===== */
-div[data-testid="stExpander"] > div:first-child {
-    background: linear-gradient(135deg, #0b0f14 0%, #0f1c1a 40%, #003d2e 100%);
-    border-radius: 10px;
-    padding: 10px 14px;
+.small-text {
+    font-size: 13px;
+    color: #ccc;
+    margin-bottom: 4px;
 }
-
-div[data-testid="stExpander"] summary {
-    font-family: "Courier New", monospace;
-    font-size: 14px;
-    font-weight: 600;
-    color: #00ff88 !important;
-}
-
-/* ===== TITRES AVANT FORMULES (plus petits) ===== */
-div[data-testid="stExpander"] h3 {
-    color: #00ff88;
-    font-family: "Courier New", monospace;
-    font-size: 13px;        /* texte réduit */
-    font-weight: 500;
-    margin-top: 18px;
-    margin-bottom: 6px;
-    letter-spacing: 0.3px;
-}
-
-/* ===== TEXTE MARKDOWN ===== */
-div[data-testid="stExpander"] p {
-    color: #c9d1d9;
-    font-family: "Courier New", monospace;
-    font-size: 12px;        /* texte réduit */
-}
-
-/* ===== FORMULES (inchangées) ===== */
-div[data-testid="stExpander"] .katex-display {
-    background-color: #0b0f14;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #1f2a36;
-    box-shadow: inset 0 0 8px rgba(0,255,136,0.03);
-}
-
-/* ===== HOVER GLOW ===== */
-div[data-testid="stExpander"]:hover {
-    box-shadow: 0 0 35px rgba(0,255,136,0.08);
-    transition: 0.3s ease;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
-
-# =================== FORMULES ===================
-
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
+    st.markdown('<div class="small-text">Toutes les formules ci-dessous sont utilisées pour calculer le range, ratio et rebalance.</div>', unsafe_allow_html=True)
 
     st.markdown(r"### Prix courant")
     st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
@@ -1920,8 +2048,7 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     {\sqrt{P_\mathrm{rebalance}}
     \cdot
     \sqrt{P_\mathrm{high}}
-    \cdot
-    \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
+    \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
     """)
 
     st.markdown(r"### Nouvelle borne haute Tight (Zero-Swap)")
@@ -1932,8 +2059,7 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     {1 - \mathrm{ratio}_\mathrm{reb}
     \cdot
     \sqrt{P_\mathrm{rebalance}}
-    \cdot
-    \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
+    \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
     """)
 
     st.latex(r"""
