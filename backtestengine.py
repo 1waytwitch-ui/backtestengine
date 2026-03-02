@@ -1824,11 +1824,11 @@ col1, col2 = st.columns(2)
 with col1:
     st.markdown("""
     <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
+        background-color: #FFA700;
+        border-left: 6px solid #754C00;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
     ">
         <h3>POOL SETUP</h3>
     </div>
