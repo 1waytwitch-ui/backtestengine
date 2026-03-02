@@ -1801,125 +1801,12 @@ if P_low < P_rebalance < P_high:
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
 
+# =================== TERMINAL OVERLAY STYLE ===================
+
 st.markdown("""
 <style>
 
-import streamlit as st
-import datetime
-import numpy as np
-import plotly.graph_objects as go
-
-# =================== CONFIG ===================
-PAIRS = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC")]
-STRATEGIES = {
-    "Neutre": {"ratio": (0.5, 0.5), "objectif": "Stable", "contexte": "Marché latéral"},
-    "Coup de pouce": {"ratio": (0.2, 0.8), "objectif": "Défensif", "contexte": "Marché calme"},
-}
-COINGECKO_IDS = {"WETH":"weth", "USDC":"usd-coin", "CBBTC":"cbbtc", "VIRTUAL":"virtual", "AERO":"aero"}
-
-# =================== LAYOUT ===================
-col1, col2 = st.columns(2)
-
-# =================== GAUCHE ===================
-with col1:
-    st.markdown("""
-    <div style='
-        background-color: #FFA700;
-        border-left: 6px solid #754C00;
-        padding: 15px 20px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-    '>
-        <h3>POOL SETUP</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # --- PAIRE & STRATEGIE ---
-    left, right = st.columns(2)
-    with left:
-        pair_labels = [f"{a}/{b}" for a, b in PAIRS]
-        selected_pair = st.radio("Paire :", pair_labels, index=0)
-    with right:
-        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
-
-    # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
-    if ("last_pair" not in st.session_state or st.session_state["last_pair"] != selected_pair):
-        for k in list(st.session_state.keys()):
-            if k.endswith("_prices_" + str(datetime.date.today())):
-                del st.session_state[k]
-        st.session_state["last_pair"] = selected_pair
-
-    # --- EXTRACTION STRAT ---
-    tokenA, tokenB = selected_pair.split("/")
-    info = STRATEGIES[strategy_choice]
-    ratioA, ratioB = info["ratio"]
-
-    invert_market = st.checkbox("Inversion marché (bull → bear)")
-    if invert_market:
-        ratioA, ratioB = ratioB, ratioA
-
-    # --- CAPITAL ---
-    capital = st.number_input("Capital (USD)", value=1000, step=50)
-
-    # ================== PRIX TOKEN ==================
-    def get_price_usd(token):
-        return 1.0, True
-    priceA_usd, okA = get_price_usd(tokenA)
-    priceB_usd, okB = get_price_usd(tokenB)
-
-    la, lb = st.columns(2)
-    with la:
-        if not okA:
-            priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
-    with lb:
-        if not okB:
-            priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
-
-    priceB_usd = max(priceB_usd, 1e-7)
-    priceA = priceA_usd / priceB_usd
-
-# =================== DROITE ===================
-with col2:
-    st.markdown("""
-    <div style='
-        background-color: #FFA700;
-        border-left: 6px solid #754C00;
-        padding: 15px 20px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-    '>
-        <h3>PRICE / RANGE</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-# =================== GUIDE ===================
-st.markdown("""
-<div style='
-    background: linear-gradient(135deg, #1e1f29 0%, #2d2f45 40%, #3c1c5d 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:18px;
-    color:white;
-'>
-    <span style='font-size:28px;font-weight:700;'>
-        GUIDE - ENGAGER DU CAPITAL SUR LP
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
-# Texte guide sécurisé
-guide_html = """
-<div id='guide'>
-<p>Bienvenue ! Ce guide t'explique ...</p>
-<!-- tout ton guide ici -->
-</div>
-"""
-st.markdown(guide_html, unsafe_allow_html=True)
-
-# =================== FORMULES ===================
-st.markdown("""
-<style>
+/* ===== TERMINAL EXPANDER CONTAINER ===== */
 div[data-testid="stExpander"] {
     background-color: #0f141b !important;
     border: 1px solid #1f2a36 !important;
@@ -1927,19 +1814,125 @@ div[data-testid="stExpander"] {
     box-shadow: 0 0 25px rgba(0,255,136,0.05);
     padding: 8px 12px 12px 12px;
 }
-.small-text {
-    font-size: 13px;
-    color: #ccc;
-    margin-bottom: 4px;
+
+/* ===== HEADER ===== */
+div[data-testid="stExpander"] > div:first-child {
+    background: linear-gradient(135deg, #0b0f14 0%, #0f1c1a 40%, #003d2e 100%);
+    border-radius: 10px;
+    padding: 10px 14px;
 }
+
+/* Header text */
+div[data-testid="stExpander"] summary {
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: #00ff88 !important;
+}
+
+/* Internal section titles */
+div[data-testid="stExpander"] h3 {
+    color: #00ff88;
+    font-family: "Courier New", monospace;
+    margin-top: 22px;
+    letter-spacing: 0.5px;
+}
+
+/* Markdown text */
+div[data-testid="stExpander"] p {
+    color: #c9d1d9;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+}
+
+/* Latex display blocks */
+div[data-testid="stExpander"] .katex-display {
+    background-color: #0b0f14;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #1f2a36;
+    box-shadow: inset 0 0 8px rgba(0,255,136,0.03);
+}
+
+/* Subtle hover glow */
+div[data-testid="stExpander"]:hover {
+    box-shadow: 0 0 35px rgba(0,255,136,0.08);
+    transition: 0.3s ease;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
-    st.markdown('<div class="small-text">Toutes les formules ci-dessous sont utilisées pour calculer le range, ratio et rebalance.</div>', unsafe_allow_html=True)
 
-    st.markdown("### Prix courant")
+# =================== FORMULES ===================
+
+with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
+
+    st.markdown(r"### Prix courant")
     st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
 
-    st.markdown("### Racines utilisées")
+    st.markdown(r"### Racines utilisées")
     st.latex(r"\sqrt{P}, \quad \sqrt{P_\mathrm{low}}, \quad \sqrt{P_\mathrm{high}}, \quad \sqrt{P_\mathrm{rebalance}}")
+
+    st.markdown(r"### Ratio initial A/B")
+    st.latex(r"""
+    \mathrm{ratio} =
+    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}
+    {\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}
+    """)
+
+    st.markdown(r"### New Plow (déplacement borne basse)")
+    st.latex(r"\mathrm{New\ Plow} = P_\mathrm{low}^{new}")
+
+    st.markdown(r"### Nouvelle borne haute Zero-Swap")
+    st.latex(r"""
+    \sqrt{\mathrm{New\ P\ High}} =
+    \frac{\sqrt{P}}
+    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot
+    \left(\sqrt{P} - \sqrt{P_\mathrm{low}^{new}}\right)}
+    """)
+
+    st.latex(r"""
+    \mathrm{New\ P\ High}
+    =
+    \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
+    """)
+
+    st.markdown(r"### Resserrement (tighten)")
+    st.latex(r"""
+    \mathrm{New\ Tight\ Plow}
+    =
+    P_\mathrm{rebalance}
+    \cdot
+    \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)
+    """)
+
+    st.markdown(r"### Ratio recalculé au rebalance")
+    st.latex(r"""
+    \mathrm{ratio}_\mathrm{reb}
+    =
+    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P_\mathrm{rebalance}}}
+    {\sqrt{P_\mathrm{rebalance}}
+    \cdot
+    \sqrt{P_\mathrm{high}}
+    \cdot
+    \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
+    """)
+
+    st.markdown(r"### Nouvelle borne haute Tight (Zero-Swap)")
+    st.latex(r"""
+    \sqrt{\mathrm{New\ Tight\ P\ High}}
+    =
+    \frac{\sqrt{P_\mathrm{rebalance}}}
+    {1 - \mathrm{ratio}_\mathrm{reb}
+    \cdot
+    \sqrt{P_\mathrm{rebalance}}
+    \cdot
+    \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
+    """)
+
+    st.latex(r"""
+    \mathrm{New\ Tight\ P\ High}
+    =
+    \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
+    """)
