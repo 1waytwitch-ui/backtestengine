@@ -456,16 +456,7 @@ col1, col2 = st.columns([1.3, 1])
 # ============================== GAUCHE ==============================
 with col1:
 
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
-        <h3>POOL SETUP</h3>
-    """, unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Pool Setup</div>', unsafe_allow_html=True)
 
     # --- PAIRE & STRATEGIE ---
     left, right = st.columns(2)
@@ -494,8 +485,6 @@ with col1:
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
 
-    
-
     # --- CAPITAL ---
     capital = st.number_input("Capital (USD)", value=1000, step=50)
 
@@ -517,14 +506,15 @@ with col1:
     # ================== VOLATILITÉ PAIRE ==================
     keyA = f"{tokenA}_prices_{datetime.date.today()}"
     keyB = f"{tokenB}_prices_{datetime.date.today()}"
+
     if keyA not in st.session_state:
         st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
     if keyB not in st.session_state:
         st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
+
     pricesA = np.array(st.session_state[keyA])
     pricesB = np.array(st.session_state[keyB])
 
-    # --- Fonction de calcul de volatilité ---
     def compute_pair_volatility(pricesA, pricesB):
         min_len = min(len(pricesA), len(pricesB))
         pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
@@ -537,7 +527,6 @@ with col1:
         returns = returns[~np.isnan(returns)]
         return float(np.std(returns)) if len(returns) > 0 else 0.0
 
-    # --- Calcul de la volatilité selon la paire ---
     if selected_pair == "WETH/USDC":
         vol_30d = compute_volatility(pricesA)
     elif selected_pair == "CBBTC/USDC":
@@ -551,7 +540,6 @@ with col1:
     else:
         vol_30d = compute_pair_volatility(pricesA, pricesB)
 
-    # --- Fallback si vol = 0 ---
     if vol_30d == 0:
         if selected_pair == "CBBTC/USDC":
             vol_30d = 0.12
@@ -560,8 +548,8 @@ with col1:
         elif selected_pair == "AERO/WETH":
             vol_30d = 0.45
 
-    # ================== SUGGESTION AUTOMATIQUE ==================
-    vol_sugg = vol_30d * 100  # %
+    # ================== SUGGESTION ==================
+    vol_sugg = vol_30d * 100
 
     if vol_sugg < 2:
         suggested_range = 3
@@ -574,7 +562,6 @@ with col1:
     else:
         suggested_range = 20
 
-    # --- MULTIPLICATEURS SELON PAIRE ---
     if selected_pair == "CBBTC/USDC":
         suggested_range *= 1.3
         vol_sugg_display = vol_sugg
@@ -591,7 +578,6 @@ with col1:
         suggested_range *= 3
         vol_sugg_display = vol_sugg * 3
 
-    # --- INPUT RANGE MANUEL ---
     range_pct = st.number_input(
         "Range (%)",
         min_value=1.0,
@@ -600,9 +586,6 @@ with col1:
         key="range_pct"
     )
 
-  
-
-    # ================= CALCUL FINAL RANGE ===============
     range_low = priceA * (1 - ratioA * range_pct / 100)
     range_high = priceA * (1 + ratioB * range_pct / 100)
 
@@ -615,22 +598,34 @@ with col1:
 # ============================== DROITE ==============================
 with col2:
 
-    # ---- Price/range ----
-    st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
-        <h3>PRICE / RANGE</h3>
+    st.markdown('<div class="section-title">Price / Range</div>', unsafe_allow_html=True)
+
+    r1, r2 = st.columns(2)
+
+    with r1:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Prix actuel</div>
+            <div class="result-value">{priceA:.6f} $</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with r2:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Range</div>
+            <div class="result-value">{range_low:.6f} → {range_high:.6f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Répartition capital</div>
+        <div class="result-value">
+            {capitalA:.2f} USD {tokenA}  |  {capitalB:.2f} USD {tokenB}
+        </div>
     </div>
     """, unsafe_allow_html=True)
-
-    st.write(f"Prix actuel : {priceA:.6f} $")
-    st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
-    st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
     # === GAUGE A/B ===
     fig_bar = go.Figure()
@@ -640,7 +635,6 @@ with col2:
         y=[tokenA],
         orientation="h",
         marker=dict(color="#FF8C00"),
-        name=tokenA,
         showlegend=False
     ))
 
@@ -649,52 +643,30 @@ with col2:
         y=[tokenB],
         orientation="h",
         marker=dict(color="#6A5ACD"),
-        name=tokenB,
         showlegend=False
     ))
 
     fig_bar.update_layout(
         height=120,
         margin=dict(l=10, r=10, t=10, b=10),
-
-        xaxis=dict(
-            range=[0, 100],
-            tickfont=dict(color="#ffffff", size=10),
-            title=None,
-            gridcolor="rgba(255,255,255,0.08)"
-        ),
-
-        yaxis=dict(
-            tickfont=dict(color="#ffffff", size=11)
-        ),
-
-        plot_bgcolor="#173a57",
-        paper_bgcolor="#173a57",
-        font=dict(color="#ffffff", size=11)
+        xaxis=dict(range=[0, 100]),
+        plot_bgcolor="#0f141b",
+        paper_bgcolor="#0f141b",
+        font=dict(color="#e6edf3", size=11)
     )
 
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # --- CADRE RECAP ---
-    st.markdown(
-        f"""
-        <div style="
-            background: rgba(29,233,182,0.15);
-            border-left: 6px solid #1de9b6;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-top: 8px;
-            color: #e5e7eb;
-            font-size: 13px;
-        ">
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Résumé stratégie</div>
+        <div style="font-size:13px;opacity:0.8;margin-top:6px;">
             <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
             <b>Objectif :</b> {info['objectif']}<br>
             <b>Contexte :</b> {info['contexte']}
         </div>
-        """,
-        unsafe_allow_html=True
-    )
-
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # =========================== AUTOMATION ===========================
