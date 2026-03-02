@@ -1801,8 +1801,6 @@ if P_low < P_rebalance < P_high:
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
 
-# =================== TERMINAL OVERLAY STYLE ===================
-
 st.markdown("""
 <style>
 
@@ -1822,7 +1820,6 @@ div[data-testid="stExpander"] > div:first-child {
     padding: 10px 14px;
 }
 
-/* Header text */
 div[data-testid="stExpander"] summary {
     font-family: "Courier New", monospace;
     font-size: 14px;
@@ -1830,22 +1827,25 @@ div[data-testid="stExpander"] summary {
     color: #00ff88 !important;
 }
 
-/* Internal section titles */
+/* 🔹 TITRES AVANT FORMULES (plus petits) */
 div[data-testid="stExpander"] h3 {
     color: #00ff88;
     font-family: "Courier New", monospace;
-    margin-top: 22px;
-    letter-spacing: 0.5px;
+    font-size: 13px;     /* ↓ plus petit */
+    font-weight: 500;
+    margin-top: 18px;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
 }
 
-/* Markdown text */
+/* 🔹 Texte markdown éventuel */
 div[data-testid="stExpander"] p {
     color: #c9d1d9;
     font-family: "Courier New", monospace;
-    font-size: 13px;
+    font-size: 12px;     /* ↓ plus petit */
 }
 
-/* Latex display blocks */
+/* ===== FORMULES (inchangées, bonne taille) ===== */
 div[data-testid="stExpander"] .katex-display {
     background-color: #0b0f14;
     padding: 12px;
@@ -1854,7 +1854,7 @@ div[data-testid="stExpander"] .katex-display {
     box-shadow: inset 0 0 8px rgba(0,255,136,0.03);
 }
 
-/* Subtle hover glow */
+/* Hover glow */
 div[data-testid="stExpander"]:hover {
     box-shadow: 0 0 35px rgba(0,255,136,0.08);
     transition: 0.3s ease;
@@ -1862,77 +1862,3 @@ div[data-testid="stExpander"]:hover {
 
 </style>
 """, unsafe_allow_html=True)
-
-
-# =================== FORMULES ===================
-
-with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
-
-    st.markdown(r"### Prix courant")
-    st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
-
-    st.markdown(r"### Racines utilisées")
-    st.latex(r"\sqrt{P}, \quad \sqrt{P_\mathrm{low}}, \quad \sqrt{P_\mathrm{high}}, \quad \sqrt{P_\mathrm{rebalance}}")
-
-    st.markdown(r"### Ratio initial A/B")
-    st.latex(r"""
-    \mathrm{ratio} =
-    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}
-    {\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}
-    """)
-
-    st.markdown(r"### New Plow (déplacement borne basse)")
-    st.latex(r"\mathrm{New\ Plow} = P_\mathrm{low}^{new}")
-
-    st.markdown(r"### Nouvelle borne haute Zero-Swap")
-    st.latex(r"""
-    \sqrt{\mathrm{New\ P\ High}} =
-    \frac{\sqrt{P}}
-    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot
-    \left(\sqrt{P} - \sqrt{P_\mathrm{low}^{new}}\right)}
-    """)
-
-    st.latex(r"""
-    \mathrm{New\ P\ High}
-    =
-    \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
-    """)
-
-    st.markdown(r"### Resserrement (tighten)")
-    st.latex(r"""
-    \mathrm{New\ Tight\ Plow}
-    =
-    P_\mathrm{rebalance}
-    \cdot
-    \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)
-    """)
-
-    st.markdown(r"### Ratio recalculé au rebalance")
-    st.latex(r"""
-    \mathrm{ratio}_\mathrm{reb}
-    =
-    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P_\mathrm{rebalance}}}
-    {\sqrt{P_\mathrm{rebalance}}
-    \cdot
-    \sqrt{P_\mathrm{high}}
-    \cdot
-    \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
-    """)
-
-    st.markdown(r"### Nouvelle borne haute Tight (Zero-Swap)")
-    st.latex(r"""
-    \sqrt{\mathrm{New\ Tight\ P\ High}}
-    =
-    \frac{\sqrt{P_\mathrm{rebalance}}}
-    {1 - \mathrm{ratio}_\mathrm{reb}
-    \cdot
-    \sqrt{P_\mathrm{rebalance}}
-    \cdot
-    \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
-    """)
-
-    st.latex(r"""
-    \mathrm{New\ Tight\ P\ High}
-    =
-    \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
-    """)
