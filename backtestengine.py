@@ -182,7 +182,7 @@ def get_price_usd(token):
 st.markdown("""
 <style>
 .deFi-banner {
-    background: linear-gradient(135deg, #0b0f14 0%, #0f1c1a 40%, #003d2e 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding: 25px 30px;
     border-radius: 18px;
     display: flex;
@@ -914,7 +914,7 @@ label { font-size: 12px !important; opacity: 0.7; }
 # =================== HEADER ===================
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding:20px;
     border-radius:12px;
     margin-top:20px;
@@ -1073,7 +1073,7 @@ if st.button("Calculer ATR et RANGE"):
 # --- GUIDE COMPLET ---
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding:20px;
     border-radius:12px;
     margin-top:20px;
@@ -1286,7 +1286,7 @@ st.markdown(guide_html, unsafe_allow_html=True)
 # ======================= video IL =======================
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding:20px;
     border-radius:12px;
     margin-top:20px;
@@ -1310,7 +1310,7 @@ import streamlit.components.v1 as components
 
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding:20px;
     border-radius:12px;
     margin-top:20px;
@@ -1342,7 +1342,7 @@ st.set_page_config(layout="wide")
 # --- Header ---
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding:20px;
     border-radius:12px;
     margin-top:20px;
@@ -1514,15 +1514,12 @@ for i, card in enumerate(cards):
 
 # ======================= Less IL =======================
 
-import streamlit as st
-import math
-
 st.set_page_config(layout="wide")
 
 # --- Header ---
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding:20px;
     border-radius:12px;
     margin-top:20px;
