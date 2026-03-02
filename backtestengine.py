@@ -1604,7 +1604,9 @@ components.iframe(
     scrolling=True
 )
 
-# ======================= BE LP =======================
+# ======================= BE LP (Terminal Style) =======================
+
+import streamlit as st
 
 st.set_page_config(layout="wide")
 
@@ -1623,126 +1625,142 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# --- Type de paire ---
+# ================= TERMINAL STYLE =================
+
+st.markdown("""
+<style>
+
+/* ===== GLOBAL TERMINAL THEME ===== */
+[data-testid="stAppViewContainer"] {
+    background-color: #0b0f14;
+    color: #e6edf3;
+    font-family: "Courier New", monospace;
+}
+
+/* ===== SECTION TITLES ===== */
+.section-title {
+    border-left: 4px solid #00ff88;
+    padding: 8px 14px;
+    margin-top: 24px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    background: rgba(0,255,136,0.05);
+    letter-spacing: 1px;
+}
+
+/* ===== INPUTS ===== */
+div[data-baseweb="input"] input {
+    background-color: #11161d !important;
+    color: #00ff88 !important;
+    border: 1px solid #1f2a36 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    font-size: 13px;
+}
+
+label {
+    font-size: 12px !important;
+    opacity: 0.7;
+}
+
+/* ===== RESULT CARDS ===== */
+.result-card {
+    background: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: left;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
+    margin-top: 14px;
+}
+
+.result-card-wide {
+    background: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 14px;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
+}
+
+.result-title {
+    font-size: 11px;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.result-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #00ff88;
+    margin-top: 6px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =================== CONFIGURATION ===================
+
+st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe_allow_html=True)
+
 pair_type = st.selectbox(
     "Type de paire",
     ["Volatile / Stable", "Double Volatile"]
 )
 
-st.divider()
-
-# --- Colonnes ---
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.subheader("METRICS")
-    capital = st.number_input(
-        "Capital engagé ($)",
-        value=6400.0,
-        step=0.01,
-        format="%.2f"
-    )
-    fees = st.number_input(
-        "Fees accumulés ($)",
-        value=140.0,
-        step=0.01,
-        format="%.2f"
-    )
+    capital = st.number_input("Capital engagé ($)", value=6400.0, step=0.01, format="%.2f")
+    fees = st.number_input("Fees accumulés ($)", value=140.0, step=0.01, format="%.2f")
 
 with col2:
     st.subheader("Token A")
-    qty_a = st.number_input(
-        "Quantité",
-        value=1.5,
-        step=0.0001,
-        format="%.6f"
-    )
-    price_a = st.number_input(
-        "Prix actuel ($)",
-        value=2950.0,
-        step=0.01,
-        format="%.2f"
-    )
+    qty_a = st.number_input("Quantité", value=1.5, step=0.0001, format="%.6f")
+    price_a = st.number_input("Prix actuel ($)", value=2950.0, step=0.01, format="%.2f")
 
 with col3:
     if pair_type == "Volatile / Stable":
         st.subheader("Token B (Stable)")
-        stable_amount = st.number_input(
-            "Montant ($)",
-            value=1500.0,
-            step=0.01,
-            format="%.2f"
-        )
-
+        stable_amount = st.number_input("Montant ($)", value=1500.0, step=0.01, format="%.2f")
         value = qty_a * price_a + stable_amount
         effective_b = stable_amount + fees
-
     else:
         st.subheader("Token B (Volatile)")
-        qty_b = st.number_input(
-            "Quantité",
-            value=0.5,
-            step=0.0001,
-            format="%.6f"
-        )
-        price_b = st.number_input(
-            "Prix actuel ($)",
-            value=2000.0,
-            step=0.01,
-            format="%.2f"
-        )
-
+        qty_b = st.number_input("Quantité", value=0.5, step=0.0001, format="%.6f")
+        price_b = st.number_input("Prix actuel ($)", value=2000.0, step=0.01, format="%.2f")
         value = qty_a * price_a + qty_b * price_b
         effective_b = qty_b * price_b + fees
 
-st.divider()
-
-# ======================= CALCULS =======================
+# =================== CALCULS ===================
 
 pnl = value - capital
 pnl_to_be = capital - value
 pnl_pct = (value / capital - 1) * 100
-
 break_even_a = (capital - effective_b) / qty_a
 
 break_even_b = None
 if pair_type == "Double Volatile":
     break_even_b = (capital - (qty_a * price_a) - fees) / qty_b
 
+# =================== RESULTATS ===================
+
 bg_color = "#FF6B6B" if pnl < 0 else "#2EF2A2"
 
-# ======================= OVERLAY =======================
-
-if pair_type == "Double Volatile":
-    overlay_html = f"""
-    <div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
-        <h3>Résultat Break-Even LP</h3>
-        <p style="font-size:18px;">
-            Valeur actuelle : <b>{value:.2f} $</b><br><br>
-            P&L actuelle : <b>{pnl:.2f} $</b> ({pnl_pct:.2f} %)<br>
-            P&L restante pour BE : <b>{pnl_to_be:.2f} $</b><br><br>
-            Break-even Token A : <b>{break_even_a:.2f} $</b><br>
-            Break-even Token B : <b>{break_even_b:.2f} $</b>
-        </p>
-        <p style="font-size:13px;margin-top:15px;">
-            Break-even conditionnel : dépend du prix de l’autre actif
-        </p>
-    </div>
-    """
-else:
-    overlay_html = f"""
-    <div style="background:{bg_color};padding:40px;border-radius:18px;text-align:center;margin-top:30px;color:#000;">
-        <h3>Résultat Break-Even LP</h3>
-        <p style="font-size:18px;">
-            Valeur actuelle : <b>{value:.2f} $</b>&nbsp;&nbsp;|&nbsp;&nbsp;
-            P&L : <b>{pnl:.2f} $</b>&nbsp;&nbsp;({pnl_pct:.2f} %)&nbsp;&nbsp;|&nbsp;&nbsp;
-            Break-even Token A : <b>{break_even_a:.2f} $</b>
-        </p>
-        <p style="font-size:13px;margin-top:15px;">
-            Break-even valide tant que la position reste dans le range
-        </p>
-    </div>
-    """
+overlay_html = f"""
+<div class="result-card-wide" style="background:{bg_color}; color:#000; text-align:center;">
+    <h3>Résultat Break-Even LP</h3>
+    <p style="font-size:18px;">
+        Valeur actuelle : <b>{value:.2f} $</b><br>
+        P&L : <b>{pnl:.2f} $</b> ({pnl_pct:.2f} %)<br>
+        Break-even Token A : <b>{break_even_a:.2f} $</b>
+        {'<br>Break-even Token B : <b>{:.2f} $</b>'.format(break_even_b) if pair_type=='Double Volatile' else ''}
+    </p>
+</div>
+"""
 
 st.markdown(overlay_html, unsafe_allow_html=True)
 
