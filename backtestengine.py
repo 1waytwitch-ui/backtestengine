@@ -1749,7 +1749,6 @@ st.markdown(overlay_html, unsafe_allow_html=True)
 
 # ======================= Less IL =======================
 
-
 st.set_page_config(layout="wide")
 
 # --- Header ---
@@ -1774,15 +1773,31 @@ st.markdown("### Entrées de la paire")
 tokenA = st.text_input("Token A", "WETH")
 tokenB = st.text_input("Token B", "USDC")
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
+
 with col1:
-    P_current = st.number_input("Prix actuel (P)", value=1850.0, step=1.0)
+    price_tokenA = st.number_input(f"Prix {tokenA} ($)", value=1850.0, step=1.0)
+
 with col2:
-    P_low = st.number_input("Borne basse initiale (Plow)", value=1800.0, step=1.0)
+    price_tokenB = st.number_input(f"Prix {tokenB} ($)", value=1.0, step=0.01)
+
 with col3:
-    P_high = st.number_input("Borne haute initiale (Phigh)", value=2100.0, step=1.0)
+    P_low = st.number_input("Borne basse initiale (Plow)", value=1800.0, step=1.0)
+
 with col4:
+    P_high = st.number_input("Borne haute initiale (Phigh)", value=2100.0, step=1.0)
+
+with col5:
     new_P_low = st.number_input("Nouvelle borne basse (New Plow)", value=1600.0, step=1.0)
+
+# --- Prix relatif utilisé dans les formules ---
+if price_tokenB == 0:
+    st.error("Le prix du token B ne peut pas être 0.")
+    st.stop()
+
+P_current = price_tokenA / price_tokenB
+
+st.write(f"Prix relatif {tokenA}/{tokenB} : {P_current:.6f}")
 
 # --- VALIDATIONS ---
 if not (P_low < P_current < P_high):
@@ -1821,17 +1836,16 @@ new_P_high = sqrtNewPh ** 2
 st.subheader("Résultats Zero Swap Rebalance")
 
 st.write(f"Ratio actuel {tokenA}/{tokenB} : {ratio:.10f}")
-st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f} $")
-st.write(f"Prix actuel : {P_current} $")
+st.write(f"Nouvelle borne haute calculée : {new_P_high:.2f}")
+st.write(f"Prix actuel : {P_current:.6f}")
 
 st.write(
-    f"Borne basse initiale : {P_low} $  →  Nouvelle borne basse : {new_P_low} $"
+    f"Borne basse initiale : {P_low}  →  Nouvelle borne basse : {new_P_low}"
 )
 
 st.write(
-    f"Borne haute initiale : {P_high} $  →  Nouvelle borne haute : {new_P_high:.2f} $"
+    f"Borne haute initiale : {P_high}  →  Nouvelle borne haute : {new_P_high:.2f}"
 )
-
 
 st.subheader("Resserrement du range (si retour dans range initial)")
 
@@ -1872,9 +1886,9 @@ if P_low < P_rebalance < P_high:
         new_tight_P_high = sqrtNewTightPh ** 2
 
         st.success("Nouveau range resserré (Zero Swap)")
-        st.write(f"Prix utilisé : {P_rebalance:.2f} $")
-        st.write(f"Borne basse : {new_tight_P_low:.2f} $")
-        st.write(f"Borne haute : {new_tight_P_high:.2f} $")
+        st.write(f"Prix utilisé : {P_rebalance:.6f}")
+        st.write(f"Borne basse : {new_tight_P_low:.2f}")
+        st.write(f"Borne haute : {new_tight_P_high:.2f}")
 
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
