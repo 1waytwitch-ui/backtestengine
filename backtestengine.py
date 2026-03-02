@@ -182,7 +182,7 @@ def get_price_usd(token):
 st.markdown("""
 <style>
 .deFi-banner {
-    background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+    background: linear-gradient(135deg, #0b0f14 0%, #0f1c1a 40%, #003d2e 100%);
     padding: 25px 30px;
     border-radius: 18px;
     display: flex;
