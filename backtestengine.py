@@ -358,7 +358,7 @@ st.markdown("<div class='card'>", unsafe_allow_html=True)
 
 # Titre coloré avec HTML corrigé
 st.markdown("""
-<div style="background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
+<div style="background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
             padding:20px; border-radius:12px; margin-top:20px;">
     <span style='color:white; font-size:28px; font-weight:700;'>Checklist avant utilisation de l'outil</span>
 </div>
