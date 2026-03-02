@@ -1070,269 +1070,6 @@ if st.button("Calculer ATR et RANGE"):
     """, unsafe_allow_html=True)
 
 
-# --- GUIDE COMPLET ---
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:18px;
-">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        GUIDE - ENGAGER DU CAPITAL SUR LP
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
-
-guide_html = """
-<style>
-    /* ===== GUIDE TERMINAL THEME ===== */
-    #guide {
-        font-family: "Courier New", monospace;
-        color: #e6edf3;
-        margin-top: 40px;
-        padding: 24px;
-        background-color: #0f141b;
-        border: 1px solid #1f2a36;
-        border-radius: 12px;
-        box-shadow: 0 0 18px rgba(0,255,136,0.05);
-    }
-
-    #guide h2, #guide h3, #guide h4 {
-        color: #00ff88;
-        margin-top: 28px;
-        margin-bottom: 10px;
-        letter-spacing: 0.5px;
-    }
-
-    #guide p, #guide li {
-        line-height: 1.6em;
-        font-size: 14px;
-        color: #c9d1d9;
-    }
-
-    #guide ul {
-        margin-left: 20px;
-    }
-
-    #guide ul li {
-        margin-bottom: 6px;
-    }
-
-    /* ===== SOMMAIRE ===== */
-    #sommaire {
-        background-color: rgba(0,255,136,0.05);
-        border: 1px solid #1f2a36;
-        padding: 18px;
-        border-radius: 10px;
-        margin-bottom: 30px;
-    }
-
-    #sommaire h4 {
-        margin-top: 0;
-        font-weight: 700;
-        color: #00ff88;
-    }
-
-    #sommaire ul {
-        list-style-type: none;
-        padding-left: 10px;
-    }
-
-    #sommaire ul li {
-        margin-bottom: 6px;
-    }
-
-    #sommaire ul li a {
-        text-decoration: none;
-        color: #00ff88;
-        font-size: 13px;
-        opacity: 0.9;
-    }
-
-    #sommaire ul li a:hover {
-        text-decoration: underline;
-        opacity: 1;
-    }
-
-    /* ===== EMPHASE ===== */
-    #guide b, #guide strong {
-        color: #ffffff;
-    }
-
-    #guide em {
-        color: #9cdcfe;
-    }
-</style>
-
-<div id="guide">
-
-<!-- Texte d'introduction -->
-<p>Bienvenue !<br>
-Ce guide t’explique <b>pas à pas</b> comment comprendre et utiliser les stratégies de LP (Liquidity Providing) dans un AMM (automated Market Maker) concentré comme Uniswap, Aerodrome, Pancake...<br><br>
-Krystal, Vfat, aperture... <b>sont uniquement des agrégateurs de positions</b> !</p>
-
-<div id="sommaire">
-<h4>Sommaire</h4>
-<ul>
-    <li><a href="#cest-quoi-fournir-de-la-liquidite">C’est quoi fournir de la liquidité ?</a></li>
-    <li><a href="#concepts-fondamentaux">Concepts fondamentaux</a></li>
-    <li><a href="#strategies-possibles">Stratégies possibles</a></li>
-    <li><a href="#choisir-un-range">Choisir un range</a></li>
-    <li><a href="#exemple-simple-weth-usdc">Exemple simple WETH/USDC</a></li>
-    <li><a href="#erreurs-de-debutant">Erreurs de débutant</a></li>
-    <li><a href="#rebalancer-la-position">Rebalancer la position</a></li>
-    <li><a href="#courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</a></li>
-    <li><a href="#strategie-lp-rentable">Quand une stratégie LP est rentable ?</a></li>
-    <li><a href="#astuces-et-autonomie">Astuces et autonomie des choix</a></li>
-    <li><a href="#conclusion">Conclusion</a></li>
-</ul>
-</div>
-
-<h3 id="cest-quoi-fournir-de-la-liquidite">C’est quoi fournir de la liquidité ?</h3>
-<p>Quand tu fournis de la liquidité à une pool (ex : WETH/USDC), tu apportes <b>deux tokens en même temps</b>. En échange, tu deviens <b>market maker</b> et touches des <b>frais de trading</b>.<br>
-Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range → tu deviens <b>full Token A</b> ou <b>full Token B</b>. Ta position s’ajuste automatiquement : <b>quand le prix baisse, tu accumules le token le plus volatile</b> ; à l’inverse, <b>quand le prix monte, tu revends progressivement ce token volatile.</b></p>
-
-<h3 id="concepts-fondamentaux">Concepts fondamentaux</h3>
-<ul>
-    <li><b>Ratio</b> : proportion entre Token A (volatile) et Token B (stable ou moins volatile). Exemple : 50/50 = neutre, 20/80 = défensif, 95/5 = agressif.</li>
-    <li><b>Range</b> : zone de prix où ton capital est actif. Range serré = plus de fees mais plus de rebalances et IL possible.</li>
-    <li><b>Impermanent Loss (IL)</b> : perte que tu aurais évitée si tu avais conservé tes tokens. Plus le prix s’éloigne, plus l’IL augmente.</li>
-</ul>
-
-<h3 id="strategies-possibles">Stratégies possibles</h3>
-<ul>
-    <li><b>Neutre (50/50)</b> : marché incertain, stable et simple, risque IL si gros mouvement</li>
-    <li><b>Coup de pouce (20/80)</b> : marché calme, protège du token volatil, défensif</li>
-    <li><b>Mini-doux (10/90)</b> : anticipation de tendance, minimise IL, très défensif</li>
-    <li><b>Side-line up (100/0)</b> : bas de marché, accumulation token volatile, agressif</li>
-    <li><b>Side-line down (0/100)</b> : marché haussier, prise de profit naturel, agressif vers la vente</li>
-</ul>
-
-<h3 id="choisir-un-range">Choisir un range</h3>
-<p>
-Le choix dépend de ton objectif, de la volatilité et du marché : haussier → profits A→B, baissier → accumulation B→A, latéral → neutre ou coup de pouce.<br>
-Objectifs : saisir des fees → petit range ; limiter l’IL → grand range sans rebalance ou mini-doux ; DCA → ratio 100/0 ou 0/100.<br><br>
-Pour affiner ton range, utilise l’indicateur <strong>ATR (Average True Range)</strong> disponible sur TradingView dans la catégorie <em>Technical</em>.<br>
-L’ATR représente de manière simplifiée <strong>l’écart-type du prix d’un actif exprimé en dollars</strong> : il mesure l’amplitude moyenne des mouvements de prix sur une période donnée.<br><br>
-Sur l’outil, règle l’ATR en <strong>daily</strong> avec une période <strong>ATR 14</strong>, puis applique un <strong>multiplicateur</strong> afin de définir la largeur de ton range autour du prix actuel.<br>
-Par exemple : <strong>ATR × 3</strong> correspond généralement à une tenue de range d’environ <strong>1 semaine à 10 jours</strong>, selon la volatilité du marché.<br><br>
-Une fois le range défini, vérifie l’ATR affiché en <strong>weekly</strong> et compare-le à ton choix initial en calculant :
-<strong>borne haute − borne basse</strong>.<br>
-Ajuste ensuite ton range en confrontant ces valeurs avec les données de l'ATR14 en <strong>WEEKLY</strong> ainsi que <strong>volatilité sur 7 jours et 30 jours</strong>, afin de sélectionner le compromis le plus adapté à la tendence entre fréquence de rebalance, capture de fees et exposition au risque.
-</p>
-
-<h3 id="exemple-simple-weth-usdc">Exemple simple WETH/USDC</h3>
-<p>Capital = 1000 USD, Prix ETH = 3000, Stratégie = 50/50, Range ±20%.</p>
-<ul>
-    <li>Répartition : 500 USD ETH, 500 USD USDC</li>
-    <li>Range bas ≈ 2700, Range haut ≈ 3300</li>
-    <li>Si prix = 3300 → plus riche en USDC, fees générés</li>
-    <li>Si prix = 2700 → plus d’ETH, fees générés</li>
-</ul>
-
-<h3 id="erreurs-de-debutant">Erreurs de débutant</h3>
-<ul>
-    <li>Range trop serré : rebalances fréquents, coûts d’opportunité, IL amplifiée</li>
-    <li>Oublier que l’IL existe : fees ne compensent pas toujours IL</li>
-    <li>Choisir un range sans regarder la volatilité : volatilité 7j et 30j clé, pas de stratégie “set and forget”</li>
-</ul>
-
-<h3 id="rebalancer-la-position">Rebalancer la position</h3>
-<p>Quand le prix sort du range, tu deviens full A ou full B, tu ne gagnes plus de fees. Ta LP = simple “bag” de tokens, il faut repositionner la liquidité.<br>
-L'app calcule combien de fois le prix est sorti dans le passé et en simulation future, et ajuste automatiquement le range.</p>
-
-<h4>Rappel sur l’automation et les rebalances</h4>
-<ul>
-  <li>Les triggers doivent toujours se baser sur le <strong>RATIO</strong>, jamais sur % ou $. Ils vont de 0 à 100 et déclenchent les rebalances en bout de range. Par exemple, pour une stratégie 20/80, placez vos triggers proches de 20/80 pour rebalancer rapidement selon le nouveau prix d’entrée.</li>
-  <li>Lors de l’utilisation des <strong>futures ranges</strong> (option avancée), réglez-les correctement en %. Un trigger placé sur le prix le plus haut dans un marché haussier conservera surtout l’USDC. Si inversé, vous risquez de valider des pertes importantes (~80%).</li>
-  <li>Si votre range actuel est très large ou trop court comparé aux futures ranges, vous aurez un décalage de stratégie, ce qui peut produire des performances en dents de scie.</li>
-  <li><strong>Conseil pratique :</strong> Pour toute question sur vos réglages, partagez uniquement des captures claires de l’édition de l’automation et de la stratégie, en masquant les données sensibles (capital, wallets).</li>
-  <li><strong>Attention sur vos décisions :</strong> Avant d’acheter du token A (volatile) à un prix supérieur au point de rebalance, demandez-vous si vous êtes prêt à vendre pour limiter la perte. Inversement, si vous êtes exposé en USDC ou token B (moins volatile), acheter beaucoup du token volatil plus cher peut réduire votre capital et amplifier vos pertes à la baisse.</li>
-</ul>
-
-<h3 id="courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</h3>
-<p>Le graphe montre : IL(%) en fonction du prix actuel, ligne pour prix de dépôt, ligne pour prix actuel, range bas/haut.<br>
-Interprétation : minimum de la courbe = prix de dépôt ; plus on s’éloigne, plus IL augmente ; IL=0 seulement si prix reste identique.</p>
-
-<h3 id="strategie-lp-rentable">Quand une stratégie LP est rentable ?</h3>
-<ul>
-    <li>Frais gagnés > impermanent loss</li>
-    <li>Prix ne sort pas trop vite du range</li>
-    <li>Stratégie cohérente avec l’objectif (DCA, prise de profit, accumulation…)</li>
-</ul>
-
-<h3 id="astuces-et-autonomie">Astuces et autonomie des choix</h3>
-<ul>
-    <li>Commencer avec un faible capital et un range large</li>
-    <li>Utiliser des stratégies asymétriques si marché directionnel</li>
-    <li>Vérifier la volatilité 7j et 30j</li>
-    <li>Ne pas déposer tout le capital d’un coup</li>
-    <li>Surveiller la courbe IL après dépôt</li>
-    <li>Utiliser le dex pour déposer la liquidité (expert)</li>
-</ul>
-
-<h3 id="conclusion">Conclusion</h3>
-<p>Ce guide t’a donné les concepts fondamentaux, des explications simples des stratégies, comment interpréter ratios, range, volatilité, lire l’IL et éviter les erreurs classiques.<br>
-Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et gérer des pools concentrés avec une vision globale de la mécanique.</p>
-
-</div>
-"""
-
-st.markdown(guide_html, unsafe_allow_html=True)
-
-# ======================= video IL =======================
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
-">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        ATELIER IMPERMANENT LOSS
-    </span>
-</div>
-""", unsafe_allow_html=True)
-st.set_page_config(layout="wide")
-
-# colonne unique large
-col, = st.columns(1)
-
-with col:
-    st.video("https://www.youtube.com/watch?v=uQPeyXsQNrs")
-
-# ======================= outil atelier IL =======================
-import streamlit.components.v1 as components
-
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
-">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        CALCULATRICE IMPERMANENT LOSS
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
-st.set_page_config(layout="wide")
-
-desmos_url = "https://www.desmos.com/calculator/i7mnoyyqdb?lang=fr"
-
-components.iframe(
-    src=desmos_url,
-    width="100%",
-    height=700,
-    scrolling=True
-)
-
 # ======================= BE LP (Terminal Style) =======================
 
 import streamlit as st
@@ -1943,3 +1680,267 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     =
     \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
     """)
+
+
+# --- GUIDE COMPLET ---
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:18px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        GUIDE - ENGAGER DU CAPITAL SUR LP
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+
+guide_html = """
+<style>
+    /* ===== GUIDE TERMINAL THEME ===== */
+    #guide {
+        font-family: "Courier New", monospace;
+        color: #e6edf3;
+        margin-top: 40px;
+        padding: 24px;
+        background-color: #0f141b;
+        border: 1px solid #1f2a36;
+        border-radius: 12px;
+        box-shadow: 0 0 18px rgba(0,255,136,0.05);
+    }
+
+    #guide h2, #guide h3, #guide h4 {
+        color: #00ff88;
+        margin-top: 28px;
+        margin-bottom: 10px;
+        letter-spacing: 0.5px;
+    }
+
+    #guide p, #guide li {
+        line-height: 1.6em;
+        font-size: 14px;
+        color: #c9d1d9;
+    }
+
+    #guide ul {
+        margin-left: 20px;
+    }
+
+    #guide ul li {
+        margin-bottom: 6px;
+    }
+
+    /* ===== SOMMAIRE ===== */
+    #sommaire {
+        background-color: rgba(0,255,136,0.05);
+        border: 1px solid #1f2a36;
+        padding: 18px;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+
+    #sommaire h4 {
+        margin-top: 0;
+        font-weight: 700;
+        color: #00ff88;
+    }
+
+    #sommaire ul {
+        list-style-type: none;
+        padding-left: 10px;
+    }
+
+    #sommaire ul li {
+        margin-bottom: 6px;
+    }
+
+    #sommaire ul li a {
+        text-decoration: none;
+        color: #00ff88;
+        font-size: 13px;
+        opacity: 0.9;
+    }
+
+    #sommaire ul li a:hover {
+        text-decoration: underline;
+        opacity: 1;
+    }
+
+    /* ===== EMPHASE ===== */
+    #guide b, #guide strong {
+        color: #ffffff;
+    }
+
+    #guide em {
+        color: #9cdcfe;
+    }
+</style>
+
+<div id="guide">
+
+<!-- Texte d'introduction -->
+<p>Bienvenue !<br>
+Ce guide t’explique <b>pas à pas</b> comment comprendre et utiliser les stratégies de LP (Liquidity Providing) dans un AMM (automated Market Maker) concentré comme Uniswap, Aerodrome, Pancake...<br><br>
+Krystal, Vfat, aperture... <b>sont uniquement des agrégateurs de positions</b> !</p>
+
+<div id="sommaire">
+<h4>Sommaire</h4>
+<ul>
+    <li><a href="#cest-quoi-fournir-de-la-liquidite">C’est quoi fournir de la liquidité ?</a></li>
+    <li><a href="#concepts-fondamentaux">Concepts fondamentaux</a></li>
+    <li><a href="#strategies-possibles">Stratégies possibles</a></li>
+    <li><a href="#choisir-un-range">Choisir un range</a></li>
+    <li><a href="#exemple-simple-weth-usdc">Exemple simple WETH/USDC</a></li>
+    <li><a href="#erreurs-de-debutant">Erreurs de débutant</a></li>
+    <li><a href="#rebalancer-la-position">Rebalancer la position</a></li>
+    <li><a href="#courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</a></li>
+    <li><a href="#strategie-lp-rentable">Quand une stratégie LP est rentable ?</a></li>
+    <li><a href="#astuces-et-autonomie">Astuces et autonomie des choix</a></li>
+    <li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</div>
+
+<h3 id="cest-quoi-fournir-de-la-liquidite">C’est quoi fournir de la liquidité ?</h3>
+<p>Quand tu fournis de la liquidité à une pool (ex : WETH/USDC), tu apportes <b>deux tokens en même temps</b>. En échange, tu deviens <b>market maker</b> et touches des <b>frais de trading</b>.<br>
+Dans un AMM concentré, tu choisis <b>un range</b>. Si le prix sort du range → tu deviens <b>full Token A</b> ou <b>full Token B</b>. Ta position s’ajuste automatiquement : <b>quand le prix baisse, tu accumules le token le plus volatile</b> ; à l’inverse, <b>quand le prix monte, tu revends progressivement ce token volatile.</b></p>
+
+<h3 id="concepts-fondamentaux">Concepts fondamentaux</h3>
+<ul>
+    <li><b>Ratio</b> : proportion entre Token A (volatile) et Token B (stable ou moins volatile). Exemple : 50/50 = neutre, 20/80 = défensif, 95/5 = agressif.</li>
+    <li><b>Range</b> : zone de prix où ton capital est actif. Range serré = plus de fees mais plus de rebalances et IL possible.</li>
+    <li><b>Impermanent Loss (IL)</b> : perte que tu aurais évitée si tu avais conservé tes tokens. Plus le prix s’éloigne, plus l’IL augmente.</li>
+</ul>
+
+<h3 id="strategies-possibles">Stratégies possibles</h3>
+<ul>
+    <li><b>Neutre (50/50)</b> : marché incertain, stable et simple, risque IL si gros mouvement</li>
+    <li><b>Coup de pouce (20/80)</b> : marché calme, protège du token volatil, défensif</li>
+    <li><b>Mini-doux (10/90)</b> : anticipation de tendance, minimise IL, très défensif</li>
+    <li><b>Side-line up (100/0)</b> : bas de marché, accumulation token volatile, agressif</li>
+    <li><b>Side-line down (0/100)</b> : marché haussier, prise de profit naturel, agressif vers la vente</li>
+</ul>
+
+<h3 id="choisir-un-range">Choisir un range</h3>
+<p>
+Le choix dépend de ton objectif, de la volatilité et du marché : haussier → profits A→B, baissier → accumulation B→A, latéral → neutre ou coup de pouce.<br>
+Objectifs : saisir des fees → petit range ; limiter l’IL → grand range sans rebalance ou mini-doux ; DCA → ratio 100/0 ou 0/100.<br><br>
+Pour affiner ton range, utilise l’indicateur <strong>ATR (Average True Range)</strong> disponible sur TradingView dans la catégorie <em>Technical</em>.<br>
+L’ATR représente de manière simplifiée <strong>l’écart-type du prix d’un actif exprimé en dollars</strong> : il mesure l’amplitude moyenne des mouvements de prix sur une période donnée.<br><br>
+Sur l’outil, règle l’ATR en <strong>daily</strong> avec une période <strong>ATR 14</strong>, puis applique un <strong>multiplicateur</strong> afin de définir la largeur de ton range autour du prix actuel.<br>
+Par exemple : <strong>ATR × 3</strong> correspond généralement à une tenue de range d’environ <strong>1 semaine à 10 jours</strong>, selon la volatilité du marché.<br><br>
+Une fois le range défini, vérifie l’ATR affiché en <strong>weekly</strong> et compare-le à ton choix initial en calculant :
+<strong>borne haute − borne basse</strong>.<br>
+Ajuste ensuite ton range en confrontant ces valeurs avec les données de l'ATR14 en <strong>WEEKLY</strong> ainsi que <strong>volatilité sur 7 jours et 30 jours</strong>, afin de sélectionner le compromis le plus adapté à la tendence entre fréquence de rebalance, capture de fees et exposition au risque.
+</p>
+
+<h3 id="exemple-simple-weth-usdc">Exemple simple WETH/USDC</h3>
+<p>Capital = 1000 USD, Prix ETH = 3000, Stratégie = 50/50, Range ±20%.</p>
+<ul>
+    <li>Répartition : 500 USD ETH, 500 USD USDC</li>
+    <li>Range bas ≈ 2700, Range haut ≈ 3300</li>
+    <li>Si prix = 3300 → plus riche en USDC, fees générés</li>
+    <li>Si prix = 2700 → plus d’ETH, fees générés</li>
+</ul>
+
+<h3 id="erreurs-de-debutant">Erreurs de débutant</h3>
+<ul>
+    <li>Range trop serré : rebalances fréquents, coûts d’opportunité, IL amplifiée</li>
+    <li>Oublier que l’IL existe : fees ne compensent pas toujours IL</li>
+    <li>Choisir un range sans regarder la volatilité : volatilité 7j et 30j clé, pas de stratégie “set and forget”</li>
+</ul>
+
+<h3 id="rebalancer-la-position">Rebalancer la position</h3>
+<p>Quand le prix sort du range, tu deviens full A ou full B, tu ne gagnes plus de fees. Ta LP = simple “bag” de tokens, il faut repositionner la liquidité.<br>
+L'app calcule combien de fois le prix est sorti dans le passé et en simulation future, et ajuste automatiquement le range.</p>
+
+<h4>Rappel sur l’automation et les rebalances</h4>
+<ul>
+  <li>Les triggers doivent toujours se baser sur le <strong>RATIO</strong>, jamais sur % ou $. Ils vont de 0 à 100 et déclenchent les rebalances en bout de range. Par exemple, pour une stratégie 20/80, placez vos triggers proches de 20/80 pour rebalancer rapidement selon le nouveau prix d’entrée.</li>
+  <li>Lors de l’utilisation des <strong>futures ranges</strong> (option avancée), réglez-les correctement en %. Un trigger placé sur le prix le plus haut dans un marché haussier conservera surtout l’USDC. Si inversé, vous risquez de valider des pertes importantes (~80%).</li>
+  <li>Si votre range actuel est très large ou trop court comparé aux futures ranges, vous aurez un décalage de stratégie, ce qui peut produire des performances en dents de scie.</li>
+  <li><strong>Conseil pratique :</strong> Pour toute question sur vos réglages, partagez uniquement des captures claires de l’édition de l’automation et de la stratégie, en masquant les données sensibles (capital, wallets).</li>
+  <li><strong>Attention sur vos décisions :</strong> Avant d’acheter du token A (volatile) à un prix supérieur au point de rebalance, demandez-vous si vous êtes prêt à vendre pour limiter la perte. Inversement, si vous êtes exposé en USDC ou token B (moins volatile), acheter beaucoup du token volatil plus cher peut réduire votre capital et amplifier vos pertes à la baisse.</li>
+</ul>
+
+<h3 id="courbe-impermanent-loss">Comprendre la courbe d’Impermanent Loss</h3>
+<p>Le graphe montre : IL(%) en fonction du prix actuel, ligne pour prix de dépôt, ligne pour prix actuel, range bas/haut.<br>
+Interprétation : minimum de la courbe = prix de dépôt ; plus on s’éloigne, plus IL augmente ; IL=0 seulement si prix reste identique.</p>
+
+<h3 id="strategie-lp-rentable">Quand une stratégie LP est rentable ?</h3>
+<ul>
+    <li>Frais gagnés > impermanent loss</li>
+    <li>Prix ne sort pas trop vite du range</li>
+    <li>Stratégie cohérente avec l’objectif (DCA, prise de profit, accumulation…)</li>
+</ul>
+
+<h3 id="astuces-et-autonomie">Astuces et autonomie des choix</h3>
+<ul>
+    <li>Commencer avec un faible capital et un range large</li>
+    <li>Utiliser des stratégies asymétriques si marché directionnel</li>
+    <li>Vérifier la volatilité 7j et 30j</li>
+    <li>Ne pas déposer tout le capital d’un coup</li>
+    <li>Surveiller la courbe IL après dépôt</li>
+    <li>Utiliser le dex pour déposer la liquidité (expert)</li>
+</ul>
+
+<h3 id="conclusion">Conclusion</h3>
+<p>Ce guide t’a donné les concepts fondamentaux, des explications simples des stratégies, comment interpréter ratios, range, volatilité, lire l’IL et éviter les erreurs classiques.<br>
+Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et gérer des pools concentrés avec une vision globale de la mécanique.</p>
+
+</div>
+"""
+
+st.markdown(guide_html, unsafe_allow_html=True)
+
+# ======================= video IL =======================
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        ATELIER IMPERMANENT LOSS
+    </span>
+</div>
+""", unsafe_allow_html=True)
+st.set_page_config(layout="wide")
+
+# colonne unique large
+col, = st.columns(1)
+
+with col:
+    st.video("https://www.youtube.com/watch?v=uQPeyXsQNrs")
+
+# ======================= outil atelier IL =======================
+import streamlit.components.v1 as components
+
+st.markdown("""
+<div style="
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
+">
+    <span style="color:white;font-size:28px;font-weight:700;">
+        CALCULATRICE IMPERMANENT LOSS
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+st.set_page_config(layout="wide")
+
+desmos_url = "https://www.desmos.com/calculator/i7mnoyyqdb?lang=fr"
+
+components.iframe(
+    src=desmos_url,
+    width="100%",
+    height=700,
+    scrolling=True
+)
