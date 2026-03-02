@@ -1749,6 +1749,7 @@ st.markdown(overlay_html, unsafe_allow_html=True)
 
 # ======================= Less IL =======================
 
+
 st.set_page_config(layout="wide")
 
 # --- Header ---
@@ -1770,7 +1771,7 @@ st.markdown("""
 st.markdown("""
 <style>
 
-/* Sous-titres cohérents avec le header */
+/* Sous-titres */
 .section-title {
     background: linear-gradient(135deg, #16213e 0%, #3a1c71 100%);
     padding:10px 16px;
@@ -1782,7 +1783,7 @@ st.markdown("""
     color:white;
 }
 
-/* Inputs plus compacts */
+/* Inputs compacts */
 div[data-baseweb="input"] input {
     padding-top:6px !important;
     padding-bottom:6px !important;
@@ -1810,15 +1811,44 @@ div[data-baseweb="input"] input {
     margin-top:6px;
 }
 
+/* Overlay large */
+.result-card-wide {
+    background: linear-gradient(135deg, #101522 0%, #2a1f5f 100%);
+    padding:18px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,0.05);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    text-align:center;
+    margin-top:15px;
+}
+
+/* Fix expander button color */
+details summary {
+    color: white !important;
+    background: linear-gradient(135deg, #16213e 0%, #3a1c71 100%) !important;
+    padding:8px 12px;
+    border-radius:8px;
+}
+
+details[open] summary {
+    color: white !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-# =================== CALCULATRICE ===================
+# =================== CONFIGURATION ===================
 
 st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe_allow_html=True)
 
-tokenA = st.text_input("Token A", "Token A")
-tokenB = st.text_input("Token B", "Token B")
+# Token A & B sur la même ligne
+t1, t2 = st.columns(2)
+
+with t1:
+    tokenA = st.text_input("Token A", "Token A")
+
+with t2:
+    tokenB = st.text_input("Token B", "Token B")
 
 col1, col2, col3, col4, col5 = st.columns(5)
 
@@ -1829,22 +1859,20 @@ with col2:
     price_tokenB = st.number_input(f"Prix {tokenB} ($)", value=1.0, step=0.01)
 
 with col3:
-    P_low = st.number_input("Borne basse initiale (Plow)", value=1800.0, step=1.0)
+    P_low = st.number_input("Plow", value=1800.0, step=1.0)
 
 with col4:
-    P_high = st.number_input("Borne haute initiale (Phigh)", value=2100.0, step=1.0)
+    P_high = st.number_input("Phigh", value=2100.0, step=1.0)
 
 with col5:
-    new_P_low = st.number_input("Nouvelle borne basse (New Plow)", value=1600.0, step=1.0)
+    new_P_low = st.number_input("New Plow", value=1600.0, step=1.0)
 
-# --- Prix relatif utilisé dans les formules ---
 if price_tokenB == 0:
     st.error("Le prix du token B ne peut pas être 0.")
     st.stop()
 
 P_current = price_tokenA / price_tokenB
 
-# --- VALIDATIONS ---
 if not (P_low < P_current < P_high):
     st.error("Le prix actuel doit être strictement à l'intérieur du range initial.")
     st.stop()
@@ -1853,16 +1881,14 @@ if new_P_low >= P_current:
     st.error("La nouvelle borne basse doit être inférieure au prix actuel.")
     st.stop()
 
-# --- CALCULS ---
+# =================== CALCULS ===================
+
 sqrtP = math.sqrt(P_current)
 sqrtPl = math.sqrt(P_low)
 sqrtPh = math.sqrt(P_high)
 sqrtNewPl = math.sqrt(new_P_low)
 
-ratio = (
-    (sqrtPh - sqrtP)
-    / (sqrtP * sqrtPh * (sqrtP - sqrtPl))
-)
+ratio = (sqrtPh - sqrtP) / (sqrtP * sqrtPh * (sqrtP - sqrtPl))
 
 denominator = 1 - ratio * sqrtP * (sqrtP - sqrtNewPl)
 
@@ -1903,10 +1929,14 @@ with r3:
     </div>
     """, unsafe_allow_html=True)
 
+# Overlay unique bornes
 st.markdown(f"""
-<div style="margin-top:15px; opacity:0.75;">
-Borne basse : {P_low} → {new_P_low} &nbsp;&nbsp; | &nbsp;&nbsp;
-Borne haute : {P_high} → {new_P_high:.2f}
+<div class="result-card-wide">
+    <div class="result-title">Bornes</div>
+    <div class="result-value">
+        {P_low} → {new_P_low} &nbsp;&nbsp; | &nbsp;&nbsp;
+        {P_high} → {new_P_high:.2f}
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1934,10 +1964,7 @@ if P_low < P_rebalance < P_high:
     new_tight_P_low = P_rebalance * (1 - tighten_percent / 100)
     sqrtNewTightPl = math.sqrt(new_tight_P_low)
 
-    ratio_reb = (
-        (sqrtPh - sqrtP_reb)
-        / (sqrtP_reb * sqrtPh * (sqrtP_reb - sqrtPl))
-    )
+    ratio_reb = (sqrtPh - sqrtP_reb) / (sqrtP_reb * sqrtPh * (sqrtP_reb - sqrtPl))
 
     denominator_tight = 1 - ratio_reb * sqrtP_reb * (sqrtP_reb - sqrtNewTightPl)
 
@@ -1947,10 +1974,31 @@ if P_low < P_rebalance < P_high:
         sqrtNewTightPh = sqrtP_reb / denominator_tight
         new_tight_P_high = sqrtNewTightPh ** 2
 
-        st.success("Nouveau range resserré (Zero Swap)")
-        st.write(f"Prix utilisé : {P_rebalance:.6f}")
-        st.write(f"Borne basse : {new_tight_P_low:.2f}")
-        st.write(f"Borne haute : {new_tight_P_high:.2f}")
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            st.markdown(f"""
+            <div class="result-card">
+                <div class="result-title">Prix utilisé</div>
+                <div class="result-value">{P_rebalance:.6f}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with c2:
+            st.markdown(f"""
+            <div class="result-card">
+                <div class="result-title">Nouvelle borne basse</div>
+                <div class="result-value">{new_tight_P_low:.2f}</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with c3:
+            st.markdown(f"""
+            <div class="result-card">
+                <div class="result-title">Nouvelle borne haute</div>
+                <div class="result-value">{new_tight_P_high:.2f}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
@@ -1958,16 +2006,7 @@ else:
 # =================== FORMULES ===================
 
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
+    st.latex(r"New Tight Plow = P_{rebalance} (1 - tighten\_percent/100)")
+    st.latex(r"ratio = \frac{\sqrt{P_{high}} - \sqrt{P}}{\sqrt{P}\sqrt{P_{high}}(\sqrt{P}-\sqrt{P_{low}})}")
+    st.latex(r"\sqrt{New\ P\ High} = \frac{\sqrt{P}}{1 - ratio\sqrt{P}(\sqrt{P}-\sqrt{P_{low}^{new}})}")
 
-    st.markdown("### New Tight Plow")
-    st.latex(r"New Tight Plow = P_{\mathrm{rebalance}} \cdot \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)")
-
-    st.markdown("### ratio A/B")
-    st.latex(r"\mathrm{ratio} = \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}{\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}")
-
-    st.markdown("### New P High")
-    st.latex(r"""
-    \sqrt{\mathrm{New\ P\ High}} =
-    \frac{\sqrt{P}}
-    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot (\sqrt{P} - \sqrt{P_L^\mathrm{new}})}
-    """)
