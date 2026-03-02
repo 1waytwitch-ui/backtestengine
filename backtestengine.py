@@ -1823,13 +1823,13 @@ col1, col2 = st.columns(2)
 # =================== GAUCHE ===================
 with col1:
     st.markdown("""
-    <div style="
+    <div style='
         background-color: #FFA700;
         border-left: 6px solid #754C00;
         padding: 15px 20px;
         border-radius: 8px;
         margin-bottom: 25px;
-    ">
+    '>
         <h3>POOL SETUP</h3>
     </div>
     """, unsafe_allow_html=True)
@@ -1863,7 +1863,6 @@ with col1:
 
     # ================== PRIX TOKEN ==================
     def get_price_usd(token):
-        # Fake function pour exemple
         return 1.0, True
     priceA_usd, okA = get_price_usd(tokenA)
     priceB_usd, okB = get_price_usd(tokenB)
@@ -1879,108 +1878,46 @@ with col1:
     priceB_usd = max(priceB_usd, 1e-7)
     priceA = priceA_usd / priceB_usd
 
-    # ================== VOLATILITÉ PAIRE ==================
-    def get_market_chart(token_id):
-        return np.random.rand(30)  # fake chart
-    keyA = f"{tokenA}_prices_{datetime.date.today()}"
-    keyB = f"{tokenB}_prices_{datetime.date.today()}"
-    if keyA not in st.session_state:
-        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
-    if keyB not in st.session_state:
-        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
-    pricesA = np.array(st.session_state[keyA])
-    pricesB = np.array(st.session_state[keyB])
-
-    def compute_pair_volatility(pricesA, pricesB):
-        min_len = min(len(pricesA), len(pricesB))
-        pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
-        mask = (pricesA > 1e-8) & (pricesB > 1e-8)
-        pricesA, pricesB = pricesA[mask], pricesB[mask]
-        if len(pricesA) < 2:
-            return 0.0
-        pair_prices = pricesA / pricesB
-        returns = np.diff(pair_prices) / pair_prices[:-1]
-        returns = returns[~np.isnan(returns)]
-        return float(np.std(returns)) if len(returns) > 0 else 0.0
-
-    if selected_pair in ["WETH/USDC", "CBBTC/USDC"]:
-        vol_30d = compute_pair_volatility(pricesA, pricesA)
-    else:
-        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
-
-    vol_sugg = vol_30d * 100
-    suggested_range = 20
-    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=200.0, value=20.0, key="range_pct")
-
-    range_low = priceA * (1 - ratioA * range_pct / 100)
-    range_high = priceA * (1 + ratioB * range_pct / 100)
-    if invert_market:
-        range_low, range_high = range_high, range_low
-    capitalA, capitalB = capital * ratioA, capital * ratioB
-
 # =================== DROITE ===================
 with col2:
     st.markdown("""
-    <div style="
-        background-color:#FFA700;
-        border-left:6px solid #754C00;
-        padding:15px 20px;
-        border-radius:8px;
-        margin-bottom:25px;
-    ">
+    <div style='
+        background-color: #FFA700;
+        border-left: 6px solid #754C00;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    '>
         <h3>PRICE / RANGE</h3>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.write(f"Prix actuel : {priceA:.6f} $")
-    st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
-    st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
-
-    # === GAUGE A/B ===
-    fig_bar = go.Figure()
-    fig_bar.add_trace(go.Bar(x=[ratioA*100], y=[tokenA], orientation="h", marker=dict(color="#FF8C00"), showlegend=False))
-    fig_bar.add_trace(go.Bar(x=[ratioB*100], y=[tokenB], orientation="h", marker=dict(color="#6A5ACD"), showlegend=False))
-    fig_bar.update_layout(height=120, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(range=[0,100], tickfont=dict(color="#ffffff", size=10), gridcolor="rgba(255,255,255,0.08)"), yaxis=dict(tickfont=dict(color="#ffffff", size=11)), plot_bgcolor="#173a57", paper_bgcolor="#173a57")
-    st.plotly_chart(fig_bar, use_container_width=True)
-
-    st.markdown(f"""
-    <div style="
-        background: rgba(29,233,182,0.15);
-        border-left: 6px solid #1de9b6;
-        padding: 12px 16px;
-        border-radius: 10px;
-        margin-top: 8px;
-        color: #e5e7eb;
-        font-size: 13px;
-    ">
-        <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
-        <b>Objectif :</b> {info['objectif']}<br>
-        <b>Contexte :</b> {info['contexte']}
     </div>
     """, unsafe_allow_html=True)
 
 # =================== GUIDE ===================
 st.markdown("""
-<div style="
+<div style='
     background: linear-gradient(135deg, #1e1f29 0%, #2d2f45 40%, #3c1c5d 100%);
     padding:20px;
     border-radius:12px;
     margin-top:20px;
     margin-bottom:18px;
     color:white;
-">
-    <span style="font-size:28px;font-weight:700;">
+'>
+    <span style='font-size:28px;font-weight:700;'>
         GUIDE - ENGAGER DU CAPITAL SUR LP
     </span>
 </div>
 """, unsafe_allow_html=True)
 
-# Texte guide (idem que ton guide complet)
-guide_html = "<div id='guide'>Ton texte complet ici...</div>"
+# Texte guide sécurisé
+guide_html = """
+<div id='guide'>
+<p>Bienvenue ! Ce guide t'explique ...</p>
+<!-- tout ton guide ici -->
+</div>
+"""
 st.markdown(guide_html, unsafe_allow_html=True)
 
 # =================== FORMULES ===================
-# CSS overlay terminal
 st.markdown("""
 <style>
 div[data-testid="stExpander"] {
@@ -2001,69 +1938,8 @@ div[data-testid="stExpander"] {
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
     st.markdown('<div class="small-text">Toutes les formules ci-dessous sont utilisées pour calculer le range, ratio et rebalance.</div>', unsafe_allow_html=True)
 
-    st.markdown(r"### Prix courant")
+    st.markdown("### Prix courant")
     st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
 
-    st.markdown(r"### Racines utilisées")
+    st.markdown("### Racines utilisées")
     st.latex(r"\sqrt{P}, \quad \sqrt{P_\mathrm{low}}, \quad \sqrt{P_\mathrm{high}}, \quad \sqrt{P_\mathrm{rebalance}}")
-
-    st.markdown(r"### Ratio initial A/B")
-    st.latex(r"""
-    \mathrm{ratio} =
-    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}
-    {\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}
-    """)
-
-    st.markdown(r"### New Plow (déplacement borne basse)")
-    st.latex(r"\mathrm{New\ Plow} = P_\mathrm{low}^{new}")
-
-    st.markdown(r"### Nouvelle borne haute Zero-Swap")
-    st.latex(r"""
-    \sqrt{\mathrm{New\ P\ High}} =
-    \frac{\sqrt{P}}
-    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot
-    \left(\sqrt{P} - \sqrt{P_\mathrm{low}^{new}}\right)}
-    """)
-
-    st.latex(r"""
-    \mathrm{New\ P\ High}
-    =
-    \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
-    """)
-
-    st.markdown(r"### Resserrement (tighten)")
-    st.latex(r"""
-    \mathrm{New\ Tight\ Plow}
-    =
-    P_\mathrm{rebalance}
-    \cdot
-    \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)
-    """)
-
-    st.markdown(r"### Ratio recalculé au rebalance")
-    st.latex(r"""
-    \mathrm{ratio}_\mathrm{reb}
-    =
-    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P_\mathrm{rebalance}}}
-    {\sqrt{P_\mathrm{rebalance}}
-    \cdot
-    \sqrt{P_\mathrm{high}}
-    \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
-    """)
-
-    st.markdown(r"### Nouvelle borne haute Tight (Zero-Swap)")
-    st.latex(r"""
-    \sqrt{\mathrm{New\ Tight\ P\ High}}
-    =
-    \frac{\sqrt{P_\mathrm{rebalance}}}
-    {1 - \mathrm{ratio}_\mathrm{reb}
-    \cdot
-    \sqrt{P_\mathrm{rebalance}}
-    \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
-    """)
-
-    st.latex(r"""
-    \mathrm{New\ Tight\ P\ High}
-    =
-    \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
-    """)
