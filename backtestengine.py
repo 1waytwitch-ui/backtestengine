@@ -2042,6 +2042,72 @@ else:
 # =================== FORMULES ===================
 
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
-    st.latex(r"New Tight Plow = P_{rebalance} (1 - tighten\_percent/100)")
-    st.latex(r"ratio = \frac{\sqrt{P_{high}} - \sqrt{P}}{\sqrt{P}\sqrt{P_{high}}(\sqrt{P}-\sqrt{P_{low}})}")
-    st.latex(r"\sqrt{New\ P\ High} = \frac{\sqrt{P}}{1 - ratio\sqrt{P}(\sqrt{P}-\sqrt{P_{low}^{new}})}")
+
+    st.markdown(r"### Prix courant")
+    st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
+
+    st.markdown(r"### Racines utilisées")
+    st.latex(r"\sqrt{P}, \quad \sqrt{P_\mathrm{low}}, \quad \sqrt{P_\mathrm{high}}, \quad \sqrt{P_\mathrm{rebalance}}")
+
+    st.markdown(r"### Ratio initial A/B")
+    st.latex(r"""
+    \mathrm{ratio} =
+    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}
+    {\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}
+    """)
+
+    st.markdown(r"### New Plow (déplacement borne basse)")
+    st.latex(r"\mathrm{New\ Plow} = P_\mathrm{low}^{new}")
+
+    st.markdown(r"### Nouvelle borne haute Zero-Swap")
+    st.latex(r"""
+    \sqrt{\mathrm{New\ P\ High}} =
+    \frac{\sqrt{P}}
+    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot
+    \left(\sqrt{P} - \sqrt{P_\mathrm{low}^{new}}\right)}
+    """)
+
+    st.latex(r"""
+    \mathrm{New\ P\ High}
+    =
+    \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
+    """)
+
+    st.markdown(r"### Resserrement (tighten)")
+    st.latex(r"""
+    \mathrm{New\ Tight\ Plow}
+    =
+    P_\mathrm{rebalance}
+    \cdot
+    \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)
+    """)
+
+    st.markdown(r"### Ratio recalculé au rebalance")
+    st.latex(r"""
+    \mathrm{ratio}_\mathrm{reb}
+    =
+    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P_\mathrm{rebalance}}}
+    {\sqrt{P_\mathrm{rebalance}}
+    \cdot
+    \sqrt{P_\mathrm{high}}
+    \cdot
+    \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
+    """)
+
+    st.markdown(r"### Nouvelle borne haute Tight (Zero-Swap)")
+    st.latex(r"""
+    \sqrt{\mathrm{New\ Tight\ P\ High}}
+    =
+    \frac{\sqrt{P_\mathrm{rebalance}}}
+    {1 - \mathrm{ratio}_\mathrm{reb}
+    \cdot
+    \sqrt{P_\mathrm{rebalance}}
+    \cdot
+    \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
+    """)
+
+    st.latex(r"""
+    \mathrm{New\ Tight\ P\ High}
+    =
+    \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
+    """)
