@@ -453,38 +453,18 @@ st.markdown("</div>", unsafe_allow_html=True)
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
-# =================== STYLE TERMINAL ===================
-st.markdown("""
-<style>
-.section-title {
-    border-left: 4px solid #00ff88;
-    padding: 8px 14px;
-    margin-top: 20px;
-    margin-bottom: 14px;
-    font-weight: 600;
-    font-size: 16px;
-    background: rgba(0,255,136,0.05);
-    letter-spacing: 1px;
-}
-.result-card, .result-card-wide {
-    background: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 10px;
-    padding: 12px;
-    margin-top: 12px;
-    box-shadow: 0 0 12px rgba(0,255,136,0.05);
-    color: #00ff88;
-}
-.result-card-wide { padding: 16px; }
-.result-title { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-.result-value { font-size: 16px; font-weight: 600; margin-top: 6px; }
-</style>
-""", unsafe_allow_html=True)
-
-# =================== GAUCHE ===================
+# ============================== GAUCHE ==============================
 with col1:
 
-    st.markdown('<div class="section-title">POOL SETUP</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #FFA700 0%, #FFB84D 100%);
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>POOL SETUP</h3>
+    """, unsafe_allow_html=True)
 
     # --- PAIRE & STRATEGIE ---
     left, right = st.columns(2)
@@ -494,8 +474,11 @@ with col1:
     with right:
         strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
-    # --- RESET CACHE SI CHANGEMENT DE PAIRE ---
-    if "last_pair" not in st.session_state or st.session_state["last_pair"] != selected_pair:
+    # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
+    if (
+        "last_pair" not in st.session_state
+        or st.session_state["last_pair"] != selected_pair
+    ):
         for k in list(st.session_state.keys()):
             if k.endswith("_prices_" + str(datetime.date.today())):
                 del st.session_state[k]
@@ -505,6 +488,7 @@ with col1:
     tokenA, tokenB = selected_pair.split("/")
     info = STRATEGIES[strategy_choice]
     ratioA, ratioB = info["ratio"]
+
     invert_market = st.checkbox("Inversion marché (bull → bear)")
     if invert_market:
         ratioA, ratioB = ratioB, ratioA
@@ -527,7 +511,7 @@ with col1:
     priceB_usd = max(priceB_usd, 1e-7)
     priceA = priceA_usd / priceB_usd
 
-    # ================== VOLATILITÉ ==================
+    # ================== VOLATILITÉ PAIRE ==================
     keyA = f"{tokenA}_prices_{datetime.date.today()}"
     keyB = f"{tokenB}_prices_{datetime.date.today()}"
     if keyA not in st.session_state:
@@ -537,140 +521,173 @@ with col1:
     pricesA = np.array(st.session_state[keyA])
     pricesB = np.array(st.session_state[keyB])
 
+    # --- Fonction de calcul de volatilité ---
     def compute_pair_volatility(pricesA, pricesB):
         min_len = min(len(pricesA), len(pricesB))
         pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
         mask = (pricesA > 1e-8) & (pricesB > 1e-8)
         pricesA, pricesB = pricesA[mask], pricesB[mask]
-        if len(pricesA) < 2: return 0.0
+        if len(pricesA) < 2:
+            return 0.0
         pair_prices = pricesA / pricesB
         returns = np.diff(pair_prices) / pair_prices[:-1]
         returns = returns[~np.isnan(returns)]
         return float(np.std(returns)) if len(returns) > 0 else 0.0
 
-    if selected_pair in ["WETH/USDC","CBBTC/USDC"]:
+    # --- Calcul de la volatilité selon la paire ---
+    if selected_pair == "WETH/USDC":
         vol_30d = compute_volatility(pricesA)
-    elif selected_pair in ["WETH/CBBTC","VIRTUAL/WETH","AERO/WETH"]:
-        vol_30d = compute_pair_volatility(pricesA, pricesB)/2
+    elif selected_pair == "CBBTC/USDC":
+        vol_30d = compute_volatility(pricesA)
+    elif selected_pair == "WETH/CBBTC":
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+    elif selected_pair == "VIRTUAL/WETH":
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+    elif selected_pair == "AERO/WETH":
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
     else:
         vol_30d = compute_pair_volatility(pricesA, pricesB)
+
+    # --- Fallback si vol = 0 ---
     if vol_30d == 0:
-        fallback = {"CBBTC/USDC":0.12,"VIRTUAL/WETH":0.45,"AERO/WETH":0.45}
-        vol_30d = fallback.get(selected_pair, vol_30d)
+        if selected_pair == "CBBTC/USDC":
+            vol_30d = 0.12
+        elif selected_pair == "VIRTUAL/WETH":
+            vol_30d = 0.45
+        elif selected_pair == "AERO/WETH":
+            vol_30d = 0.45
 
-    # --- SUGGESTION RANGE ---
-    vol_sugg = vol_30d*100
-    if vol_sugg<2: suggested_range=3
-    elif vol_sugg<4: suggested_range=7
-    elif vol_sugg<7: suggested_range=10
-    elif vol_sugg<10: suggested_range=16
-    else: suggested_range=20
+    # ================== SUGGESTION AUTOMATIQUE ==================
+    vol_sugg = vol_30d * 100  # %
 
-    # Multiplicateurs par paire
-    pair_mult = {"CBBTC/USDC":1.3,"VIRTUAL/WETH":6.2,"AERO/WETH":6.5,"WETH/USDC":3}
-    vol_mult = {"CBBTC/USDC":1,"VIRTUAL/WETH":3.2,"AERO/WETH":2,"WETH/USDC":3}
-    suggested_range *= pair_mult.get(selected_pair, 3)
-    vol_sugg_display = vol_sugg*vol_mult.get(selected_pair,3)
+    if vol_sugg < 2:
+        suggested_range = 3
+    elif vol_sugg < 4:
+        suggested_range = 7
+    elif vol_sugg < 7:
+        suggested_range = 10
+    elif vol_sugg < 10:
+        suggested_range = 16
+    else:
+        suggested_range = 20
 
-    range_pct = st.number_input("Range (%)", min_value=1.0, max_value=200.0, value=20.0, key="range_pct")
+    # --- MULTIPLICATEURS SELON PAIRE ---
+    if selected_pair == "CBBTC/USDC":
+        suggested_range *= 1.3
+        vol_sugg_display = vol_sugg
+    elif selected_pair == "VIRTUAL/WETH":
+        suggested_range *= 6.2
+        vol_sugg_display = vol_sugg * 3.2
+    elif selected_pair == "AERO/WETH":
+        suggested_range *= 6.5
+        vol_sugg_display = vol_sugg * 2
+    elif selected_pair == "WETH/USDC":
+        suggested_range *= 3
+        vol_sugg_display = vol_sugg * 3
+    else:
+        suggested_range *= 3
+        vol_sugg_display = vol_sugg * 3
 
-    range_low = priceA*(1-ratioA*range_pct/100)
-    range_high = priceA*(1+ratioB*range_pct/100)
-    if invert_market: range_low, range_high = range_high, range_low
-    capitalA, capitalB = capital*ratioA, capital*ratioB
+    # --- INPUT RANGE MANUEL ---
+    range_pct = st.number_input(
+        "Range (%)",
+        min_value=1.0,
+        max_value=200.0,
+        value=20.0,
+        key="range_pct"
+    )
 
-# =================== DROITE ===================
+    # ================= CALCUL FINAL RANGE ===============
+    range_low = priceA * (1 - ratioA * range_pct / 100)
+    range_high = priceA * (1 + ratioB * range_pct / 100)
+
+    if invert_market:
+        range_low, range_high = range_high, range_low
+
+    capitalA, capitalB = capital * ratioA, capital * ratioB
+
+
+# ============================== DROITE ==============================
 with col2:
 
-    st.markdown('<div class="section-title">PRICE / RANGE</div>', unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Prix actuel</div>
-        <div class="result-value">{priceA:.6f} $</div>
-    </div>
-    <div class="result-card">
-        <div class="result-title">Range</div>
-        <div class="result-value">{range_low:.6f} ↔ {range_high:.6f}</div>
-    </div>
-    <div class="result-card">
-        <div class="result-title">Répartition</div>
-        <div class="result-value">{capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}</div>
+    # ---- Price/range ----
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #FFA700 0%, #FFB84D 100%);
+        padding:15px 20px;
+        border-radius:8px;
+        margin-bottom:25px;
+    ">
+        <h3>PRICE / RANGE</h3>
     </div>
     """, unsafe_allow_html=True)
+
+    st.write(f"Prix actuel : {priceA:.6f} $")
+    st.write(f"Range : {range_low:.6f} ↔ {range_high:.6f}")
+    st.write(f"Répartition : {capitalA:.2f} USD {tokenA} ◄► {capitalB:.2f} USD {tokenB}")
 
     # === GAUGE A/B ===
     fig_bar = go.Figure()
-    fig_bar.add_trace(go.Bar(x=[ratioA*100], y=[tokenA], orientation="h",
-                             marker=dict(color="#FF8C00"), showlegend=False))
-    fig_bar.add_trace(go.Bar(x=[ratioB*100], y=[tokenB], orientation="h",
-                             marker=dict(color="#6A5ACD"), showlegend=False))
-    fig_bar.update_layout(height=120, margin=dict(l=10,r=10,t=10,b=10),
-                          xaxis=dict(range=[0,100],tickfont=dict(color="#00ff88",size=10),
-                                     gridcolor="rgba(255,255,255,0.08)"),
-                          yaxis=dict(tickfont=dict(color="#00ff88",size=11)),
-                          plot_bgcolor="#0f141b", paper_bgcolor="#0f141b")
+
+    fig_bar.add_trace(go.Bar(
+        x=[ratioA * 100],
+        y=[tokenA],
+        orientation="h",
+        marker=dict(color="#FF8C00"),
+        name=tokenA,
+        showlegend=False
+    ))
+
+    fig_bar.add_trace(go.Bar(
+        x=[ratioB * 100],
+        y=[tokenB],
+        orientation="h",
+        marker=dict(color="#6A5ACD"),
+        name=tokenB,
+        showlegend=False
+    ))
+
+    fig_bar.update_layout(
+        height=120,
+        margin=dict(l=10, r=10, t=10, b=10),
+
+        xaxis=dict(
+            range=[0, 100],
+            tickfont=dict(color="#ffffff", size=10),
+            title=None,
+            gridcolor="rgba(255,255,255,0.08)"
+        ),
+
+        yaxis=dict(
+            tickfont=dict(color="#ffffff", size=11)
+        ),
+
+        plot_bgcolor="#173a57",
+        paper_bgcolor="#173a57",
+        font=dict(color="#ffffff", size=11)
+    )
+
     st.plotly_chart(fig_bar, use_container_width=True)
 
     # --- CADRE RECAP ---
-    st.markdown(f"""
-    <div class="result-card-wide">
-        <div class="result-title">Récap Stratégie</div>
-        <div class="result-value">
-            Ratio : {int(ratioA*100)} / {int(ratioB*100)}<br>
-            Objectif : {info['objectif']}<br>
-            Contexte : {info['contexte']}
+    st.markdown(
+        f"""
+        <div style="
+            background: rgba(29,233,182,0.15);
+            border-left: 6px solid #1de9b6;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 8px;
+            color: #e5e7eb;
+            font-size: 13px;
+        ">
+            <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
+            <b>Objectif :</b> {info['objectif']}<br>
+            <b>Contexte :</b> {info['contexte']}
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# =================== AUTOMATION ===================
-st.markdown('<div class="section-title">REGLAGES AUTOMATION</div>', unsafe_allow_html=True)
-
-col_range, col_time = st.columns([2,1])
-
-with col_range:
-    st.markdown('<div class="result-card-wide"><div class="result-title">Range future</div></div>', unsafe_allow_html=True)
-    range_percent = st.slider("Range total (%)",1.0,90.0,20.0,step=0.5)
-    low_offset_pct = -range_percent*20/100
-    high_offset_pct = range_percent*80/100
-    final_low = priceA*(1+low_offset_pct/100)
-    final_high = priceA*(1+high_offset_pct/100)
-    st.markdown(f'<div class="result-value">Range : {final_low:.6f} – {final_high:.6f}</div>', unsafe_allow_html=True)
-
-with col_time:
-    st.markdown('<div class="result-card-wide"><div class="result-title">Time-buffer</div></div>', unsafe_allow_html=True)
-    vola = vol_30d*100
-    recomand = "6 à 12 minutes" if vola<2 else "18 à 48 minutes" if vola<5 else "60 minutes et plus"
-    st.markdown(f'<div class="result-value">Recommandation : {recomand}</div>', unsafe_allow_html=True)
-
-col_trigger, col_rebalance = st.columns(2)
-with col_trigger:
-    st.markdown('<div class="result-card-wide"><div class="result-title">Trigger d’anticipation (RATIO)</div></div>', unsafe_allow_html=True)
-    t1,t2=st.columns(2)
-    with t1: trig_low = st.slider("Trigger Low (%)",0,100,10)
-    with t2: trig_high = st.slider("Trigger High (%)",0,100,90)
-    rw = final_high-final_low
-    trigger_low_price = final_low + (trig_low/100)*rw
-    trigger_high_price = final_low + (trig_high/100)*rw
-    st.markdown(f'<div class="result-value">Trigger Low : {trigger_low_price:.6f}<br>Trigger High : {trigger_high_price:.6f}</div>', unsafe_allow_html=True)
-
-with col_rebalance:
-    st.markdown('<div class="result-card-wide"><div class="result-title">Rebalance avancée (futur range)</div></div>', unsafe_allow_html=True)
-    off_low_pct = -ratioA*range_percent
-    off_high_pct= ratioB*range_percent
-    bear_low  = priceA*(1+off_low_pct/100)
-    bear_high = priceA*(1+off_high_pct/100)
-    bull_low  = priceA*(1-off_high_pct/100)
-    bull_high = priceA*(1-off_low_pct/100)
-    col_b1,col_b2 = st.columns(2)
-    with col_b1:
-        st.markdown(f'**Marché Haussier (Pump/RANGE HIGH)**')
-        st.markdown(f'<div class="result-value">Range Low : {bull_low:.6f} ({-off_high_pct:.0f}%)<br>Range High : {bull_high:.6f} (+{off_low_pct:.0f}%)</div>', unsafe_allow_html=True)
-    with col_b2:
-        st.markdown(f'**Marché Baissier (Dump/RANGE LOW)**')
-        st.markdown(f'<div class="result-value">Range Low : {bear_low:.6f} ({off_low_pct:.0f}%)<br>Range High : {bear_high:.6f} (+{off_high_pct:.0f}%)</div>', unsafe_allow_html=True)
-
+        """,
+        unsafe_allow_html=True
+    )
 # ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
 
 # --- Style Terminal DeFi ---
