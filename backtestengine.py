@@ -1801,6 +1801,69 @@ if P_low < P_rebalance < P_high:
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
 
+# =================== TERMINAL OVERLAY STYLE ===================
+
+st.markdown("""
+<style>
+
+/* ===== TERMINAL EXPANDER CONTAINER ===== */
+div[data-testid="stExpander"] {
+    background-color: #0f141b !important;
+    border: 1px solid #1f2a36 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 0 25px rgba(0,255,136,0.05);
+    padding: 8px 12px 12px 12px;
+}
+
+/* ===== HEADER ===== */
+div[data-testid="stExpander"] > div:first-child {
+    background: linear-gradient(135deg, #0b0f14 0%, #0f1c1a 40%, #003d2e 100%);
+    border-radius: 10px;
+    padding: 10px 14px;
+}
+
+/* Header text */
+div[data-testid="stExpander"] summary {
+    font-family: "Courier New", monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: #00ff88 !important;
+}
+
+/* Internal section titles */
+div[data-testid="stExpander"] h3 {
+    color: #00ff88;
+    font-family: "Courier New", monospace;
+    margin-top: 22px;
+    letter-spacing: 0.5px;
+}
+
+/* Markdown text */
+div[data-testid="stExpander"] p {
+    color: #c9d1d9;
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+}
+
+/* Latex display blocks */
+div[data-testid="stExpander"] .katex-display {
+    background-color: #0b0f14;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #1f2a36;
+    box-shadow: inset 0 0 8px rgba(0,255,136,0.03);
+}
+
+/* Subtle hover glow */
+div[data-testid="stExpander"]:hover {
+    box-shadow: 0 0 35px rgba(0,255,136,0.08);
+    transition: 0.3s ease;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
 # =================== FORMULES ===================
 
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
