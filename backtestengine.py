@@ -1255,11 +1255,13 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ================= FORMAT DYNAMIQUE =================
+# ================= FORMAT DYNAMIQUE CORRIGÉ =================
 
-def format_number(value, max_decimals=10):
-    formatted = f"{value:.{max_decimals}f}".rstrip("0").rstrip(".")
-    return formatted
+def format_number(value, max_decimals=8):
+    rounded = round(value, max_decimals)
+    if isinstance(rounded, float) and rounded.is_integer():
+        return str(int(rounded))
+    return f"{rounded:.{max_decimals}f}".rstrip("0").rstrip(".")
 
 # ================= TERMINAL DEFI STYLE =================
 
@@ -1300,9 +1302,6 @@ label {
     text-align: left;
     box-shadow: 0 0 12px rgba(0,255,136,0.05);
 }
-.result-card:hover {
-    box-shadow: 0 0 18px rgba(0,255,136,0.15);
-}
 .result-title {
     font-size: 11px;
     opacity: 0.6;
@@ -1321,7 +1320,6 @@ label {
     border-radius: 10px;
     padding: 16px;
     margin-top: 14px;
-    box-shadow: 0 0 12px rgba(0,255,136,0.05);
 }
 </style>
 """, unsafe_allow_html=True)
