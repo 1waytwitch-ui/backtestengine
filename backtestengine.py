@@ -1495,6 +1495,72 @@ if P_low < P_rebalance < P_high:
 
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
+
+# =================== FORMULES ===================
+with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
+
+    # Texte d’intro réduit (optionnel)
+    st.markdown(
+        '<div style="font-size:12px; color:#aaa; margin-bottom:10px; font-family: Courier, monospace;">'
+        'Ces formules permettent de calculer le range, le ratio et le rebalance automatiquement.'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # Titres de section en monospace, petite taille, et en blanc cassé
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Prix courant</div>', unsafe_allow_html=True)
+    st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Racines utilisées</div>', unsafe_allow_html=True)
+    st.latex(r"\sqrt{P}, \quad \sqrt{P_\mathrm{low}}, \quad \sqrt{P_\mathrm{high}}, \quad \sqrt{P_\mathrm{rebalance}}")
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio initial A/B</div>', unsafe_allow_html=True)
+    st.latex(r"""
+    \mathrm{ratio} = 
+    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}
+    {\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}
+    """)
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">New Plow (déplacement borne basse)</div>', unsafe_allow_html=True)
+    st.latex(r"\mathrm{New\ Plow} = P_\mathrm{low}^{new}")
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle borne haute Zero-Swap</div>', unsafe_allow_html=True)
+    st.latex(r"""
+    \sqrt{\mathrm{New\ P\ High}} =
+    \frac{\sqrt{P}}
+    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}^{new}}\right)}
+    """)
+
+    st.latex(r"""
+    \mathrm{New\ P\ High} =
+    \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
+    """)
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Resserrement (tighten)</div>', unsafe_allow_html=True)
+    st.latex(r"""
+    \mathrm{New\ Tight\ Plow} =
+    P_\mathrm{rebalance} \cdot \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)
+    """)
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio recalculé au rebalance</div>', unsafe_allow_html=True)
+    st.latex(r"""
+    \mathrm{ratio}_\mathrm{reb} =
+    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P_\mathrm{rebalance}}}
+    {\sqrt{P_\mathrm{rebalance}} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
+    """)
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle borne haute Tight (Zero-Swap)</div>', unsafe_allow_html=True)
+    st.latex(r"""
+    \sqrt{\mathrm{New\ Tight\ P\ High}} =
+    \frac{\sqrt{P_\mathrm{rebalance}}}
+    {1 - \mathrm{ratio}_\mathrm{reb} \cdot \sqrt{P_\mathrm{rebalance}} \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
+    """)
+
+    st.latex(r"""
+    \mathrm{New\ Tight\ P\ High} =
+    \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
+    """)
+
 # --- GUIDE COMPLET ---
 st.markdown("""
 <div style="
