@@ -1255,7 +1255,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ================= FORMAT DYNAMIQUE CORRIGÉ =================
+# ================= FORMAT DYNAMIQUE =================
 
 def format_number(value, max_decimals=8):
     rounded = round(value, max_decimals)
@@ -1263,7 +1263,7 @@ def format_number(value, max_decimals=8):
         return str(int(rounded))
     return f"{rounded:.{max_decimals}f}".rstrip("0").rstrip(".")
 
-# ================= TERMINAL DEFI STYLE =================
+# ================= STYLE =================
 
 st.markdown("""
 <style>
@@ -1286,27 +1286,17 @@ div[data-baseweb="input"] input {
     background-color: #11161d !important;
     color: #00ff88 !important;
     border: 1px solid #1f2a36 !important;
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-    font-size: 13px;
-}
-label {
-    font-size: 12px !important;
-    opacity: 0.7;
 }
 .result-card {
     background: #0f141b;
     border: 1px solid #1f2a36;
     border-radius: 10px;
     padding: 14px;
-    text-align: left;
-    box-shadow: 0 0 12px rgba(0,255,136,0.05);
 }
 .result-title {
     font-size: 11px;
     opacity: 0.6;
     text-transform: uppercase;
-    letter-spacing: 1px;
 }
 .result-value {
     font-size: 18px;
@@ -1339,19 +1329,39 @@ with t2:
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
-    price_tokenA = st.number_input(f"Prix {tokenA} ($)", value=1850.0, step=0.00000001, format="%.10f")
+    price_tokenA = st.number_input(
+        f"Prix {tokenA} ($)",
+        value=1850.0,
+        step=0.00000001
+    )
 
 with col2:
-    price_tokenB = st.number_input(f"Prix {tokenB} ($)", value=1.0, step=0.00000001, format="%.10f")
+    price_tokenB = st.number_input(
+        f"Prix {tokenB} ($)",
+        value=1.0,
+        step=0.00000001
+    )
 
 with col3:
-    P_low = st.number_input("Plow", value=1800.0, step=0.00000001, format="%.10f")
+    P_low = st.number_input(
+        "Plow",
+        value=1800.0,
+        step=0.00000001
+    )
 
 with col4:
-    P_high = st.number_input("Phigh", value=2100.0, step=0.00000001, format="%.10f")
+    P_high = st.number_input(
+        "Phigh",
+        value=2100.0,
+        step=0.00000001
+    )
 
 with col5:
-    new_P_low = st.number_input("New Plow", value=1600.0, step=0.00000001, format="%.10f")
+    new_P_low = st.number_input(
+        "New Plow",
+        value=1600.0,
+        step=0.00000001
+    )
 
 if price_tokenB == 0:
     st.error("Le prix du token B ne peut pas être 0.")
@@ -1418,7 +1428,7 @@ st.markdown(f"""
 <div class="result-card-wide">
     <div class="result-title">Bornes</div>
     <div class="result-value">
-        {format_number(P_low)} → {format_number(new_P_low)} &nbsp;&nbsp; | &nbsp;&nbsp;
+        {format_number(P_low)} → {format_number(new_P_low)} |
         {format_number(P_high)} → {format_number(new_P_high)}
     </div>
 </div>
@@ -1431,8 +1441,7 @@ st.markdown('<div class="section-title">Resserrement du range</div>', unsafe_all
 P_rebalance = st.number_input(
     "Prix actuel au moment du resserrement",
     value=P_current,
-    step=0.00000001,
-    format="%.10f"
+    step=0.00000001
 )
 
 if P_low < P_rebalance < P_high:
@@ -1486,7 +1495,6 @@ if P_low < P_rebalance < P_high:
 
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
-
 # --- GUIDE COMPLET ---
 st.markdown("""
 <div style="
