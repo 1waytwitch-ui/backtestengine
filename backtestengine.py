@@ -1237,7 +1237,6 @@ for i, card in enumerate(cards):
 
 
 # ======================= Less IL =======================
-
 st.set_page_config(layout="wide")
 
 # --- Header ---
@@ -1255,23 +1254,18 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ================= FORMAT DYNAMIQUE =================
-
-def format_number(value, max_decimals=8):
-    rounded = round(value, max_decimals)
-    if isinstance(rounded, float) and rounded.is_integer():
-        return str(int(rounded))
-    return f"{rounded:.{max_decimals}f}".rstrip("0").rstrip(".")
-
-# ================= STYLE =================
-
+# ================= TERMINAL DEFI STYLE =================
 st.markdown("""
 <style>
+
+/* ===== GLOBAL TERMINAL THEME ===== */
 [data-testid="stAppViewContainer"] {
     background-color: #0b0f14;
     color: #e6edf3;
     font-family: "Courier New", monospace;
 }
+
+/* ===== SECTION TITLES ===== */
 .section-title {
     border-left: 4px solid #00ff88;
     padding: 8px 14px;
@@ -1282,40 +1276,83 @@ st.markdown("""
     background: rgba(0,255,136,0.05);
     letter-spacing: 1px;
 }
+
+/* ===== INPUTS ===== */
 div[data-baseweb="input"] input {
     background-color: #11161d !important;
     color: #00ff88 !important;
     border: 1px solid #1f2a36 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    font-size: 13px;
 }
+
+label {
+    font-size: 12px !important;
+    opacity: 0.7;
+}
+
+/* ===== RESULT CARDS ===== */
 .result-card {
     background: #0f141b;
     border: 1px solid #1f2a36;
     border-radius: 10px;
     padding: 14px;
+    text-align: left;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
 }
+
+.result-card:hover {
+    box-shadow: 0 0 18px rgba(0,255,136,0.15);
+}
+
 .result-title {
     font-size: 11px;
     opacity: 0.6;
     text-transform: uppercase;
+    letter-spacing: 1px;
 }
+
 .result-value {
     font-size: 18px;
     font-weight: 600;
     color: #00ff88;
     margin-top: 6px;
 }
+
+/* ===== WIDE CARD ===== */
 .result-card-wide {
     background: #0f141b;
     border: 1px solid #1f2a36;
     border-radius: 10px;
     padding: 16px;
     margin-top: 14px;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
 }
+
+/* ===== SLIDER ===== */
+div[data-baseweb="slider"] > div {
+    color: #00ff88 !important;
+}
+
+/* ===== EXPANDER FIX ===== */
+details summary {
+    color: #00ff88 !important;
+    background-color: #11161d !important;
+    border: 1px solid #1f2a36 !important;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+details[open] summary {
+    color: #00ff88 !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 # =================== CONFIGURATION ===================
-
 st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe_allow_html=True)
 
 t1, t2 = st.columns(2)
@@ -1329,39 +1366,19 @@ with t2:
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
-    price_tokenA = st.number_input(
-        f"Prix {tokenA} ($)",
-        value=1850.0,
-        step=0.00000001
-    )
+    price_tokenA = st.number_input(f"Prix {tokenA} ($)", value=1850.0, step=1.0)
 
 with col2:
-    price_tokenB = st.number_input(
-        f"Prix {tokenB} ($)",
-        value=1.0,
-        step=0.00000001
-    )
+    price_tokenB = st.number_input(f"Prix {tokenB} ($)", value=1.0, step=0.01)
 
 with col3:
-    P_low = st.number_input(
-        "Plow",
-        value=1800.0,
-        step=0.00000001
-    )
+    P_low = st.number_input("Plow", value=1800.0, step=1.0)
 
 with col4:
-    P_high = st.number_input(
-        "Phigh",
-        value=2100.0,
-        step=0.00000001
-    )
+    P_high = st.number_input("Phigh", value=2100.0, step=1.0)
 
 with col5:
-    new_P_low = st.number_input(
-        "New Plow",
-        value=1600.0,
-        step=0.00000001
-    )
+    new_P_low = st.number_input("New Plow", value=1600.0, step=1.0)
 
 if price_tokenB == 0:
     st.error("Le prix du token B ne peut pas être 0.")
@@ -1378,7 +1395,6 @@ if new_P_low >= P_current:
     st.stop()
 
 # =================== CALCULS ===================
-
 sqrtP = math.sqrt(P_current)
 sqrtPl = math.sqrt(P_low)
 sqrtPh = math.sqrt(P_high)
@@ -1395,7 +1411,6 @@ sqrtNewPh = sqrtP / denominator
 new_P_high = sqrtNewPh ** 2
 
 # =================== RESULTATS ===================
-
 st.markdown('<div class="section-title">Résultats Zero Swap</div>', unsafe_allow_html=True)
 
 r1, r2, r3 = st.columns(3)
@@ -1404,7 +1419,7 @@ with r1:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Ratio {tokenA}/{tokenB}</div>
-        <div class="result-value">{format_number(ratio)}</div>
+        <div class="result-value">{ratio:.10f}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1412,7 +1427,7 @@ with r2:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Nouvelle borne haute</div>
-        <div class="result-value">{format_number(new_P_high)}</div>
+        <div class="result-value">{new_P_high:.2f}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1420,7 +1435,7 @@ with r3:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Prix actuel</div>
-        <div class="result-value">{format_number(P_current)}</div>
+        <div class="result-value">{P_current:.6f}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1428,20 +1443,18 @@ st.markdown(f"""
 <div class="result-card-wide">
     <div class="result-title">Bornes</div>
     <div class="result-value">
-        {format_number(P_low)} → {format_number(new_P_low)} |
-        {format_number(P_high)} → {format_number(new_P_high)}
+        {P_low} → {new_P_low} &nbsp;&nbsp; | &nbsp;&nbsp; {P_high} → {new_P_high:.2f}
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # =================== RESSERREMENT ===================
-
 st.markdown('<div class="section-title">Resserrement du range</div>', unsafe_allow_html=True)
 
 P_rebalance = st.number_input(
     "Prix actuel au moment du resserrement",
     value=P_current,
-    step=0.00000001
+    step=1.0
 )
 
 if P_low < P_rebalance < P_high:
@@ -1454,7 +1467,6 @@ if P_low < P_rebalance < P_high:
     )
 
     sqrtP_reb = math.sqrt(P_rebalance)
-
     new_tight_P_low = P_rebalance * (1 - tighten_percent / 100)
     sqrtNewTightPl = math.sqrt(new_tight_P_low)
 
@@ -1473,7 +1485,7 @@ if P_low < P_rebalance < P_high:
             st.markdown(f"""
             <div class="result-card">
                 <div class="result-title">Prix utilisé</div>
-                <div class="result-value">{format_number(P_rebalance)}</div>
+                <div class="result-value">{P_rebalance:.6f}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1481,7 +1493,7 @@ if P_low < P_rebalance < P_high:
             st.markdown(f"""
             <div class="result-card">
                 <div class="result-title">Nouvelle borne basse</div>
-                <div class="result-value">{format_number(new_tight_P_low)}</div>
+                <div class="result-value">{new_tight_P_low:.2f}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1489,77 +1501,12 @@ if P_low < P_rebalance < P_high:
             st.markdown(f"""
             <div class="result-card">
                 <div class="result-title">Nouvelle borne haute</div>
-                <div class="result-value">{format_number(new_tight_P_high)}</div>
+                <div class="result-value">{new_tight_P_high:.2f}</div>
             </div>
             """, unsafe_allow_html=True)
 
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
-
-# =================== FORMULES ===================
-with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
-
-    # Texte d’intro réduit (optionnel)
-    st.markdown(
-        '<div style="font-size:12px; color:#aaa; margin-bottom:10px; font-family: Courier, monospace;">'
-        'Ces formules permettent de calculer le range, le ratio et le rebalance automatiquement.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    # Titres de section en monospace, petite taille, et en blanc cassé
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Prix courant</div>', unsafe_allow_html=True)
-    st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Racines utilisées</div>', unsafe_allow_html=True)
-    st.latex(r"\sqrt{P}, \quad \sqrt{P_\mathrm{low}}, \quad \sqrt{P_\mathrm{high}}, \quad \sqrt{P_\mathrm{rebalance}}")
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio initial A/B</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \mathrm{ratio} = 
-    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}
-    {\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}
-    """)
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">New Plow (déplacement borne basse)</div>', unsafe_allow_html=True)
-    st.latex(r"\mathrm{New\ Plow} = P_\mathrm{low}^{new}")
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle borne haute Zero-Swap</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \sqrt{\mathrm{New\ P\ High}} =
-    \frac{\sqrt{P}}
-    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}^{new}}\right)}
-    """)
-
-    st.latex(r"""
-    \mathrm{New\ P\ High} =
-    \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
-    """)
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Resserrement (tighten)</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \mathrm{New\ Tight\ Plow} =
-    P_\mathrm{rebalance} \cdot \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)
-    """)
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio recalculé au rebalance</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \mathrm{ratio}_\mathrm{reb} =
-    \frac{\sqrt{P_\mathrm{high}} - \sqrt{P_\mathrm{rebalance}}}
-    {\sqrt{P_\mathrm{rebalance}} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
-    """)
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle borne haute Tight (Zero-Swap)</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \sqrt{\mathrm{New\ Tight\ P\ High}} =
-    \frac{\sqrt{P_\mathrm{rebalance}}}
-    {1 - \mathrm{ratio}_\mathrm{reb} \cdot \sqrt{P_\mathrm{rebalance}} \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
-    """)
-
-    st.latex(r"""
-    \mathrm{New\ Tight\ P\ High} =
-    \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
-    """)
 
 # --- GUIDE COMPLET ---
 st.markdown("""
