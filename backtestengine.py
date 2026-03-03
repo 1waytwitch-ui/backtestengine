@@ -911,22 +911,9 @@ label { font-size: 12px !important; opacity: 0.7; }
 </style>
 """, unsafe_allow_html=True)
 
-# =================== HEADER ===================
-st.markdown("""
-<div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        IMPERMANENT LOSS & ATR
-    </span>
-</div>
-""", unsafe_allow_html=True)
 
 # =================== INPUTS ===================
-st.markdown('<div class="section-title">Paramètres IL</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_html=True)
 
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
 with row1_col1:
@@ -1268,21 +1255,21 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ================= FORMAT DYNAMIQUE =================
+
+def format_number(value, max_decimals=10):
+    formatted = f"{value:.{max_decimals}f}".rstrip("0").rstrip(".")
+    return formatted
+
 # ================= TERMINAL DEFI STYLE =================
 
 st.markdown("""
 <style>
-
-/* ===== GLOBAL TERMINAL THEME ===== */
-
 [data-testid="stAppViewContainer"] {
     background-color: #0b0f14;
     color: #e6edf3;
     font-family: "Courier New", monospace;
 }
-
-/* ===== SECTION TITLES ===== */
-
 .section-title {
     border-left: 4px solid #00ff88;
     padding: 8px 14px;
@@ -1293,9 +1280,6 @@ st.markdown("""
     background: rgba(0,255,136,0.05);
     letter-spacing: 1px;
 }
-
-/* ===== INPUTS ===== */
-
 div[data-baseweb="input"] input {
     background-color: #11161d !important;
     color: #00ff88 !important;
@@ -1304,14 +1288,10 @@ div[data-baseweb="input"] input {
     padding-bottom: 6px !important;
     font-size: 13px;
 }
-
 label {
     font-size: 12px !important;
     opacity: 0.7;
 }
-
-/* ===== RESULT CARDS ===== */
-
 .result-card {
     background: #0f141b;
     border: 1px solid #1f2a36;
@@ -1320,27 +1300,21 @@ label {
     text-align: left;
     box-shadow: 0 0 12px rgba(0,255,136,0.05);
 }
-
 .result-card:hover {
     box-shadow: 0 0 18px rgba(0,255,136,0.15);
 }
-
 .result-title {
     font-size: 11px;
     opacity: 0.6;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-
 .result-value {
     font-size: 18px;
     font-weight: 600;
     color: #00ff88;
     margin-top: 6px;
 }
-
-/* ===== WIDE CARD ===== */
-
 .result-card-wide {
     background: #0f141b;
     border: 1px solid #1f2a36;
@@ -1349,28 +1323,6 @@ label {
     margin-top: 14px;
     box-shadow: 0 0 12px rgba(0,255,136,0.05);
 }
-
-/* ===== SLIDER ===== */
-
-div[data-baseweb="slider"] > div {
-    color: #00ff88 !important;
-}
-
-/* ===== EXPANDER FIX ===== */
-
-details summary {
-    color: #00ff88 !important;
-    background-color: #11161d !important;
-    border: 1px solid #1f2a36 !important;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-}
-
-details[open] summary {
-    color: #00ff88 !important;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -1425,7 +1377,6 @@ sqrtPh = math.sqrt(P_high)
 sqrtNewPl = math.sqrt(new_P_low)
 
 ratio = (sqrtPh - sqrtP) / (sqrtP * sqrtPh * (sqrtP - sqrtPl))
-
 denominator = 1 - ratio * sqrtP * (sqrtP - sqrtNewPl)
 
 if denominator <= 0:
@@ -1445,7 +1396,7 @@ with r1:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Ratio {tokenA}/{tokenB}</div>
-        <div class="result-value">{ratio}</div>
+        <div class="result-value">{format_number(ratio)}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1453,7 +1404,7 @@ with r2:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Nouvelle borne haute</div>
-        <div class="result-value">{new_P_high}</div>
+        <div class="result-value">{format_number(new_P_high)}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1461,7 +1412,7 @@ with r3:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Prix actuel</div>
-        <div class="result-value">{P_current}</div>
+        <div class="result-value">{format_number(P_current)}</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1469,8 +1420,8 @@ st.markdown(f"""
 <div class="result-card-wide">
     <div class="result-title">Bornes</div>
     <div class="result-value">
-        {P_low} → {new_P_low} &nbsp;&nbsp; | &nbsp;&nbsp;
-        {P_high} → {new_P_high}
+        {format_number(P_low)} → {format_number(new_P_low)} &nbsp;&nbsp; | &nbsp;&nbsp;
+        {format_number(P_high)} → {format_number(new_P_high)}
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -1501,7 +1452,6 @@ if P_low < P_rebalance < P_high:
     sqrtNewTightPl = math.sqrt(new_tight_P_low)
 
     ratio_reb = (sqrtPh - sqrtP_reb) / (sqrtP_reb * sqrtPh * (sqrtP_reb - sqrtPl))
-
     denominator_tight = 1 - ratio_reb * sqrtP_reb * (sqrtP_reb - sqrtNewTightPl)
 
     if denominator_tight <= 0:
@@ -1516,7 +1466,7 @@ if P_low < P_rebalance < P_high:
             st.markdown(f"""
             <div class="result-card">
                 <div class="result-title">Prix utilisé</div>
-                <div class="result-value">{P_rebalance}</div>
+                <div class="result-value">{format_number(P_rebalance)}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1524,7 +1474,7 @@ if P_low < P_rebalance < P_high:
             st.markdown(f"""
             <div class="result-card">
                 <div class="result-title">Nouvelle borne basse</div>
-                <div class="result-value">{new_tight_P_low}</div>
+                <div class="result-value">{format_number(new_tight_P_low)}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1532,13 +1482,12 @@ if P_low < P_rebalance < P_high:
             st.markdown(f"""
             <div class="result-card">
                 <div class="result-title">Nouvelle borne haute</div>
-                <div class="result-value">{new_tight_P_high}</div>
+                <div class="result-value">{format_number(new_tight_P_high)}</div>
             </div>
             """, unsafe_allow_html=True)
 
 else:
     st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
-
 
 # --- GUIDE COMPLET ---
 st.markdown("""
