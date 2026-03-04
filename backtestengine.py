@@ -1306,6 +1306,13 @@ ratio = (sqrtPh - sqrtP) / (sqrtP * sqrtPh * (sqrtP - sqrtPl))
 # =================== ZERO SWAP BIDIRECTIONNEL ===================
 st.markdown('<div class="section-title">Zero Swap Bidirectionnel</div>', unsafe_allow_html=True)
 
+# Choix de la direction
+direction_select = st.selectbox(
+    "Mode de recalcul",
+    options=["Auto", "Dump", "Pump"],
+    help="Auto: calcule selon la borne la plus éloignée. Dump: priorise New Plow. Pump: priorise New Phigh."
+)
+
 c1, c2 = st.columns(2)
 
 with c1:
@@ -1314,19 +1321,22 @@ with c1:
 with c2:
     new_P_high = st.number_input("New Phigh (pump)", value=P_high * 1.1, step=1.0)
 
-# Détection direction automatique
-dist_low = abs(P_current - new_P_low)
-dist_high = abs(new_P_high - P_current)
-
+# Détermination du mode
 mode = None
 
-if dist_low > dist_high:
+if direction_select == "Dump":
     mode = "bear"
-elif dist_high > dist_low:
+elif direction_select == "Pump":
     mode = "bull"
+elif direction_select == "Auto":
+    dist_low = abs(P_current - new_P_low)
+    dist_high = abs(new_P_high - P_current)
+    if dist_low > dist_high:
+        mode = "bear"
+    elif dist_high > dist_low:
+        mode = "bull"
 
 # =================== CALCUL ===================
-
 if mode == "bear":
 
     if new_P_low >= P_current:
