@@ -10,7 +10,7 @@ import yfinance as yf
 import math
 
 
-# ---- HEADER FIXE ----
+# ---- HEADER FIXE COMPACT & THEME TERMINAL ----
 st.markdown("""
 <style>
 .deFi-banner {
@@ -18,10 +18,10 @@ st.markdown("""
     top: 0;
     left: 0;
     width: 100%;
-    height: 90px;  /* ajuster selon le padding + texte */
+    height: 70px;  /* plus compact */
     z-index: 9999;
     background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding: 25px 30px;
+    padding: 15px 20px;  /* réduit */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -29,61 +29,53 @@ st.markdown("""
     box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
 }
 
-/* Titres et boutons */
+/* Titre */
 .deFi-title-text {
-    font-size: 36px;
+    font-size: 24px;  /* plus petit */
     font-weight: 700;
-    color: white !important;
+    color: #00ff88 !important;  /* style terminal vert */
+    font-family: "Courier New", monospace;
 }
+
+/* Boutons compact terminal style */
 .deFi-buttons a {
-    color: white;
-    font-size: 18px;
+    color: #00ff88;
+    font-size: 12px;  /* plus petit */
     font-weight: 600;
     text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 12px;
-    margin-left: 10px;
+    padding: 4px 10px;  /* moins de padding */
+    border-radius: 6px;
+    margin-left: 6px;
+    background-color: #11161d;  /* fond sombre style terminal */
+    border: 1px solid #00ff88;
+    font-family: "Courier New", monospace;
+    transition: 0.2s all;
 }
-.krystal-btn { background-color: #06b6d4; }
-.plusvalue-btn { background-color: #10b981; }
-.wallet-btn { background-color: #a17fff; }
-.telegram-btn { background-color: #6c5ce7; }
-.formation-btn { background-color: #f59e0b; }
+
+.deFi-buttons a:hover {
+    background-color: #0b0f14;
+    box-shadow: 0 0 8px #00ff88;
+}
 
 /* Décaler le reste du contenu */
 [data-testid="stAppViewContainer"] {
-    margin-top: 90px;  /* doit correspondre à la hauteur du header */
+    margin-top: 70px;  /* correspond à la hauteur du header */
 }
 </style>
 
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div class="deFi-buttons">
-        <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank" class="krystal-btn">
-            Krystal
+        <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank">Krystal</a>
+        <a href="https://plusvalueimposable.streamlit.app/" target="_blank">Plus-value</a>
+        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank">Wallet</a>
+        <a href="https://t.me/Pigeonchanceux" target="_blank">
+            <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:20px;height:20px;border-radius:50%; vertical-align: middle; margin-right:4px;">Telegram
         </a>
-        <a href="https://plusvalueimposable.streamlit.app/" target="_blank" class="plusvalue-btn">
-            Plus-value imposable
-        </a>
-        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank" class="wallet-btn">
-            DEFI WALLET BACKTEST
-        </a>
-        <a href="https://t.me/Pigeonchanceux" target="_blank" class="telegram-btn">
-            <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:30px;height:30px;border-radius:50%; vertical-align: middle; margin-right:5px;">
-            Mon Telegram
-        </a>
-        <a href="https://shorturl.at/X3sYt" target="_blank" class="formation-btn">
-            Formation code DEFI
-        </a>
+        <a href="https://shorturl.at/X3sYt" target="_blank">Formation</a>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
-# ===================== CONFIG PAGE =====================
-st.set_page_config(
-    page_title="LP STRATÉGIES BACKTEST ENGINE",
-    layout="wide"
-)
 
 # ===================== PLOTLY DARK =====================
 pio.templates.default = "plotly_dark"
