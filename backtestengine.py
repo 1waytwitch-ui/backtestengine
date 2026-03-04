@@ -1601,16 +1601,26 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     """)
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
+# --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
+<br>
 <div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:18px;
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
 ">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        GUIDE COMPLET - ENGAGER DU CAPITAL SUR LP
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
+        GUIDE COMPLET - ENGAGER DU CAPITAL SUR UNE LP
     </span>
 </div>
 """, unsafe_allow_html=True)
