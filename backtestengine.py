@@ -795,6 +795,9 @@ with col_rebalance:
             <div class="result-value">
                 {bull_low:.6f} → {bull_high:.6f}
             </div>
+            <div class="result-subvalue">
+                {(-off_high_pct):.2f}% → {(-off_low_pct):.2f}%
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -811,9 +814,11 @@ with col_rebalance:
             <div class="result-value">
                 {bear_low:.6f} → {bear_high:.6f}
             </div>
+            <div class="result-subvalue">
+                {off_low_pct:.2f}% → {off_high_pct:.2f}%
+            </div>
         </div>
         """, unsafe_allow_html=True)
-
 
 
 # =================== FONCTIONS (INCHANGÉES) ===================
@@ -860,6 +865,7 @@ def V_LP(P, L, P_lower, P_upper):
 
 def V_HODL(P, x0, y0):
     return x0 * P + y0
+    
 # ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
 
 # --- Style Terminal DeFi ---
