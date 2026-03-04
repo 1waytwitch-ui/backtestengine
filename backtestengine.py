@@ -1267,10 +1267,10 @@ st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe
 t1, t2 = st.columns(2)
 
 with t1:
-    tokenA = st.text_input("Token A", "ETH")
+    tokenA = st.text_input("Token A", "Exemple Weth")
 
 with t2:
-    tokenB = st.text_input("Token B", "USDC")
+    tokenB = st.text_input("Token B", "Exemple USDC")
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -1306,24 +1306,24 @@ ratio = (sqrtPh - sqrtP) / (sqrtP * sqrtPh * (sqrtP - sqrtPl))
 # =================== ZERO SWAP BIDIRECTIONNEL ===================
 st.markdown('<div class="section-title">Zero Swap Bidirectionnel</div>', unsafe_allow_html=True)
 
-# Choix de la direction
-direction_select = st.selectbox(
-    "Mode de recalcul",
-    options=["Auto", "Dump", "Pump"],
-    help="Auto: calcule selon la borne la plus éloignée. Dump: priorise New Plow. Pump: priorise New Phigh."
-)
+# Trois colonnes : New Plow | New Phigh | Direction
+col_low, col_high, col_dir = st.columns(3)
 
-c1, c2 = st.columns(2)
-
-with c1:
+with col_low:
     new_P_low = st.number_input("New Plow (dump)", value=P_low * 0.9, step=1.0)
 
-with c2:
+with col_high:
     new_P_high = st.number_input("New Phigh (pump)", value=P_high * 1.1, step=1.0)
+
+with col_dir:
+    direction_select = st.selectbox(
+        "Mode de recalcul",
+        options=["Auto", "Dump", "Pump"],
+        help="Auto: calcule selon la borne la plus éloignée. Dump: priorise New Plow. Pump: priorise New Phigh."
+    )
 
 # Détermination du mode
 mode = None
-
 if direction_select == "Dump":
     mode = "bear"
 elif direction_select == "Pump":
@@ -1335,7 +1335,6 @@ elif direction_select == "Auto":
         mode = "bear"
     elif dist_high > dist_low:
         mode = "bull"
-
 # =================== CALCUL ===================
 if mode == "bear":
 
