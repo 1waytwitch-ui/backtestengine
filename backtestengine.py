@@ -1298,6 +1298,7 @@ st.set_page_config(layout="wide")
 
 # --- Header Terminal Style ---
 st.markdown("""
+<br>
 <div style="
     background-color: #0f141b;
     border: 1px solid #1f2a36;
@@ -1601,21 +1602,111 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 st.markdown("""
+<br>
 <div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:18px;
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 18px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
 ">
-    <span style="color:white;font-size:28px;font-weight:700;">
-        GUIDE COMPLET - ENGAGER DU CAPITAL SUR LP
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
+        GUIDE COMPLET - ENGAGER DU CAPITAL SUR UNE LP
     </span>
 </div>
 """, unsafe_allow_html=True)
 
 guide_html = """
 <style>
+/* ===== GUIDE TERMINAL THEME ===== */
+#guide {
+    font-family: "Courier New", monospace;
+    color: #e6edf3;
+    margin-top: 24px;
+    padding: 20px;
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 12px;
+    box-shadow: 0 0 18px rgba(0,255,136,0.05);
+}
+
+#guide h2, #guide h3, #guide h4 {
+    color: #00ff88;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+#guide p, #guide li {
+    line-height: 1.6em;
+    font-size: 14px;
+    color: #c9d1d9;
+}
+
+#guide ul {
+    margin-left: 20px;
+}
+
+#guide ul li {
+    margin-bottom: 6px;
+}
+
+/* ===== SOMMAIRE ===== */
+#sommaire {
+    background-color: rgba(0,255,136,0.05);
+    border: 1px solid #1f2a36;
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+}
+
+#sommaire h4 {
+    margin-top: 0;
+    font-weight: 700;
+    color: #00ff88;
+}
+
+#sommaire ul {
+    list-style-type: none;
+    padding-left: 10px;
+}
+
+#sommaire ul li a {
+    text-decoration: none;
+    color: #00ff88;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+#sommaire ul li a:hover {
+    text-decoration: underline;
+    opacity: 1;
+}
+
+/* ===== EMPHASE ===== */
+#guide b, #guide strong {
+    color: #ffffff;
+}
+
+#guide em {
+    color: #9cdcfe;
+}
+</style>
+
+<div id="guide">
+<!-- Ton contenu de guide complet ici -->
+</div>
+"""
+st.markdown(guide_html, unsafe_allow_html=True)
+
 /* ===== GUIDE TERMINAL THEME ===== */
 #guide {
     font-family: "Courier New", monospace;
@@ -1860,15 +1951,25 @@ Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et 
 st.markdown(guide_html, unsafe_allow_html=True)
 
 # ======================= video IL =======================
+# --- ATELIER IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
+<br>
 <div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
 ">
-    <span style="color:white;font-size:28px;font-weight:700;">
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
         ATELIER IMPERMANENT LOSS
     </span>
 </div>
@@ -1884,20 +1985,29 @@ with col:
 # ======================= outil atelier IL =======================
 import streamlit.components.v1 as components
 
+# --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
+<br>
 <div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
 ">
-    <span style="color:white;font-size:28px;font-weight:700;">
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
         CALCULATRICE IMPERMANENT LOSS
     </span>
 </div>
 """, unsafe_allow_html=True)
-
 st.set_page_config(layout="wide")
 
 desmos_url = "https://www.desmos.com/calculator/i7mnoyyqdb?lang=fr"
