@@ -9,6 +9,22 @@ import plotly.io as pio
 import yfinance as yf
 import math
 
+# ---- MASQUER MENU ET FOOTER ----
+st.markdown("""
+<style>
+/* Masquer le menu hamburger */
+#MainMenu {visibility: hidden;}
+
+/* Masquer le footer "Made with Streamlit" */
+footer {visibility: hidden;}
+
+/* Eventuellement ajuster le header si tu veux conserver l'espace */
+[data-testid="stAppViewContainer"] {
+    margin-top: 90px;  /* hauteur du header fixe */
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ===================== CONFIG PAGE =====================
 st.set_page_config(
     page_title="LP STRATÉGIES BACKTEST ENGINE",
