@@ -1,14 +1,3 @@
-import streamlit as st
-import requests
-import numpy as np
-import datetime
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-import plotly.express as px
-import plotly.io as pio
-import yfinance as yf
-import math
-
 # ---- MASQUER MENU ET FOOTER ----
 st.markdown("""
 <style>
@@ -24,6 +13,18 @@ footer {visibility: hidden;}
 }
 </style>
 """, unsafe_allow_html=True)
+
+
+import streamlit as st
+import requests
+import numpy as np
+import datetime
+import matplotlib.pyplot as plt
+import plotly.graph_objects as go
+import plotly.express as px
+import plotly.io as pio
+import yfinance as yf
+import math
 
 # ===================== CONFIG PAGE =====================
 st.set_page_config(
