@@ -10,51 +10,15 @@ import yfinance as yf
 import math
 
 
-import streamlit as st
-
-####DARKMODE####
+# ---- HEADER FIXE ----
 st.markdown("""
 <style>
-/* Forcer le thème sombre global */
-body, .css-18e3th9, .block-container, .stApp {
-    background-color: #0b0f14 !important;
-    color: #e6edf3 !important;
-}
-
-/* Texte clair pour tous les éléments */
-h1,h2,h3,h4,h5,h6,p,span,label,div {
-    color: #e6edf3 !important;
-}
-
-/* Inputs, sliders, boutons */
-div[data-baseweb="input"] input, div[data-baseweb="slider"] > div {
-    background-color: #11161d !important;
-    color: #00ff88 !important;
-    border: 1px solid #1f2a36 !important;
-}
-
-/* Masquer menu / footer Streamlit si besoin */
-#MainMenu {visibility: hidden !important;}
-footer {visibility: hidden !important;}
-header [title="Menu"] {display: none !important;}
-</style>
-
-<script>
-/* Forcer le thème sombre sur le body */
-document.body.classList.add("theme-dark");
-</script>
-""", unsafe_allow_html=True)
-
-# ================= HEADER FIXE + MASQUAGE MENU =================
-st.markdown("""
-<style>
-/* Header fixe */
 .deFi-banner {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 90px;
+    height: 90px;  /* ajuster selon le padding + texte */
     z-index: 9999;
     background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding: 25px 30px;
@@ -86,32 +50,34 @@ st.markdown("""
 .telegram-btn { background-color: #6c5ce7; }
 .formation-btn { background-color: #f59e0b; }
 
-/* Décaler le contenu pour le header */
+/* Décaler le reste du contenu */
 [data-testid="stAppViewContainer"] {
-    margin-top: 90px;
+    margin-top: 90px;  /* doit correspondre à la hauteur du header */
 }
-
-/* Masquer menu hamburger et footer */
-#MainMenu {visibility: hidden !important;}
-footer {visibility: hidden !important;}
-header [title="Menu"] {display: none !important;}
 </style>
 
 <div class="deFi-banner">
     <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
     <div class="deFi-buttons">
-        <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank" class="krystal-btn">Krystal</a>
-        <a href="https://plusvalueimposable.streamlit.app/" target="_blank" class="plusvalue-btn">Plus-value imposable</a>
-        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank" class="wallet-btn">DEFI WALLET BACKTEST</a>
+        <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank" class="krystal-btn">
+            Krystal
+        </a>
+        <a href="https://plusvalueimposable.streamlit.app/" target="_blank" class="plusvalue-btn">
+            Plus-value imposable
+        </a>
+        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank" class="wallet-btn">
+            DEFI WALLET BACKTEST
+        </a>
         <a href="https://t.me/Pigeonchanceux" target="_blank" class="telegram-btn">
             <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:30px;height:30px;border-radius:50%; vertical-align: middle; margin-right:5px;">
             Mon Telegram
         </a>
-        <a href="https://shorturl.at/X3sYt" target="_blank" class="formation-btn">Formation code DEFI</a>
+        <a href="https://shorturl.at/X3sYt" target="_blank" class="formation-btn">
+            Formation code DEFI
+        </a>
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 
 # ===================== CONFIG PAGE =====================
 st.set_page_config(
