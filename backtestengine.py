@@ -356,7 +356,7 @@ if not st.session_state.authenticated:
             Code disponible dans <b>DEFI Académie</b>
         </div>
         <!-- BOUTON EXTERNE -->
-        <a href="https://www.youtube.com/channel/UCZL_vS9bsLI4maA4Oja9zyg/join" 
+        <a href="https://kbourcrypto.app/" 
            target="_blank" class="elite-btn">
            Rejoindre la Team Élite
         </a>
