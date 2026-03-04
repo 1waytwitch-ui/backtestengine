@@ -947,19 +947,58 @@ IL_curve = (LP_values / HODL_values - 1) * 100
 
 # --- Graph IL ---
 fig = go.Figure()
-fig.add_trace(go.Scatter(x=prices, y=IL_curve, mode="lines", name="IL(%)", line=dict(color="red", width=3)))
-for px, label, color in [(P_lower,"Low","green"), (P_upper,"High","green"), (P_deposit,"Deposit","blue"), (P_now,"Now","purple")]:
-    fig.add_vline(x=px, line=dict(color=color, width=2, dash="dot" if label in ["Low","High"] else "dash"))
-    fig.add_annotation(x=px, y=max(IL_curve) if label in ["Low","High"] else min(IL_curve),
-                       text=label, showarrow=False, font=dict(color=color, size=12),
-                       yshift=10 if label in ["Low","High"] else -10)
 
-fig.update_xaxes(title="Prix", title_font=dict(color="white", size=14), tickfont=dict(color="white", size=12),
-                 gridcolor="rgba(255,255,255,0.1)")
-fig.update_yaxes(title="IL (%)", title_font=dict(color="white", size=14), tickfont=dict(color="white", size=12),
-                 gridcolor="rgba(255,255,255,0.1)")
-fig.update_layout(height=380, plot_bgcolor="#173a57", paper_bgcolor="#173a57",
-                  title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)))
+# Courbe IL
+fig.add_trace(go.Scatter(
+    x=prices, y=IL_curve, mode="lines", name="IL(%)",
+    line=dict(color="red", width=3)
+))
+
+# Lignes verticales et annotations
+for px, label, color in [
+    (P_lower, "Low", "green"),
+    (P_upper, "High", "green"),
+    (P_deposit, "Deposit", "blue"),
+    (P_now, "Now", "purple")
+]:
+    fig.add_vline(
+        x=px,
+        line=dict(color=color, width=2, dash="dot" if label in ["Low","High"] else "dash")
+    )
+    fig.add_annotation(
+        x=px,
+        y=max(IL_curve) if label in ["Low","High"] else min(IL_curve),
+        text=label,
+        showarrow=False,
+        font=dict(color=color, size=12),
+        yshift=10 if label in ["Low","High"] else -10
+    )
+
+# Axes et grilles
+fig.update_xaxes(
+    title="Prix",
+    title_font=dict(color="white", size=14),
+    tickfont=dict(color="white", size=12),
+    gridcolor="rgba(255,255,255,0.1)",
+    zerolinecolor="rgba(255,255,255,0.2)"
+)
+fig.update_yaxes(
+    title="IL (%)",
+    title_font=dict(color="white", size=14),
+    tickfont=dict(color="white", size=12),
+    gridcolor="rgba(255,255,255,0.1)",
+    zerolinecolor="rgba(255,255,255,0.2)"
+)
+
+# Fond noir complet
+fig.update_layout(
+    height=380,
+    plot_bgcolor="black",   # fond du graphique
+    paper_bgcolor="black",  # fond autour du graphique
+    title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)),
+    legend=dict(font=dict(color="white"))
+)
+
 st.plotly_chart(fig, use_container_width=True)
 
 # --- Valeurs actuelles IL ---
