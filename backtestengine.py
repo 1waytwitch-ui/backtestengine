@@ -687,7 +687,7 @@ with col_range:
 
     st.markdown('<div class="section-title">Range future</div>', unsafe_allow_html=True)
 
-    range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.5)
+    range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.1)
 
     low_offset_pct = -range_percent * 20 / 100
     high_offset_pct = range_percent * 80 / 100
@@ -738,9 +738,9 @@ with col_trigger:
 
     t1, t2 = st.columns(2)
     with t1:
-        trig_low = st.slider("Trigger Low (%)", 0, 100, 10)
+        trig_low = st.slider("Trigger Low (%)", 0.0, 100.0, 10.0, step=0.1)
     with t2:
-        trig_high = st.slider("Trigger High (%)", 0, 100, 90)
+        trig_high = st.slider("Trigger High (%)", 0.0, 100.0, 90.0, step=0.1)
 
     rw = final_high - final_low
     trigger_low_price = final_low + (trig_low/100)*rw
@@ -796,7 +796,7 @@ with col_rebalance:
                 {bull_low:.6f} → {bull_high:.6f}
             </div>
             <div class="result-subvalue">
-                {(-off_high_pct):.2f}% → {(-off_low_pct):.2f}%
+                {(-off_high_pct):.1f}% → {(-off_low_pct):.1f}%
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -815,7 +815,7 @@ with col_rebalance:
                 {bear_low:.6f} → {bear_high:.6f}
             </div>
             <div class="result-subvalue">
-                {off_low_pct:.2f}% → {off_high_pct:.2f}%
+                {off_low_pct:.1f}% → {off_high_pct:.1f}%
             </div>
         </div>
         """, unsafe_allow_html=True)
