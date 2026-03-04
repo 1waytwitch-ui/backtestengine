@@ -1118,183 +1118,28 @@ if st.button("Calculer ATR et RANGE"):
     """, unsafe_allow_html=True)
 
 
-# ======================= BE LP (Terminal Style) =======================
-
-
-st.set_page_config(layout="wide")
-
-# --- Header ---
+# --- Header Terminal Style ---
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
 ">
-    <span style="color:white;font-size:28px;font-weight:700;">
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
         CALCULATRICE BREAK-EVEN LP
     </span>
 </div>
 """, unsafe_allow_html=True)
-
-# ================= TERMINAL STYLE =================
-
-st.markdown("""
-<style>
-
-/* ===== GLOBAL TERMINAL THEME ===== */
-[data-testid="stAppViewContainer"] {
-    background-color: #0b0f14;
-    color: #e6edf3;
-    font-family: "Courier New", monospace;
-}
-
-/* ===== SECTION TITLES ===== */
-.section-title {
-    border-left: 4px solid #00ff88;
-    padding: 8px 14px;
-    margin-top: 24px;
-    margin-bottom: 14px;
-    font-weight: 600;
-    font-size: 16px;
-    background: rgba(0,255,136,0.05);
-    letter-spacing: 1px;
-}
-
-/* ===== INPUTS ===== */
-div[data-baseweb="input"] input {
-    background-color: #11161d !important;
-    color: #00ff88 !important;
-    border: 1px solid #1f2a36 !important;
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-    font-size: 13px;
-}
-
-label {
-    font-size: 12px !important;
-    opacity: 0.7;
-}
-
-/* ===== RESULT CARDS ===== */
-.result-card {
-    background: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 10px;
-    padding: 14px;
-    text-align: left;
-    box-shadow: 0 0 12px rgba(0,255,136,0.05);
-    margin-top: 14px;
-}
-
-.result-title {
-    font-size: 11px;
-    opacity: 0.6;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.result-value {
-    font-size: 18px;
-    font-weight: 600;
-    color: #00ff88;
-    margin-top: 6px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-# =================== CONFIGURATION ===================
-
-st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe_allow_html=True)
-
-pair_type = st.selectbox(
-    "Type de paire",
-    ["Volatile / Stable", "Double Volatile"]
-)
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.subheader("METRICS")
-    capital = st.number_input("Capital engagé ($)", value=6400.0, step=0.01, format="%.2f")
-    fees = st.number_input("Fees accumulés ($)", value=140.0, step=0.01, format="%.2f")
-
-with col2:
-    st.subheader("Token A")
-    qty_a = st.number_input("Quantité", value=1.5, step=0.0001, format="%.6f")
-    price_a = st.number_input("Prix actuel ($)", value=2950.0, step=0.01, format="%.2f")
-
-with col3:
-    if pair_type == "Volatile / Stable":
-        st.subheader("Token B (Stable)")
-        stable_amount = st.number_input("Montant ($)", value=1500.0, step=0.01, format="%.2f")
-        value = qty_a * price_a + stable_amount
-        effective_b = stable_amount + fees
-    else:
-        st.subheader("Token B (Volatile)")
-        qty_b = st.number_input("Quantité", value=0.5, step=0.0001, format="%.6f")
-        price_b = st.number_input("Prix actuel ($)", value=2000.0, step=0.01, format="%.2f")
-        value = qty_a * price_a + qty_b * price_b
-        effective_b = qty_b * price_b + fees
-
-# =================== CALCULS ===================
-
-pnl = value - capital
-pnl_to_be = capital - value
-pnl_pct = (value / capital - 1) * 100
-break_even_a = (capital - effective_b) / qty_a
-
-break_even_b = None
-if pair_type == "Double Volatile":
-    break_even_b = (capital - (qty_a * price_a) - fees) / qty_b
-
-# =================== RESULTATS ===================
-
-st.markdown('<div class="section-title">Résultats Break-Even LP</div>', unsafe_allow_html=True)
-
-# Création des cartes de résultats
-cards = []
-
-cards.append({
-    "title": "Valeur actuelle",
-    "value": f"{value:.2f} $",
-    "color": "#FF6B6B" if pnl < 0 else "#2EF2A2"
-})
-cards.append({
-    "title": "P&L",
-    "value": f"{pnl:.2f} $ ({pnl_pct:.2f}%)",
-    "color": "#FF6B6B" if pnl < 0 else "#2EF2A2"
-})
-cards.append({
-    "title": "P&L restante pour BE",
-    "value": f"{pnl_to_be:.2f} $",
-    "color": "#FF6B6B" if pnl < 0 else "#2EF2A2"
-})
-cards.append({
-    "title": "Break-even Token A",
-    "value": f"{break_even_a:.2f} $",
-    "color": "#00ff88"
-})
-if pair_type == "Double Volatile":
-    cards.append({
-        "title": "Break-even Token B",
-        "value": f"{break_even_b:.2f} $",
-        "color": "#00ff88"
-    })
-
-# Affichage en colonnes
-cols = st.columns(len(cards))
-for i, card in enumerate(cards):
-    with cols[i]:
-        st.markdown(f"""
-        <div class="result-card">
-            <div class="result-title">{card['title']}</div>
-            <div class="result-value" style="color:{card['color']};">{card['value']}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
 
 # ======================= Less IL =======================
 
