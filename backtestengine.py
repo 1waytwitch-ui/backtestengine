@@ -1267,7 +1267,7 @@ st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe
 t1, t2 = st.columns(2)
 
 with t1:
-    tokenA = st.text_input("Token A", "Exemple Weth")
+    tokenA = st.text_input("Token A", "Exemple WETH")
 
 with t2:
     tokenB = st.text_input("Token B", "Exemple USDC")
