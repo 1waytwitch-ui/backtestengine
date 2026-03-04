@@ -1065,7 +1065,6 @@ if st.button("Calculer ATR et RANGE"):
 
 # ======================= BE LP (Terminal Style) =======================
 
-import streamlit as st
 
 st.set_page_config(layout="wide")
 
@@ -1243,6 +1242,8 @@ for i, card in enumerate(cards):
 
 
 # ======================= Less IL =======================
+
+
 st.set_page_config(layout="wide")
 
 # --- Header ---
@@ -1260,116 +1261,18 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ================= TERMINAL DEFI STYLE =================
-st.markdown("""
-<style>
-
-/* ===== GLOBAL TERMINAL THEME ===== */
-[data-testid="stAppViewContainer"] {
-    background-color: #0b0f14;
-    color: #e6edf3;
-    font-family: "Courier New", monospace;
-}
-
-/* ===== SECTION TITLES ===== */
-.section-title {
-    border-left: 4px solid #00ff88;
-    padding: 8px 14px;
-    margin-top: 24px;
-    margin-bottom: 14px;
-    font-weight: 600;
-    font-size: 16px;
-    background: rgba(0,255,136,0.05);
-    letter-spacing: 1px;
-}
-
-/* ===== INPUTS ===== */
-div[data-baseweb="input"] input {
-    background-color: #11161d !important;
-    color: #00ff88 !important;
-    border: 1px solid #1f2a36 !important;
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-    font-size: 13px;
-}
-
-label {
-    font-size: 12px !important;
-    opacity: 0.7;
-}
-
-/* ===== RESULT CARDS ===== */
-.result-card {
-    background: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 10px;
-    padding: 14px;
-    text-align: left;
-    box-shadow: 0 0 12px rgba(0,255,136,0.05);
-}
-
-.result-card:hover {
-    box-shadow: 0 0 18px rgba(0,255,136,0.15);
-}
-
-.result-title {
-    font-size: 11px;
-    opacity: 0.6;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.result-value {
-    font-size: 18px;
-    font-weight: 600;
-    color: #00ff88;
-    margin-top: 6px;
-}
-
-/* ===== WIDE CARD ===== */
-.result-card-wide {
-    background: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 10px;
-    padding: 16px;
-    margin-top: 14px;
-    box-shadow: 0 0 12px rgba(0,255,136,0.05);
-}
-
-/* ===== SLIDER ===== */
-div[data-baseweb="slider"] > div {
-    color: #00ff88 !important;
-}
-
-/* ===== EXPANDER FIX ===== */
-details summary {
-    color: #00ff88 !important;
-    background-color: #11161d !important;
-    border: 1px solid #1f2a36 !important;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-}
-
-details[open] summary {
-    color: #00ff88 !important;
-}
-
-</style>
-""", unsafe_allow_html=True)
-
 # =================== CONFIGURATION ===================
 st.markdown('<div class="section-title">Configuration de la paire</div>', unsafe_allow_html=True)
 
 t1, t2 = st.columns(2)
 
 with t1:
-    tokenA = st.text_input("Token A", "Token A")
+    tokenA = st.text_input("Token A", "ETH")
 
 with t2:
-    tokenB = st.text_input("Token B", "Token B")
+    tokenB = st.text_input("Token B", "USDC")
 
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     price_tokenA = st.number_input(f"Prix {tokenA} ($)", value=1850.0, step=1.0)
@@ -1378,13 +1281,10 @@ with col2:
     price_tokenB = st.number_input(f"Prix {tokenB} ($)", value=1.0, step=0.01)
 
 with col3:
-    P_low = st.number_input("Plow", value=1800.0, step=1.0)
+    P_low = st.number_input("Plow initial", value=1800.0, step=1.0)
 
 with col4:
-    P_high = st.number_input("Phigh", value=2100.0, step=1.0)
-
-with col5:
-    new_P_low = st.number_input("New Plow", value=1600.0, step=1.0)
+    P_high = st.number_input("Phigh initial", value=2100.0, step=1.0)
 
 if price_tokenB == 0:
     st.error("Le prix du token B ne peut pas être 0.")
@@ -1396,35 +1296,91 @@ if not (P_low < P_current < P_high):
     st.error("Le prix actuel doit être strictement à l'intérieur du range initial.")
     st.stop()
 
-if new_P_low >= P_current:
-    st.error("La nouvelle borne basse doit être inférieure au prix actuel.")
-    st.stop()
-
-# =================== CALCULS ===================
+# =================== CALCUL RATIO ===================
 sqrtP = math.sqrt(P_current)
 sqrtPl = math.sqrt(P_low)
 sqrtPh = math.sqrt(P_high)
-sqrtNewPl = math.sqrt(new_P_low)
 
 ratio = (sqrtPh - sqrtP) / (sqrtP * sqrtPh * (sqrtP - sqrtPl))
-denominator = 1 - ratio * sqrtP * (sqrtP - sqrtNewPl)
 
-if denominator <= 0:
-    st.error("Configuration impossible : la nouvelle borne haute tend vers l'infini.")
-    st.stop()
+# =================== ZERO SWAP BIDIRECTIONNEL ===================
+st.markdown('<div class="section-title">Zero Swap Bidirectionnel</div>', unsafe_allow_html=True)
 
-sqrtNewPh = sqrtP / denominator
-new_P_high = sqrtNewPh ** 2
+c1, c2 = st.columns(2)
+
+with c1:
+    new_P_low = st.number_input("New Plow (dump)", value=P_low * 0.9, step=1.0)
+
+with c2:
+    new_P_high = st.number_input("New Phigh (pump)", value=P_high * 1.1, step=1.0)
+
+# Détection direction automatique
+dist_low = abs(P_current - new_P_low)
+dist_high = abs(new_P_high - P_current)
+
+mode = None
+
+if dist_low > dist_high:
+    mode = "bear"
+elif dist_high > dist_low:
+    mode = "bull"
+
+# =================== CALCUL ===================
+
+if mode == "bear":
+
+    if new_P_low >= P_current:
+        st.error("La nouvelle borne basse doit être inférieure au prix actuel.")
+        st.stop()
+
+    sqrtNewPl = math.sqrt(new_P_low)
+    denominator = 1 - ratio * sqrtP * (sqrtP - sqrtNewPl)
+
+    if denominator <= 0:
+        st.error("Configuration impossible : borne haute tend vers l'infini.")
+        st.stop()
+
+    sqrtNewPh = sqrtP / denominator
+    new_P_high = sqrtNewPh ** 2
+
+    direction_label = "🔻 Mode actif : Dump"
+
+elif mode == "bull":
+
+    if new_P_high <= P_current:
+        st.error("La nouvelle borne haute doit être supérieure au prix actuel.")
+        st.stop()
+
+    sqrtNewPh = math.sqrt(new_P_high)
+    numerator = (1 - (sqrtP / sqrtNewPh))
+    sqrtNewPl = sqrtP - (numerator / (ratio * sqrtP))
+
+    if sqrtNewPl <= 0:
+        st.error("Configuration impossible : borne basse négative.")
+        st.stop()
+
+    new_P_low = sqrtNewPl ** 2
+    direction_label = "🔺 Mode actif : Pump"
+
+else:
+    direction_label = "— Ajuste une borne pour activer le recalcul —"
 
 # =================== RESULTATS ===================
-st.markdown('<div class="section-title">Résultats Zero Swap</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Résultats</div>', unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="result-card">
+    <div class="result-title">Direction active</div>
+    <div class="result-value">{direction_label}</div>
+</div>
+""", unsafe_allow_html=True)
 
 r1, r2, r3 = st.columns(3)
 
 with r1:
     st.markdown(f"""
     <div class="result-card">
-        <div class="result-title">Ratio {tokenA}/{tokenB}</div>
+        <div class="result-title">Ratio Zero Swap</div>
         <div class="result-value">{ratio:.10f}</div>
     </div>
     """, unsafe_allow_html=True)
@@ -1432,147 +1388,26 @@ with r1:
 with r2:
     st.markdown(f"""
     <div class="result-card">
-        <div class="result-title">Nouvelle borne haute</div>
-        <div class="result-value">{new_P_high:.2f}</div>
+        <div class="result-title">Nouvelle borne basse</div>
+        <div class="result-value">{new_P_low:.2f}</div>
     </div>
     """, unsafe_allow_html=True)
 
 with r3:
     st.markdown(f"""
     <div class="result-card">
-        <div class="result-title">Prix actuel</div>
-        <div class="result-value">{P_current:.6f}</div>
+        <div class="result-title">Nouvelle borne haute</div>
+        <div class="result-value">{new_P_high:.2f}</div>
     </div>
     """, unsafe_allow_html=True)
 
 st.markdown(f"""
 <div class="result-card-wide">
-    <div class="result-title">Bornes</div>
+    <div class="result-title">Range recalibré</div>
     <div class="result-value">
-        {P_low} → {new_P_low} &nbsp;&nbsp; | &nbsp;&nbsp; {P_high} → {new_P_high:.2f}
+        {new_P_low:.2f} → {new_P_high:.2f}
     </div>
 </div>
-""", unsafe_allow_html=True)
-
-# =================== RESSERREMENT ===================
-st.markdown('<div class="section-title">Resserrement du range</div>', unsafe_allow_html=True)
-
-P_rebalance = st.number_input(
-    "Prix actuel au moment du resserrement",
-    value=P_current,
-    step=1.0
-)
-
-if P_low < P_rebalance < P_high:
-
-    tighten_percent = st.slider(
-        "Largeur du nouveau range (%) autour du prix actuel",
-        min_value=1,
-        max_value=50,
-        value=10
-    )
-
-    sqrtP_reb = math.sqrt(P_rebalance)
-    new_tight_P_low = P_rebalance * (1 - tighten_percent / 100)
-    sqrtNewTightPl = math.sqrt(new_tight_P_low)
-
-    ratio_reb = (sqrtPh - sqrtP_reb) / (sqrtP_reb * sqrtPh * (sqrtP_reb - sqrtPl))
-    denominator_tight = 1 - ratio_reb * sqrtP_reb * (sqrtP_reb - sqrtNewTightPl)
-
-    if denominator_tight <= 0:
-        st.warning("Range trop agressif — borne haute tend vers l'infini.")
-    else:
-        sqrtNewTightPh = sqrtP_reb / denominator_tight
-        new_tight_P_high = sqrtNewTightPh ** 2
-
-        c1, c2, c3 = st.columns(3)
-
-        with c1:
-            st.markdown(f"""
-            <div class="result-card">
-                <div class="result-title">Prix utilisé</div>
-                <div class="result-value">{P_rebalance:.6f}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        with c2:
-            st.markdown(f"""
-            <div class="result-card">
-                <div class="result-title">Nouvelle borne basse</div>
-                <div class="result-value">{new_tight_P_low:.2f}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        with c3:
-            st.markdown(f"""
-            <div class="result-card">
-                <div class="result-title">Nouvelle borne haute</div>
-                <div class="result-value">{new_tight_P_high:.2f}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-else:
-    st.info("Le prix n'est pas dans le range initial — resserrement impossible.")
-
-# =================== TERMINAL OVERLAY STYLE ===================
-st.markdown("""
-<style>
-
-/* ===== TERMINAL EXPANDER CONTAINER ===== */
-div[data-testid="stExpander"] {
-    background-color: #0f141b !important;
-    border: 1px solid #1f2a36 !important;
-    border-radius: 12px !important;
-    box-shadow: 0 0 25px rgba(0,255,136,0.05);
-    padding: 8px 12px 12px 12px;
-}
-
-/* ===== HEADER ===== */
-div[data-testid="stExpander"] > div:first-child {
-    background: linear-gradient(135deg, #0b0f14 0%, #0f1c1a 40%, #003d2e 100%);
-    border-radius: 10px;
-    padding: 10px 14px;
-}
-
-/* Header text */
-div[data-testid="stExpander"] summary {
-    font-family: "Courier New", monospace;
-    font-size: 14px;
-    font-weight: 600;
-    color: #00ff88 !important;
-}
-
-/* Internal section titles */
-div[data-testid="stExpander"] h3 {
-    color: #00ff88;
-    font-family: "Courier New", monospace;
-    margin-top: 22px;
-    letter-spacing: 0.5px;
-}
-
-/* Markdown text */
-div[data-testid="stExpander"] p {
-    color: #c9d1d9;
-    font-family: "Courier New", monospace;
-    font-size: 13px;
-}
-
-/* Latex display blocks */
-div[data-testid="stExpander"] .katex-display {
-    background-color: #0b0f14;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid #1f2a36;
-    box-shadow: inset 0 0 8px rgba(0,255,136,0.03);
-}
-
-/* Subtle hover glow */
-div[data-testid="stExpander"]:hover {
-    box-shadow: 0 0 35px rgba(0,255,136,0.08);
-    transition: 0.3s ease;
-}
-
-</style>
 """, unsafe_allow_html=True)
 
 # =================== FORMULES ===================
