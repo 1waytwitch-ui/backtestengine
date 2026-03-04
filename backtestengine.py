@@ -990,11 +990,11 @@ fig.update_yaxes(
     zerolinecolor="rgba(255,255,255,0.2)"
 )
 
-# Fond noir complet
+# Fond couleur #0b0f14
 fig.update_layout(
     height=380,
-    plot_bgcolor="black",   # fond du graphique
-    paper_bgcolor="black",  # fond autour du graphique
+    plot_bgcolor="#0b0f14",   # fond du graphique
+    paper_bgcolor="#0b0f14",  # fond autour du graphique
     title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)),
     legend=dict(font=dict(color="white"))
 )
