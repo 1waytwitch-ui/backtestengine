@@ -1293,24 +1293,94 @@ for i, card in enumerate(cards):
         </div>
         """, unsafe_allow_html=True)
 
-# ======================= Less IL =======================
-
-
+# ======================= LESS IL / ZERO SWAP TERMINAL STYLE =======================
 st.set_page_config(layout="wide")
 
-# --- Header ---
+# --- Header Terminal Style ---
 st.markdown("""
 <div style="
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding:20px;
-    border-radius:12px;
-    margin-top:20px;
-    margin-bottom:20px;
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
 ">
-    <span style="color:white;font-size:28px;font-weight:700;">
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
         Zero Swap Rebalance
     </span>
 </div>
+""", unsafe_allow_html=True)
+
+# ================= TERMINAL THEME CSS =================
+st.markdown("""
+<style>
+/* ===== GLOBAL TERMINAL THEME ===== */
+[data-testid="stAppViewContainer"] {
+    background-color: #0b0f14;
+    color: #e6edf3;
+    font-family: "Courier New", monospace;
+}
+
+/* ===== SECTION TITLES ===== */
+.section-title {
+    border-left: 4px solid #00ff88;
+    padding: 8px 14px;
+    margin-top: 24px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    background: rgba(0,255,136,0.05);
+    letter-spacing: 1px;
+}
+
+/* ===== INPUTS ===== */
+div[data-baseweb="input"] input {
+    background-color: #11161d !important;
+    color: #00ff88 !important;
+    border: 1px solid #1f2a36 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    font-size: 13px;
+}
+
+label {
+    font-size: 12px !important;
+    opacity: 0.7;
+}
+
+/* ===== RESULT CARDS ===== */
+.result-card {
+    background: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: left;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
+    margin-top: 14px;
+}
+
+.result-title {
+    font-size: 11px;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.result-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #00ff88;
+    margin-top: 6px;
+}
+</style>
 """, unsafe_allow_html=True)
 
 # =================== CONFIGURATION ===================
