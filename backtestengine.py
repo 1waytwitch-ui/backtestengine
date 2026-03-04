@@ -384,7 +384,15 @@ div[data-baseweb="checkbox"] label {
 
 # ======= HEADER DE LA CHECKLIST ======
 st.markdown("""
-<div class="checklist-card">
+<div class="checklist-card" style="
+    background-color:#0f141b;
+    border:1px solid #1f2a36;
+    border-radius:12px;
+    padding:16px;
+    margin-top:20px;
+    margin-bottom:10px;
+    box-shadow:0 0 12px rgba(0,255,136,0.05);
+">
     <span style="font-weight:700; font-size:20px; color:#00ff88;">
         Checklist avant utilisation de l'outil
     </span>
@@ -417,9 +425,28 @@ user_check = [st.checkbox(item, key=item) for item in checklist_items]
 if st.button("Valider le questionnaire"):
     st.session_state.checklist_validee = True
 
-# Blocage si non validé
-if not st.session_state.get("checklist_validee", False):
-    st.info("Veuillez compléter et valider le questionnaire pour accéder à l'application.")
+# ======= BLOCAGE SI NON SUFFISANT =======
+min_valid = 9  # par exemple, nombre minimum de réponses pour débloquer
+
+score = sum(user_check)
+total = len(checklist_items)
+
+if not st.session_state.get("checklist_validee", False) or score < min_valid:
+    st.markdown(f"""
+    <div style="
+        background-color:#0f141b;
+        border:1px solid #1f2a36;
+        border-radius:10px;
+        padding:16px;
+        color:#00ff88;
+        font-family: 'Courier New', monospace;
+        font-size:14px;
+        margin-bottom:20px;
+    ">
+    ⚠️ Veuillez compléter et valider le questionnaire pour accéder à l'application.  
+    Réponses actuelles : {score}/{total} (minimum requis : {min_valid})
+    </div>
+    """, unsafe_allow_html=True)
     st.stop()
 
 
