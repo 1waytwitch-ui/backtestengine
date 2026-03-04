@@ -358,31 +358,37 @@ if not st.session_state.authenticated:
     st.stop()
 
 
-# =======================
-# CHECKLIST CLMM
-# =======================
-
-st.markdown("<div class='card'>", unsafe_allow_html=True)
-
-# Titre coloré style terminal
+# ======= STYLE CHECKLIST TERMINAL ======
 st.markdown("""
-<div style="
+<style>
+/* Label des checkboxes */
+div[data-baseweb="checkbox"] label {
+    font-family: "Courier New", monospace;
+    color: #00ff88;
+    font-size: 13px;
+}
+
+/* Card de la checklist */
+.checklist-card {
     background-color: #0b0f14;
     border: 1px solid #00ff88;
-    padding: 12px 16px;
     border-radius: 8px;
+    padding: 12px 16px;
     margin-top: 20px;
-    font-family: 'Courier New', monospace;
-">
-    <span style='color:#00ff88; font-size:20px; font-weight:700;'>
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ======= HEADER DE LA CHECKLIST ======
+st.markdown("""
+<div class="checklist-card">
+    <span style="font-weight:700; font-size:20px; color:#00ff88;">
         Checklist avant utilisation de l'outil
     </span>
 </div>
 """, unsafe_allow_html=True)
 
-# =======================
-# Items de la checklist
-# =======================
+# ======= ITEMS =======
 checklist_items = [
     "Je comprends que mon capital n'est productif que lorsqu'il est dans le range",
     "J'ai défini un range cohérent avec la volatilité actuelle et de la tendence du marché",
@@ -401,72 +407,17 @@ checklist_items = [
     "Je comprends que l'APR affiché sur l'aggragateur est indicatif et non garanti"
 ]
 
-# =======================
-# Session state pour validation
-# =======================
-if "checklist_validee" not in st.session_state:
-    st.session_state.checklist_validee = False
+# ======= CHECKBOXES =======
+user_check = [st.checkbox(item, key=item) for item in checklist_items]
 
-# Création des cases à cocher
-user_check = []
-for item in checklist_items:
-    user_check.append(
-        st.checkbox(f"<span style='color:#00ff88;font-size:13px;font-family:Courier New'>{item}</span>", 
-                    key=item, 
-                    unsafe_allow_html=True)
-    )
-
-# Bouton pour valider le questionnaire (style terminal)
+# ======= BOUTON VALIDATION =======
 if st.button("Valider le questionnaire"):
-    st.session_state.checklist_validee = True  # mémorise la validation
+    st.session_state.checklist_validee = True
 
-# Tant que le questionnaire n'est pas validé, on bloque le reste de l'app
-if not st.session_state.checklist_validee:
+# Blocage si non validé
+if not st.session_state.get("checklist_validee", False):
     st.info("Veuillez compléter et valider le questionnaire pour accéder à l'application.")
     st.stop()
-
-# =======================
-# Partie qui ne s'affiche qu'après validation
-# =======================
-score = sum(user_check)
-total = len(checklist_items)
-
-st.write(f"Niveau de compréhension : {score}/{total}")
-
-if score <= 8:
-    prof_color = "red"
-    prof_text = "Exposition non maîtrisée"
-elif score <= 11:
-    prof_color = "orange"
-    prof_text = "Exposition partiellement maîtrisée"
-else:
-    prof_color = "green"
-    prof_text = "Exposition maîtrisée"
-
-st.markdown(
-    f"<div style='font-weight:700; color:{prof_color}; font-size:18px; font-family:Courier New'>"
-    f"Profil CLMM : {prof_text}</div>",
-    unsafe_allow_html=True
-)
-
-st.progress(int(score / total * 100))
-
-if prof_text == "Exposition non maîtrisée":
-    st.warning(
-        "Votre compréhension de la liquidité concentrée est insuffisante. "
-        "Le déploiement d'une LP est fortement déconseillé sans clarification des points ci-dessus."
-    )
-    st.stop()
-elif prof_text == "Exposition partiellement maîtrisée":
-    st.info(
-        "Vous pouvez utiliser l'outil, mais avec des ranges prudents et des montants limités."
-    )
-else:
-    st.success(
-        "Profil adapté à l'apport de liquidité concentrée. Vous pouvez poursuivre l'analyse."
-    )
-
-st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ----------------------------- LAYOUT -----------------------------
