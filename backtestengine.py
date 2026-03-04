@@ -9,21 +9,73 @@ import plotly.io as pio
 import yfinance as yf
 import math
 
-# ---- MASQUER MENU ET FOOTER ----
+# ================= HEADER FIXE + MASQUAGE MENU =================
 st.markdown("""
 <style>
-/* Masquer le menu hamburger */
-#MainMenu {visibility: hidden;}
-
-/* Masquer le footer "Made with Streamlit" */
-footer {visibility: hidden;}
-
-/* Eventuellement ajuster le header si tu veux conserver l'espace */
-[data-testid="stAppViewContainer"] {
-    margin-top: 90px;  /* hauteur du header fixe */
+/* Header fixe */
+.deFi-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    z-index: 9999;
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
+    padding: 25px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
 }
+
+/* Titres et boutons */
+.deFi-title-text {
+    font-size: 36px;
+    font-weight: 700;
+    color: white !important;
+}
+.deFi-buttons a {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    margin-left: 10px;
+}
+.krystal-btn { background-color: #06b6d4; }
+.plusvalue-btn { background-color: #10b981; }
+.wallet-btn { background-color: #a17fff; }
+.telegram-btn { background-color: #6c5ce7; }
+.formation-btn { background-color: #f59e0b; }
+
+/* Décaler le contenu pour le header */
+[data-testid="stAppViewContainer"] {
+    margin-top: 90px;
+}
+
+/* Masquer menu hamburger et footer */
+#MainMenu {visibility: hidden !important;}
+footer {visibility: hidden !important;}
+header [title="Menu"] {display: none !important;}
 </style>
+
+<div class="deFi-banner">
+    <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
+    <div class="deFi-buttons">
+        <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank" class="krystal-btn">Krystal</a>
+        <a href="https://plusvalueimposable.streamlit.app/" target="_blank" class="plusvalue-btn">Plus-value imposable</a>
+        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank" class="wallet-btn">DEFI WALLET BACKTEST</a>
+        <a href="https://t.me/Pigeonchanceux" target="_blank" class="telegram-btn">
+            <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:30px;height:30px;border-radius:50%; vertical-align: middle; margin-right:5px;">
+            Mon Telegram
+        </a>
+        <a href="https://shorturl.at/X3sYt" target="_blank" class="formation-btn">Formation code DEFI</a>
+    </div>
+</div>
 """, unsafe_allow_html=True)
+
 
 # ===================== CONFIG PAGE =====================
 st.set_page_config(
@@ -194,74 +246,6 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
-# ---- HEADER FIXE ----
-st.markdown("""
-<style>
-.deFi-banner {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 90px;  /* ajuster selon le padding + texte */
-    z-index: 9999;
-    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-    padding: 25px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
-}
-
-/* Titres et boutons */
-.deFi-title-text {
-    font-size: 36px;
-    font-weight: 700;
-    color: white !important;
-}
-.deFi-buttons a {
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-    text-decoration: none;
-    padding: 8px 16px;
-    border-radius: 12px;
-    margin-left: 10px;
-}
-.krystal-btn { background-color: #06b6d4; }
-.plusvalue-btn { background-color: #10b981; }
-.wallet-btn { background-color: #a17fff; }
-.telegram-btn { background-color: #6c5ce7; }
-.formation-btn { background-color: #f59e0b; }
-
-/* Décaler le reste du contenu */
-[data-testid="stAppViewContainer"] {
-    margin-top: 90px;  /* doit correspondre à la hauteur du header */
-}
-</style>
-
-<div class="deFi-banner">
-    <div class="deFi-title-text">LP STRATÉGIES BACKTEST ENGINE</div>
-    <div class="deFi-buttons">
-        <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank" class="krystal-btn">
-            Krystal
-        </a>
-        <a href="https://plusvalueimposable.streamlit.app/" target="_blank" class="plusvalue-btn">
-            Plus-value imposable
-        </a>
-        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank" class="wallet-btn">
-            DEFI WALLET BACKTEST
-        </a>
-        <a href="https://t.me/Pigeonchanceux" target="_blank" class="telegram-btn">
-            <img src="https://t.me/i/userpic/320/Pigeonchanceux.jpg" style="width:30px;height:30px;border-radius:50%; vertical-align: middle; margin-right:5px;">
-            Mon Telegram
-        </a>
-        <a href="https://shorturl.at/X3sYt" target="_blank" class="formation-btn">
-            Formation code DEFI
-        </a>
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
 
 # ---- DISCLAIMER ----
