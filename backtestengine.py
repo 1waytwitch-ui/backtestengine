@@ -1624,6 +1624,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+# ===== CSS TERMINAL THEME =====
 guide_html = """
 <style>
 /* ===== GUIDE TERMINAL THEME ===== */
@@ -1632,87 +1633,6 @@ guide_html = """
     color: #e6edf3;
     margin-top: 24px;
     padding: 20px;
-    background-color: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 12px;
-    box-shadow: 0 0 18px rgba(0,255,136,0.05);
-}
-
-#guide h2, #guide h3, #guide h4 {
-    color: #00ff88;
-    margin-top: 28px;
-    margin-bottom: 10px;
-    letter-spacing: 0.5px;
-}
-
-#guide p, #guide li {
-    line-height: 1.6em;
-    font-size: 14px;
-    color: #c9d1d9;
-}
-
-#guide ul {
-    margin-left: 20px;
-}
-
-#guide ul li {
-    margin-bottom: 6px;
-}
-
-/* ===== SOMMAIRE ===== */
-#sommaire {
-    background-color: rgba(0,255,136,0.05);
-    border: 1px solid #1f2a36;
-    padding: 18px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-}
-
-#sommaire h4 {
-    margin-top: 0;
-    font-weight: 700;
-    color: #00ff88;
-}
-
-#sommaire ul {
-    list-style-type: none;
-    padding-left: 10px;
-}
-
-#sommaire ul li a {
-    text-decoration: none;
-    color: #00ff88;
-    font-size: 13px;
-    opacity: 0.9;
-}
-
-#sommaire ul li a:hover {
-    text-decoration: underline;
-    opacity: 1;
-}
-
-/* ===== EMPHASE ===== */
-#guide b, #guide strong {
-    color: #ffffff;
-}
-
-#guide em {
-    color: #9cdcfe;
-}
-</style>
-
-<div id="guide">
-<!-- Ton contenu de guide complet ici -->
-</div>
-"""
-st.markdown(guide_html, unsafe_allow_html=True)
-
-/* ===== GUIDE TERMINAL THEME ===== */
-#guide {
-    font-family: "Courier New", monospace;
-    color: #e6edf3;
-    margin-top: 20px;
-    padding: 24px;
     background-color: #0f141b;
     border: 1px solid #1f2a36;
     border-radius: 12px;
@@ -1809,6 +1729,11 @@ st.markdown(guide_html, unsafe_allow_html=True)
 </style>
 
 <div id="guide">
+<!-- Ton contenu de guide complet ici -->
+</div>
+"""
+
+st.markdown(guide_html, unsafe_allow_html=True)
 
 <!-- Introduction -->
 <div class="encadre">
