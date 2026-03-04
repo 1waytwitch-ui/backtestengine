@@ -178,20 +178,25 @@ def get_price_usd(token):
     except:
         return 0.0, False
 
-# ---- HEADER ----
+# ---- HEADER FIXE ----
 st.markdown("""
 <style>
 .deFi-banner {
+    position: sticky;  /* ou fixed si tu veux toujours visible même au scroll long */
+    top: 0;
+    width: 100%;
+    z-index: 9999;
     background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding: 25px 30px;
-    border-radius: 18px;
+    border-radius: 0px;  /* pour sticky, mieux sans bord arrondi sur les côtés */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border: 1px solid rgba(255,255,255,0.12);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
     box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
-    margin-bottom: 25px;
 }
+
+/* Titres et boutons */
 .deFi-title-text {
     font-size: 36px;
     font-weight: 700;
@@ -206,21 +211,11 @@ st.markdown("""
     border-radius: 12px;
     margin-left: 10px;
 }
-.krystal-btn {
-    background-color: #06b6d4;
-}
-.plusvalue-btn {
-    background-color: #10b981;
-}
-.wallet-btn {
-    background-color: #a17fff;
-}
-.telegram-btn {
-    background-color: #6c5ce7;
-}
-.formation-btn {
-    background-color: #f59e0b;
-}
+.krystal-btn { background-color: #06b6d4; }
+.plusvalue-btn { background-color: #10b981; }
+.wallet-btn { background-color: #a17fff; }
+.telegram-btn { background-color: #6c5ce7; }
+.formation-btn { background-color: #f59e0b; }
 </style>
 
 <div class="deFi-banner">
