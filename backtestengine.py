@@ -293,7 +293,7 @@ if st.session_state.show_disclaimer:
     """, unsafe_allow_html=True)
 
 # -----------------------
-# CODE SECRET - THEME TERMINAL
+# CODE SECRET - THEME TERMINAL AVEC BOUTON VALIDER
 # -----------------------
 SECRET_CODE = st.secrets["Secret_Code"]
 
@@ -302,7 +302,7 @@ if "authenticated" not in st.session_state:
 
 if not st.session_state.authenticated:
 
-    # HTML + CSS overlay + bouton en thème terminal
+    # HTML + CSS overlay + boutons en thème terminal
     st.markdown("""
     <style>
     .login-card {
@@ -329,19 +329,21 @@ if not st.session_state.authenticated:
         margin-bottom: 18px; 
         line-height: 1.4em;
     }
-    .elite-btn {
+    .elite-btn, .stButton button {
         display: inline-block;
-        background-color: #00ff88;
+        background-color: #00ff88 !important;
         color: #0b0f14 !important;
-        font-size: 14px;
-        font-weight: 700;
+        font-size: 14px !important;
+        font-weight: 700 !important;
         text-decoration: none !important;
-        padding: 8px 14px;
-        border-radius: 10px;
+        padding: 8px 14px !important;
+        border-radius: 10px !important;
         transition: transform 0.15s ease, box-shadow 0.15s ease;
         margin-bottom: 18px;
+        border: none !important;
+        cursor: pointer;
     }
-    .elite-btn:hover {
+    .elite-btn:hover, .stButton button:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(0,255,136,0.4);
     }
@@ -363,6 +365,8 @@ if not st.session_state.authenticated:
 
     # INPUT STREAMLIT séparé pour que ce soit cliquable
     st.text_input("Code d'accès", key="secret_code", type="password")
+
+    # BOUTON STREAMLIT VALIDER stylé
     if st.button("Valider", use_container_width=True):
         if st.session_state.secret_code == SECRET_CODE:
             st.session_state.authenticated = True
