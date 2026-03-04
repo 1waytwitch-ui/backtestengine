@@ -10,6 +10,9 @@ import yfinance as yf
 import math
 
 
+# Forcer l'application en mode écran large
+st.set_page_config(layout="wide")
+
 # ---- HEADER FIXE COMPACT & THEME TERMINAL ----
 st.markdown("""
 <style>
