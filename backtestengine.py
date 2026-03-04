@@ -89,7 +89,7 @@ st.markdown("""
 
 /* ================= ROOT ================= */
 :root {
-    --bg-main: #000000;
+    --bg-main: #0b0f14;
     --bg-card: #121716;
     --bg-soft: #181f1e;
     --accent: #1de9b6;
