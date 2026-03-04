@@ -251,35 +251,42 @@ st.markdown("""
 # ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
     st.markdown("""
-    <div style="
-        background-color: #fff3cd;
-        border-left: 6px solid #ffca2c;
+    <style>
+    .disclaimer-card {
+        background-color: #0b0f14;
+        border-left: 6px solid #00ff88;
         padding: 15px 20px;
         border-radius: 8px;
-        color: #000;
+        color: #e6edf3;
         margin-bottom: 25px;
         font-size: 15px;
-    ">
-    <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
+        line-height: 1.5;
+        box-shadow: 0 0 12px rgba(0,255,136,0.05);
+        transition: 0.3s ease;
+    }
+    .disclaimer-card:hover {
+        box-shadow: 0 0 25px rgba(0,255,136,0.15);
+    }
+    </style>
 
-    <b style="font-size:16px;">
-    Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie de farming automatisée peut perdre malgré des APY élevés.
-    </b>
-    <br><br>
+    <div class="disclaimer-card">
+        <b>⚠️ DISCLAIMER IMPORTANT</b><br><br>
 
-     <b style="font-size:16px;">
-    L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. 
-    Le code d’accès est disponible dans le canal privé “DEFI Académie”. 
-    Cet outil peut comporter des approximations ou des inexactitudes. 
-    Il ne s’agit en aucun cas d’un conseil en investissement. 
-    Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. 
-    Si l’API est surchargée, certains prix devront être saisis manuellement !
-     </b>
+        <b style="font-size:16px;">
+        Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie de farming automatisée peut perdre malgré des APY élevés.
+        </b>
+        <br><br>
+
+        <b style="font-size:16px;">
+        L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. 
+        Le code d’accès est disponible dans le canal privé “DEFI Académie”. 
+        Cet outil peut comporter des approximations ou des inexactitudes. 
+        Il ne s’agit en aucun cas d’un conseil en investissement. 
+        Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. 
+        Si l’API est surchargée, certains prix devront être saisis manuellement !
+        </b>
     </div>
     """, unsafe_allow_html=True)
-
-
-
 
 # -----------------------
 # CODE SECRET
