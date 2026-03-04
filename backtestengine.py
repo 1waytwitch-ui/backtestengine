@@ -1298,7 +1298,6 @@ st.set_page_config(layout="wide")
 
 # --- Header Terminal Style ---
 st.markdown("""
-<br>
 <div style="
     background-color: #0f141b;
     border: 1px solid #1f2a36;
@@ -1602,37 +1601,27 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 st.markdown("""
-<br>
 <div style="
-    background-color: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-top: 20px;
-    margin-bottom: 18px;
-    font-family: 'Courier New', monospace;
-    color: #e6edf3;
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:18px;
 ">
-    <span style="
-        color: #00ff88;
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: 1px;
-    ">
-        GUIDE COMPLET - ENGAGER DU CAPITAL SUR UNE LP
+    <span style="color:white;font-size:28px;font-weight:700;">
+        GUIDE COMPLET - ENGAGER DU CAPITAL SUR LP
     </span>
 </div>
 """, unsafe_allow_html=True)
 
-# ===== CSS TERMINAL THEME =====
 guide_html = """
 <style>
 /* ===== GUIDE TERMINAL THEME ===== */
 #guide {
     font-family: "Courier New", monospace;
     color: #e6edf3;
-    margin-top: 24px;
-    padding: 20px;
+    margin-top: 20px;
+    padding: 24px;
     background-color: #0f141b;
     border: 1px solid #1f2a36;
     border-radius: 12px;
@@ -1729,11 +1718,6 @@ guide_html = """
 </style>
 
 <div id="guide">
-<!-- Ton contenu de guide complet ici -->
-</div>
-"""
-
-st.markdown(guide_html, unsafe_allow_html=True)
 
 <!-- Introduction -->
 <div class="encadre">
@@ -1876,25 +1860,15 @@ Avec l'application, tu as un backtest complet des LP, parfait pour apprendre et 
 st.markdown(guide_html, unsafe_allow_html=True)
 
 # ======================= video IL =======================
-# --- ATELIER IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
-<br>
 <div style="
-    background-color: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    font-family: 'Courier New', monospace;
-    color: #e6edf3;
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
 ">
-    <span style="
-        color: #00ff88;
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: 1px;
-    ">
+    <span style="color:white;font-size:28px;font-weight:700;">
         ATELIER IMPERMANENT LOSS
     </span>
 </div>
@@ -1910,29 +1884,20 @@ with col:
 # ======================= outil atelier IL =======================
 import streamlit.components.v1 as components
 
-# --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
-<br>
 <div style="
-    background-color: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    font-family: 'Courier New', monospace;
-    color: #e6edf3;
+    background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
+    padding:20px;
+    border-radius:12px;
+    margin-top:20px;
+    margin-bottom:20px;
 ">
-    <span style="
-        color: #00ff88;
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: 1px;
-    ">
+    <span style="color:white;font-size:28px;font-weight:700;">
         CALCULATRICE IMPERMANENT LOSS
     </span>
 </div>
 """, unsafe_allow_html=True)
+
 st.set_page_config(layout="wide")
 
 desmos_url = "https://www.desmos.com/calculator/i7mnoyyqdb?lang=fr"
