@@ -9,6 +9,42 @@ import plotly.io as pio
 import yfinance as yf
 import math
 
+
+import streamlit as st
+
+####DARKMODE####
+st.markdown("""
+<style>
+/* Forcer le thème sombre global */
+body, .css-18e3th9, .block-container, .stApp {
+    background-color: #0b0f14 !important;
+    color: #e6edf3 !important;
+}
+
+/* Texte clair pour tous les éléments */
+h1,h2,h3,h4,h5,h6,p,span,label,div {
+    color: #e6edf3 !important;
+}
+
+/* Inputs, sliders, boutons */
+div[data-baseweb="input"] input, div[data-baseweb="slider"] > div {
+    background-color: #11161d !important;
+    color: #00ff88 !important;
+    border: 1px solid #1f2a36 !important;
+}
+
+/* Masquer menu / footer Streamlit si besoin */
+#MainMenu {visibility: hidden !important;}
+footer {visibility: hidden !important;}
+header [title="Menu"] {display: none !important;}
+</style>
+
+<script>
+/* Forcer le thème sombre sur le body */
+document.body.classList.add("theme-dark");
+</script>
+""", unsafe_allow_html=True)
+
 # ================= HEADER FIXE + MASQUAGE MENU =================
 st.markdown("""
 <style>
