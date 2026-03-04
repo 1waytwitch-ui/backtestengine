@@ -364,11 +364,19 @@ if not st.session_state.authenticated:
 
 st.markdown("<div class='card'>", unsafe_allow_html=True)
 
-# Titre coloré avec HTML corrigé
+# Titre coloré style terminal
 st.markdown("""
-<div style="background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
-            padding:20px; border-radius:12px; margin-top:20px;">
-    <span style='color:white; font-size:28px; font-weight:700;'>Checklist avant utilisation de l'outil</span>
+<div style="
+    background-color: #0b0f14;
+    border: 1px solid #00ff88;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-family: 'Courier New', monospace;
+">
+    <span style='color:#00ff88; font-size:20px; font-weight:700;'>
+        Checklist avant utilisation de l'outil
+    </span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -402,9 +410,13 @@ if "checklist_validee" not in st.session_state:
 # Création des cases à cocher
 user_check = []
 for item in checklist_items:
-    user_check.append(st.checkbox(item, key=item))
+    user_check.append(
+        st.checkbox(f"<span style='color:#00ff88;font-size:13px;font-family:Courier New'>{item}</span>", 
+                    key=item, 
+                    unsafe_allow_html=True)
+    )
 
-# Bouton pour valider le questionnaire
+# Bouton pour valider le questionnaire (style terminal)
 if st.button("Valider le questionnaire"):
     st.session_state.checklist_validee = True  # mémorise la validation
 
@@ -432,7 +444,7 @@ else:
     prof_text = "Exposition maîtrisée"
 
 st.markdown(
-    f"<div style='font-weight:700; color:{prof_color}; font-size:20px'>"
+    f"<div style='font-weight:700; color:{prof_color}; font-size:18px; font-family:Courier New'>"
     f"Profil CLMM : {prof_text}</div>",
     unsafe_allow_html=True
 )
@@ -455,7 +467,6 @@ else:
     )
 
 st.markdown("</div>", unsafe_allow_html=True)
-
 
 
 # ----------------------------- LAYOUT -----------------------------
