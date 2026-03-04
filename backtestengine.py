@@ -182,13 +182,14 @@ def get_price_usd(token):
 st.markdown("""
 <style>
 .deFi-banner {
-    position: sticky;  /* ou fixed si tu veux toujours visible même au scroll long */
+    position: fixed;
     top: 0;
+    left: 0;
     width: 100%;
+    height: 90px;  /* ajuster selon le padding + texte */
     z-index: 9999;
     background: linear-gradient(135deg, #0b0f14 0%, #141a2a 40%, #1c2338 100%);
     padding: 25px 30px;
-    border-radius: 0px;  /* pour sticky, mieux sans bord arrondi sur les côtés */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -216,6 +217,11 @@ st.markdown("""
 .wallet-btn { background-color: #a17fff; }
 .telegram-btn { background-color: #6c5ce7; }
 .formation-btn { background-color: #f59e0b; }
+
+/* Décaler le reste du contenu */
+[data-testid="stAppViewContainer"] {
+    margin-top: 90px;  /* doit correspondre à la hauteur du header */
+}
 </style>
 
 <div class="deFi-banner">
@@ -240,7 +246,6 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
-
 
 
 # ---- DISCLAIMER ----
