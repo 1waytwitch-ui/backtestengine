@@ -293,7 +293,7 @@ if st.session_state.show_disclaimer:
     """, unsafe_allow_html=True)
 
 # -----------------------
-# CODE SECRET
+# CODE SECRET - THEME TERMINAL
 # -----------------------
 SECRET_CODE = st.secrets["Secret_Code"]
 
@@ -302,36 +302,48 @@ if "authenticated" not in st.session_state:
 
 if not st.session_state.authenticated:
 
-    # HTML + CSS overlay + bouton
+    # HTML + CSS overlay + bouton en thème terminal
     st.markdown("""
     <style>
     .login-card {
-        background: linear-gradient(135deg, #0a0f1f 0%, #1e2761 40%, #4b1c7d 100%);
-        padding: 28px 30px;
-        border-radius: 18px;
+        background-color: #0f141b;
+        border: 1px solid #1f2a36;
+        border-radius: 12px;
         max-width: 420px;
         margin: 3rem auto;
-        border: 1px solid rgba(255,255,255,0.12);
-        box-shadow: 0px 4px 18px rgba(0,0,0,0.45);
+        padding: 24px;
+        box-shadow: 0 0 18px rgba(0,255,136,0.05);
+        font-family: "Courier New", monospace;
+        color: #e6edf3;
         text-align: center;
     }
-    .login-title { font-size: 28px; font-weight: 700; color: white !important; margin-bottom: 6px; }
-    .login-subtitle { font-size: 14px; color: #d1d5db; margin-bottom: 18px; }
+    .login-title { 
+        font-size: 24px; 
+        font-weight: 700; 
+        color: #00ff88 !important; 
+        margin-bottom: 6px; 
+    }
+    .login-subtitle { 
+        font-size: 13px; 
+        color: #c9d1d9; 
+        margin-bottom: 18px; 
+        line-height: 1.4em;
+    }
     .elite-btn {
         display: inline-block;
-        background-color: #facc15;
-        color: #111827 !important;
-        font-size: 16px;
+        background-color: #00ff88;
+        color: #0b0f14 !important;
+        font-size: 14px;
         font-weight: 700;
         text-decoration: none !important;
-        padding: 10px 18px;
-        border-radius: 14px;
+        padding: 8px 14px;
+        border-radius: 10px;
         transition: transform 0.15s ease, box-shadow 0.15s ease;
         margin-bottom: 18px;
     }
     .elite-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(250,204,21,0.4);
+        box-shadow: 0 6px 16px rgba(0,255,136,0.4);
     }
     </style>
 
