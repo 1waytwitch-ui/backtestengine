@@ -1625,20 +1625,20 @@ with c3:
 q1, q2 = st.columns(2)
 
 with q1:
-    tokenA_lp = st.number_input("Quantité Token A dans LP", value=4.0)
+    tokenA_lp = st.number_input("Quantité Token A dans la LP", value=4.0)
 
 with q2:
-    tokenB_lp = st.number_input("Quantité Token B dans LP", value=3000.0)
+    tokenB_lp = st.number_input("Quantité Token B dans la LP", value=3000.0)
 
 # Range
 
 r1, r2 = st.columns(2)
 
 with r1:
-    P_low = st.number_input("Borne basse LP", value=1700.0)
+    P_low = st.number_input("Borne basse", value=1700.0)
 
 with r2:
-    P_high = st.number_input("Borne haute LP", value=2100.0)
+    P_high = st.number_input("Borne haute", value=2100.0)
 
 # =================== CALCUL POSITION ===================
 
@@ -1761,6 +1761,143 @@ st.markdown(f"""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+# =================== FORMULES ===================
+with st.expander("Résumé stratégique : Gestion et timing de l’ajout de liquidité (LP Refill)"):
+
+    # Texte d’intro
+    st.markdown(
+        '<div style="font-size:12px; color:#aaa; margin-bottom:10px; font-family: Courier, monospace;">'
+        "Cet outil permet d'évaluer si un ajout de liquidité dans une position LP est stratégique ou risqué. "
+        "Il analyse la position actuelle, la proximité avec le bas de range et simule l’impact d’un refill "
+        "sur l’exposition et le ratio de la position."
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # =================== OBJECTIF ===================
+
+    st.markdown(
+        '<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Objectif de l’outil</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "L’ajout de liquidité ne doit pas être une réaction émotionnelle à une baisse du prix. "
+        "Cet outil aide à déterminer si le prix est dans une zone stratégique pour renforcer une LP "
+        "sans augmenter excessivement le risque directionnel."
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # =================== MAUVAIS MOMENT ===================
+
+    st.markdown(
+        '<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Mauvais moment pour ajouter de la liquidité</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Ajouter après une cassure nette du bas de range peut transformer une position LP neutre "
+        "en position directionnelle fortement exposée à la baisse. "
+        "<br><br>"
+        "Situations à éviter :"
+        "<br>• Prix sous la range active"
+        "<br>• Forte accélération baissière"
+        "<br>• Absence de plan de capital maximum"
+        "<br>• Moyennage agressif sans paliers"
+        "<br><br>"
+        "Dans ces conditions, le risque devient exponentiel si la tendance continue."
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # =================== BON MOMENT ===================
+
+    st.markdown(
+        '<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Meilleur moment pour un refill</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Le moment idéal pour ajouter de la liquidité est lorsque le prix reste encore dans le range "
+        "mais se rapproche de la borne basse."
+        "<br><br>"
+        "Conditions favorables :"
+        "<br>• Prix proche du bas de range"
+        "<br>• Baisse en ralentissement"
+        "<br>• LP toujours active dans la fourchette"
+        "<br>• Impermanent loss encore non réalisée"
+        "<br><br>"
+        "Dans ce cas, le refill permet d’augmenter légèrement l’exposition tout en abaissant le prix moyen."
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # =================== STRUCTURE MARCHE ===================
+
+    st.markdown(
+        '<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Importance de la structure de marché</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Avant d’ajouter du capital, il est important d’évaluer la structure du marché."
+        "<br><br>"
+        "Questions clés :"
+        "<br>• La baisse est-elle technique ou structurelle ?"
+        "<br>• La volatilité augmente-t-elle ou réduit elle ?"
+        "<br>• Le capital disponible permet-il d’absorber une baisse supplémentaire ?"
+        "<br><br>"
+        "Si la tendance est fortement baissière, ne rien faire reste souvent la décision la plus prudente."
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # =================== STRATEGIE PALIER ===================
+
+    st.markdown(
+        '<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Stratégie d’ajout progressif</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Les ajouts doivent être planifiés sous forme de paliers afin d’éviter un surdimensionnement de la position."
+        "<br><br>"
+        "Exemple d’allocation :"
+        "<br>• Position initiale : capital principal"
+        "<br>• Palier 1 : proche du bas de range"
+        "<br>• Palier 2 : si la baisse continue"
+        "<br>• Palier 3 : dernier ajout planifié"
+        "<br><br>"
+        "Chaque palier doit être défini à l’avance afin d’éviter les décisions impulsives."
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # =================== CONCLUSION ===================
+
+    st.markdown(
+        '<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Principe clé</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "La discipline de capital est plus importante que le timing parfait."
+        "<br><br>"
+        "Ajouter trop tôt expose à la tendance."
+        "<br>Ajouter trop tard augmente le risque directionnel."
+        "<br><br>"
+        "Un refill doit toujours être planifié, limité et intégré dans une stratégie globale de gestion du risque."
+        "</div>",
+        unsafe_allow_html=True
+    )
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
