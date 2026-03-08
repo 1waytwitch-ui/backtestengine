@@ -939,16 +939,21 @@ st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_ht
 
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
 with row1_col1:
+    st.markdown("P_deposit")
     P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row1_col2:
+    st.markdown("P_now")
     P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row1_col3:
+    st.markdown("Valeur deposit (USD)")
     v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.6f", step=0.01, label_visibility="collapsed")
 
 row2_col1, row2_col2 = st.columns([1,1])
 with row2_col1:
+    st.markdown("P_lower")
     P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row2_col2:
+    st.markdown("P_upper")
     P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001, label_visibility="collapsed")
 
 # --- Calcul IL ---
@@ -964,13 +969,11 @@ IL_curve = (LP_values / HODL_values - 1) * 100
 # --- Graph IL ---
 fig = go.Figure()
 
-# Courbe IL
 fig.add_trace(go.Scatter(
     x=prices, y=IL_curve, mode="lines", name="IL(%)",
     line=dict(color="red", width=3)
 ))
 
-# Lignes verticales et annotations
 for px, label, color in [
     (P_lower, "Low", "green"),
     (P_upper, "High", "green"),
@@ -990,7 +993,6 @@ for px, label, color in [
         yshift=10 if label in ["Low","High"] else -10
     )
 
-# Axes et grilles
 fig.update_xaxes(
     title="Prix",
     title_font=dict(color="white", size=14),
@@ -1006,11 +1008,10 @@ fig.update_yaxes(
     zerolinecolor="rgba(255,255,255,0.2)"
 )
 
-# Fond couleur #0b0f14
 fig.update_layout(
     height=380,
-    plot_bgcolor="#0b0f14",   # fond du graphique
-    paper_bgcolor="#0b0f14",  # fond autour du graphique
+    plot_bgcolor="#0b0f14",
+    paper_bgcolor="#0b0f14",
     title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)),
     legend=dict(font=dict(color="white"))
 )
