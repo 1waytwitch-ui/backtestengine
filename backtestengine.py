@@ -1899,6 +1899,134 @@ with st.expander("Résumé stratégique : Gestion et timing de l’ajout de liqu
         unsafe_allow_html=True
     )
 
+# =================== FORMULES ===================
+with st.expander("Formules avancées utilisées pour l'analyse Refill LP"):
+
+    st.markdown(
+        '<div style="font-size:12px; color:#aaa; margin-bottom:10px; font-family: Courier, monospace;">'
+        "Ces formules permettent d'analyser l’exposition réelle d’une position LP concentrée, "
+        "de simuler un refill et d’estimer l’impact sur le ratio et la valeur de la position."
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # =================== PRIX ===================
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Prix du pool</div>', unsafe_allow_html=True)
+
+    st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Le prix de la pool est simplement le ratio entre les deux actifs."
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # =================== VALEUR LP ===================
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Valeur totale de la position LP</div>', unsafe_allow_html=True)
+
+    st.latex(r"V = (A \cdot P_A) + (B \cdot P_B)")
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Permet de mesurer la valeur totale de la position en dollars."
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # =================== RATIO LP ===================
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio d’exposition Token A</div>', unsafe_allow_html=True)
+
+    st.latex(r"""
+    Ratio_A =
+    \frac{A \cdot P_A}
+    {(A \cdot P_A) + (B \cdot P_B)}
+    """)
+
+    st.latex(r"Ratio_B = 1 - Ratio_A")
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Mesure l’exposition directionnelle réelle de la LP."
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # =================== REFILL ===================
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ajout de liquidité (refill)</div>', unsafe_allow_html=True)
+
+    st.latex(r"""
+    A_{added} =
+    \frac{Capital/2}{P_A}
+    """)
+
+    st.latex(r"""
+    B_{added} =
+    \frac{Capital}{2}
+    """)
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Un refill standard ajoute 50% de chaque actif pour maintenir l'équilibre initial."
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # =================== NOUVELLE POSITION ===================
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle position après refill</div>', unsafe_allow_html=True)
+
+    st.latex(r"A_{new} = A_{current} + A_{added}")
+
+    st.latex(r"B_{new} = B_{current} + B_{added}")
+
+    st.latex(r"""
+    V_{new} =
+    (A_{new} \cdot P_A) +
+    (B_{new} \cdot P_B)
+    """)
+
+    # =================== IMPERMANENT LOSS ===================
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Impermanent Loss (AMM)</div>', unsafe_allow_html=True)
+
+    st.latex(r"""
+    IL =
+    \frac{2\sqrt{r}}
+    {1+r}
+    -1
+    """)
+
+    st.latex(r"r = \frac{P_{new}}{P_{entry}}")
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Cette formule mesure la perte relative par rapport à un simple holding des actifs."
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # =================== PRIX MOYEN ===================
+
+    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Prix moyen après refill</div>', unsafe_allow_html=True)
+
+    st.latex(r"""
+    P_{avg} =
+    \frac{Capital_{total}}
+    {TokenA_{total}}
+    """)
+
+    st.markdown(
+        '<div style="font-size:12px; color:#bbb; font-family: Courier, monospace;">'
+        "Permet d'évaluer si le refill améliore réellement le prix moyen d'exposition."
+        '</div>',
+        unsafe_allow_html=True
+    )
+
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
