@@ -1074,10 +1074,10 @@ else:
     with cw1: low_weight = st.slider("Poids bas (%)",0,100,40)/100
     with cw2: high_weight = 1-low_weight
 
-atr_low = P_deposit*(1-range_total_pct*low_weight/100)
-atr_high= P_deposit*(1+range_total_pct*high_weight/100)
-low_pct_display = (atr_low/P_deposit-1)*100
-high_pct_display = (atr_high/P_deposit-1)*100
+atr_low = asset_price*(1-range_total_pct*low_weight/100)
+atr_high= asset_price*(1+range_total_pct*high_weight/100)
+low_pct_display = (atr_low/asset_price-1)*100
+high_pct_display = (atr_high/asset_price-1)*100
 
 st.markdown(f"""
 <div class="result-card-wide" style="text-align:center;">
@@ -1086,7 +1086,6 @@ st.markdown(f"""
     ATR Low: {atr_low:.2f}$ | ATR High: {atr_high:.2f}$ | ±{range_total_pct:.2f}%</div>
 </div>
 """, unsafe_allow_html=True)
-
 # --- ATR Expert (Double Volatile) ---
 st.markdown('<div class="section-title">ATR Paire Double Volatile</div>', unsafe_allow_html=True)
 col1,col2,col3,col4=st.columns(4)
