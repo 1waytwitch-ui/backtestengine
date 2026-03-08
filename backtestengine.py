@@ -930,6 +930,11 @@ label { font-size: 12px !important; opacity: 0.7; }
 .result-title { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
 .result-value { font-size: 18px; font-weight: 600; color: #00ff88; margin-top: 6px; }
 
+.small-label {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-bottom: 2px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -939,21 +944,21 @@ st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_ht
 
 row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
 with row1_col1:
-    st.markdown("P_deposit")
+    st.markdown('<div class="small-label">P_deposit</div>', unsafe_allow_html=True)
     P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row1_col2:
-    st.markdown("P_now")
+    st.markdown('<div class="small-label">P_now</div>', unsafe_allow_html=True)
     P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row1_col3:
-    st.markdown("Valeur deposit (USD)")
+    st.markdown('<div class="small-label">Valeur deposit (USD)</div>', unsafe_allow_html=True)
     v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.6f", step=0.01, label_visibility="collapsed")
 
 row2_col1, row2_col2 = st.columns([1,1])
 with row2_col1:
-    st.markdown("P_lower")
+    st.markdown('<div class="small-label">P_lower</div>', unsafe_allow_html=True)
     P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001, label_visibility="collapsed")
 with row2_col2:
-    st.markdown("P_upper")
+    st.markdown('<div class="small-label">P_upper</div>', unsafe_allow_html=True)
     P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001, label_visibility="collapsed")
 
 # --- Calcul IL ---
@@ -1037,7 +1042,6 @@ for i, (title,val) in enumerate(results):
             <div class="result-value">{val}</div>
         </div>
         """, unsafe_allow_html=True)
-
 # --- APR ---
 def calculate_clmm_apr(fees_usd_period: float, active_liquidity_usd_avg: float, period_days: int) -> float:
     if active_liquidity_usd_avg <= 0 or period_days <= 0:
