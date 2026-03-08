@@ -1604,6 +1604,166 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     \mathrm{New\ Tight\ P\ High} = \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
     """)
 
+# =================== LP REFILL ANALYZER ===================
+st.markdown('<div class="section-title">LP Refill Analyzer</div>', unsafe_allow_html=True)
+
+import math
+
+# =================== INPUTS ===================
+
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    tokenA_price = st.number_input("Prix Token A ($)", value=1900.0)
+
+with c2:
+    tokenB_price = st.number_input("Prix Token B ($)", value=1.0)
+
+with c3:
+    refill_amount = st.number_input("Montant à ajouter ($)", value=1000.0)
+
+# LP state
+
+q1, q2 = st.columns(2)
+
+with q1:
+    tokenA_lp = st.number_input("Quantité Token A dans LP", value=4.0)
+
+with q2:
+    tokenB_lp = st.number_input("Quantité Token B dans LP", value=3000.0)
+
+# Range
+
+r1, r2 = st.columns(2)
+
+with r1:
+    P_low = st.number_input("Borne basse LP", value=1700.0)
+
+with r2:
+    P_high = st.number_input("Borne haute LP", value=2100.0)
+
+# =================== CALCUL POSITION ===================
+
+lp_value = tokenA_lp * tokenA_price + tokenB_lp * tokenB_price
+
+ratio_A = (tokenA_lp * tokenA_price) / lp_value
+ratio_B = (tokenB_lp * tokenB_price) / lp_value
+
+# =================== DETECTION MOMENT REFILL ===================
+
+zone_bottom = P_low + (P_high - P_low) * 0.15
+
+good_moment = False
+message = ""
+
+if tokenA_price < P_low:
+    message = "🔴 Prix sous la range : risque directionnel élevé"
+
+elif tokenA_price <= zone_bottom:
+    good_moment = True
+    message = "🟢 Bon moment : prix proche du bas de range"
+
+elif tokenA_price < P_high:
+    message = "🟡 Prix encore dans la range mais pas optimal"
+
+else:
+    message = "🔴 Prix au-dessus de la range"
+
+# =================== REFILL SIMULATION ===================
+
+refill_half = refill_amount / 2
+
+tokenA_added = refill_half / tokenA_price
+tokenB_added = refill_half / tokenB_price
+
+new_tokenA = tokenA_lp + tokenA_added
+new_tokenB = tokenB_lp + tokenB_added
+
+new_value = new_tokenA * tokenA_price + new_tokenB * tokenB_price
+
+new_ratio_A = (new_tokenA * tokenA_price) / new_value
+new_ratio_B = (new_tokenB * tokenB_price) / new_value
+
+# =================== RESULTATS ===================
+
+st.markdown('<div class="section-title">Analyse</div>', unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="result-card">
+    <div class="result-title">Etat du marché</div>
+    <div class="result-value">{message}</div>
+</div>
+""", unsafe_allow_html=True)
+
+# =================== POSITION ACTUELLE ===================
+
+st.markdown('<div class="section-title">Position actuelle</div>', unsafe_allow_html=True)
+
+r1, r2, r3 = st.columns(3)
+
+with r1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Valeur LP</div>
+        <div class="result-value">${lp_value:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with r2:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Ratio Token A</div>
+        <div class="result-value">{ratio_A*100:.2f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with r3:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Ratio Token B</div>
+        <div class="result-value">{ratio_B*100:.2f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# =================== APRES REFILL ===================
+
+st.markdown('<div class="section-title">Projection après Refill</div>', unsafe_allow_html=True)
+
+rr1, rr2, rr3 = st.columns(3)
+
+with rr1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Token A ajouté</div>
+        <div class="result-value">{tokenA_added:.4f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with rr2:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Token B ajouté</div>
+        <div class="result-value">{tokenB_added:.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with rr3:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Valeur LP future</div>
+        <div class="result-value">${new_value:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="result-card-wide">
+    <div class="result-title">Nouveau ratio LP</div>
+    <div class="result-value">
+        Token A : {new_ratio_A*100:.2f}%  |  Token B : {new_ratio_B*100:.2f}%
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
