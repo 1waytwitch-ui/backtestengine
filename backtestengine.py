@@ -1604,10 +1604,8 @@ with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)
     \mathrm{New\ Tight\ P\ High} = \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
     """)
 
-# =================== LP REFILL ANALYZER ===================
-st.markdown('<div class="section-title">LP Refill Analyzer</div>', unsafe_allow_html=True)
-
-import math
+# =================== LP REFILL BACKTEST ===================
+st.markdown('<div class="section-title">LP Refill BACKTEST</div>', unsafe_allow_html=True)
 
 # =================== INPUTS ===================
 
@@ -1657,17 +1655,17 @@ good_moment = False
 message = ""
 
 if tokenA_price < P_low:
-    message = "🔴 Prix sous la range : risque directionnel élevé"
+    message = "🔴 Prix sous le range : risque directionnel élevé"
 
 elif tokenA_price <= zone_bottom:
     good_moment = True
     message = "🟢 Bon moment : prix proche du bas de range"
 
 elif tokenA_price < P_high:
-    message = "🟡 Prix encore dans la range mais pas optimal"
+    message = "🟡 Prix encore dans le range mais pas optimal"
 
 else:
-    message = "🔴 Prix au-dessus de la range"
+    message = "🔴 Prix au-dessus du range"
 
 # =================== REFILL SIMULATION ===================
 
