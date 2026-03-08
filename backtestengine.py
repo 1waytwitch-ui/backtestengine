@@ -1303,6 +1303,7 @@ st.set_page_config(layout="wide")
 
 # --- Header Terminal Style ---
 st.markdown("""
+<br>
 <div style="
     background-color: #0f141b;
     border: 1px solid #1f2a36;
