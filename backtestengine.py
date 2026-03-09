@@ -1498,34 +1498,8 @@ elif mode == "bull":
 else:
     direction_label = "— Ajuste une borne pour activer le recalcul —"
 
-# =================== RESSERREMENT DU RANGE ===================
-st.markdown('<div class="section-title">Resserrement du range</div>', unsafe_allow_html=True)
-
-tighten_percent = st.number_input("Tighten (%)", value=5.0, step=0.5)
-
-if tighten_percent > 0:
-
-    P_rebalance = P_current
-    new_tight_plow = P_rebalance * (1 - tighten_percent / 100)
-
-    sqrtP_reb = math.sqrt(P_rebalance)
-    sqrtPl_reb = math.sqrt(new_tight_plow)
-    sqrtPh_reb = math.sqrt(new_P_high)
-
-    ratio_reb = (sqrtPh_reb - sqrtP_reb) / (
-        sqrtP_reb * sqrtPh_reb * (sqrtP_reb - sqrtPl_reb)
-    )
-
-    denominator = 1 - ratio_reb * sqrtP_reb * (sqrtP_reb - sqrtPl_reb)
-
-    if denominator > 0:
-        sqrt_new_tight_ph = sqrtP_reb / denominator
-        new_tight_phigh = sqrt_new_tight_ph ** 2
-    else:
-        new_tight_phigh = None
-
-# =================== RESULTATS ===================
-st.markdown('<div class="section-title">Résultats</div>', unsafe_allow_html=True)
+# =================== RESULTATS REBALANCE ===================
+st.markdown('<div class="section-title">Résultats - Rebalance / Élargissement</div>', unsafe_allow_html=True)
 
 st.markdown(f"""
 <div class="result-card">
@@ -1560,7 +1534,36 @@ with r3:
 </div>
 """, unsafe_allow_html=True)
 
+# =================== RESSERREMENT DU RANGE ===================
+st.markdown('<div class="section-title">Resserrement du range</div>', unsafe_allow_html=True)
+
+tighten_percent = st.number_input("Tighten (%)", value=5.0, step=0.5)
+
+if tighten_percent > 0:
+
+    P_rebalance = P_current
+    new_tight_plow = P_rebalance * (1 - tighten_percent / 100)
+
+    sqrtP_reb = math.sqrt(P_rebalance)
+    sqrtPl_reb = math.sqrt(new_tight_plow)
+    sqrtPh_reb = math.sqrt(new_P_high)
+
+    ratio_reb = (sqrtPh_reb - sqrtP_reb) / (
+        sqrtP_reb * sqrtPh_reb * (sqrtP_reb - sqrtPl_reb)
+    )
+
+    denominator = 1 - ratio_reb * sqrtP_reb * (sqrtP_reb - sqrtPl_reb)
+
+    if denominator > 0:
+        sqrt_new_tight_ph = sqrtP_reb / denominator
+        new_tight_phigh = sqrt_new_tight_ph ** 2
+    else:
+        new_tight_phigh = None
+
+# =================== RESULTATS RESSERREMENT ===================
 if tighten_percent > 0 and new_tight_phigh:
+
+    st.markdown('<div class="section-title">Résultats - Resserrement du range</div>', unsafe_allow_html=True)
 
     rt1, rt2 = st.columns(2)
 
@@ -1579,7 +1582,7 @@ if tighten_percent > 0 and new_tight_phigh:
 <div class="result-value">{new_tight_phigh:.2f}</div>
 </div>
 """, unsafe_allow_html=True)
-
+        
 # =================== FORMULES ===================
 with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
 
