@@ -2422,7 +2422,7 @@ st.markdown('<div class="section-title">Auto-Compounding Simulator</div>', unsaf
 
 # =================== INPUT ===================
 
-c1, c2, c3 = st.columns(3)
+c1, c2 = st.columns(2)
 
 with c1:
     capital = st.number_input("Capital initial ($)", value=10000.0, key="comp_cap")
@@ -2430,38 +2430,33 @@ with c1:
 with c2:
     apr = st.number_input("APR (%)", value=60.0, key="comp_apr")
 
-with c3:
-    days = st.number_input("Durée (jours)", value=360, key="comp_days")
-
 # =================== CALCULS ===================
 
 apr_decimal = apr / 100
+years = 1  # On fixe 1 an
 
-# No compounding
-no_compound = capital * (1 + apr_decimal * (days / 365))
+# Sans compounding
+no_compound = capital * (1 + apr_decimal * years)
 
 # Daily compounding
 daily_rate = apr_decimal / 365
-daily_compound = capital * ((1 + daily_rate) ** days)
+daily_compound = capital * ((1 + daily_rate) ** 365)
 
-# Weekly compounding (fraction exacte)
+# Weekly compounding
 weekly_rate = apr_decimal / 52
-weeks = days / 7
-weekly_compound = capital * ((1 + weekly_rate) ** weeks)
+weekly_compound = capital * ((1 + weekly_rate) ** 52)
 
-# Monthly compounding (fraction exacte)
+# Monthly compounding
 monthly_rate = apr_decimal / 12
-months = days / 30
-monthly_compound = capital * ((1 + monthly_rate) ** months)
+monthly_compound = capital * ((1 + monthly_rate) ** 12)
 
 # Yearly compounding
 yearly_rate = apr_decimal
-years = days / 365
-yearly_compound = capital * ((1 + yearly_rate) ** years)
+yearly_compound = capital * (1 + yearly_rate)
 
 # =================== DISPLAY ===================
 
-st.markdown('<div class="section-title">Résultats</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Résultats après 1 an</div>', unsafe_allow_html=True)
 
 r1, r2, r3, r4 = st.columns(4)
 
@@ -2497,18 +2492,13 @@ with r4:
     </div>
     """, unsafe_allow_html=True)
 
-# =================== GAIN ===================
-
-gain_daily = daily_compound - no_compound
-gain_weekly = weekly_compound - no_compound
-gain_monthly = monthly_compound - no_compound
-gain_yearly = yearly_compound - no_compound
+# =================== OPTIONNEL: gain total sur 1 an ===================
 
 st.markdown(f"""
 <div class="result-card-wide">
-    <div class="result-title">Gain du compounding</div>
+    <div class="result-title">Gain du compounding sur 1 an</div>
     <div class="result-value">
-        Daily : +${gain_daily:,.2f} | Weekly : +${gain_weekly:,.2f} | Monthly : +${gain_monthly:,.2f} | Yearly : +${gain_yearly:,.2f}
+        Daily : +${daily_compound - no_compound:,.2f} | Weekly : +${weekly_compound - no_compound:,.2f} | Monthly : +${monthly_compound - no_compound:,.2f} | Yearly : +${yearly_compound - no_compound:,.2f}
     </div>
 </div>
 """, unsafe_allow_html=True)
