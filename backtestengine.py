@@ -2320,7 +2320,7 @@ st.markdown('<div class="section-title">Optimal Range Finder</div>', unsafe_allo
 
 # =================== INPUT ===================
 
-double_volatile = st.checkbox("Paie double volatile ?", value=False)
+double_volatile = st.checkbox("Analyser une pair double volatile", value=False)
 
 if double_volatile:
     c1, c2 = st.columns(2)
@@ -2410,7 +2410,7 @@ with s3:
 
 st.markdown(f"""
 <div class="result-card-wide">
-    <div class="result-title">Lecture</div>
+    <div class="result-title">RAPPEL</div>
     <div class="result-value">
         Safe = moins de sorties | Aggressive = plus de fees mais plus de risque
     </div>
@@ -2444,16 +2444,26 @@ no_compound = capital * (1 + apr_decimal * (days / 365))
 daily_rate = apr_decimal / 365
 daily_compound = capital * ((1 + daily_rate) ** days)
 
-# Weekly compounding
+# Weekly compounding (sur semaines complètes)
 weekly_rate = apr_decimal / 52
-weeks = days / 7
+weeks = int(days / 7)
 weekly_compound = capital * ((1 + weekly_rate) ** weeks)
+
+# Monthly compounding (sur mois complets)
+monthly_rate = apr_decimal / 12
+months = int(days / 30)
+monthly_compound = capital * ((1 + monthly_rate) ** months)
+
+# Yearly compounding (pour comparaison)
+yearly_rate = apr_decimal
+years = days / 365
+yearly_compound = capital * ((1 + yearly_rate) ** years)
 
 # =================== DISPLAY ===================
 
 st.markdown('<div class="section-title">Résultats</div>', unsafe_allow_html=True)
 
-r1, r2, r3 = st.columns(3)
+r1, r2, r3, r4 = st.columns(4)
 
 with r1:
     st.markdown(f"""
@@ -2479,16 +2489,26 @@ with r3:
     </div>
     """, unsafe_allow_html=True)
 
+with r4:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Monthly</div>
+        <div class="result-value">${monthly_compound:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
 # =================== GAIN ===================
 
 gain_daily = daily_compound - no_compound
 gain_weekly = weekly_compound - no_compound
+gain_monthly = monthly_compound - no_compound
+gain_yearly = yearly_compound - no_compound
 
 st.markdown(f"""
 <div class="result-card-wide">
     <div class="result-title">Gain du compounding</div>
     <div class="result-value">
-        Daily : +${gain_daily:,.2f} | Weekly : +${gain_weekly:,.2f}
+        Daily : +${gain_daily:,.2f} | Weekly : +${gain_weekly:,.2f} | Monthly : +${gain_monthly:,.2f} | Yearly : +${gain_yearly:,.2f}
     </div>
 </div>
 """, unsafe_allow_html=True)
