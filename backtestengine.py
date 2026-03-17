@@ -2428,10 +2428,10 @@ with c1:
     capital = st.number_input("Capital initial ($)", value=10000.0, key="comp_cap")
 
 with c2:
-    apr = st.number_input("APR (%)", value=30.0, key="comp_apr")
+    apr = st.number_input("APR (%)", value=60.0, key="comp_apr")
 
 with c3:
-    days = st.number_input("Durée (jours)", value=30, key="comp_days")
+    days = st.number_input("Durée (jours)", value=360, key="comp_days")
 
 # =================== CALCULS ===================
 
@@ -2444,17 +2444,17 @@ no_compound = capital * (1 + apr_decimal * (days / 365))
 daily_rate = apr_decimal / 365
 daily_compound = capital * ((1 + daily_rate) ** days)
 
-# Weekly compounding (sur semaines complètes)
+# Weekly compounding (fraction exacte)
 weekly_rate = apr_decimal / 52
-weeks = int(days / 7)
+weeks = days / 7
 weekly_compound = capital * ((1 + weekly_rate) ** weeks)
 
-# Monthly compounding (sur mois complets)
+# Monthly compounding (fraction exacte)
 monthly_rate = apr_decimal / 12
-months = int(days / 30)
+months = days / 30
 monthly_compound = capital * ((1 + monthly_rate) ** months)
 
-# Yearly compounding (pour comparaison)
+# Yearly compounding
 yearly_rate = apr_decimal
 years = days / 365
 yearly_compound = capital * ((1 + yearly_rate) ** years)
