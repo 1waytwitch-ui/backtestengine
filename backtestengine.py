@@ -2315,6 +2315,162 @@ with r3:
     </div>
     """, unsafe_allow_html=True)
 
+# =================== OPTIMAL RANGE FINDER ===================
+st.markdown('<div class="section-title">Optimal Range Finder</div>', unsafe_allow_html=True)
+
+# =================== INPUT ===================
+
+c1, c2 = st.columns(2)
+
+with c1:
+    price_orf = st.number_input("Prix actuel ($)", value=1900.0, key="orf_price")
+
+with c2:
+    atr_orf = st.number_input("ATR ($)", value=80.0, key="orf_atr")
+
+# =================== MULTIPLIERS ===================
+
+safe_mult = 3.0
+balanced_mult = 2.0
+aggressive_mult = 1.2
+
+# =================== CALCULS ===================
+
+def compute_range(price, atr, mult):
+    low = price - (atr * mult)
+    high = price + (atr * mult)
+    width_pct = ((high - low) / price) * 100
+    return low, high, width_pct
+
+safe_low, safe_high, safe_width = compute_range(price_orf, atr_orf, safe_mult)
+bal_low, bal_high, bal_width = compute_range(price_orf, atr_orf, balanced_mult)
+agg_low, agg_high, agg_width = compute_range(price_orf, atr_orf, aggressive_mult)
+
+# =================== DISPLAY ===================
+
+st.markdown('<div class="section-title">Suggestions</div>', unsafe_allow_html=True)
+
+s1, s2, s3 = st.columns(3)
+
+with s1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Safe</div>
+        <div class="result-value">
+            {safe_low:.0f} → {safe_high:.0f}<br>
+            {safe_width:.1f}%
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s2:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Balanced</div>
+        <div class="result-value">
+            {bal_low:.0f} → {bal_high:.0f}<br>
+            {bal_width:.1f}%
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s3:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Aggressive</div>
+        <div class="result-value">
+            {agg_low:.0f} → {agg_high:.0f}<br>
+            {agg_width:.1f}%
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# =================== INSIGHT ===================
+
+st.markdown(f"""
+<div class="result-card-wide">
+    <div class="result-title">Lecture</div>
+    <div class="result-value">
+        Safe = moins de sorties | Aggressive = plus de fees mais plus de risque
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# =================== AUTO COMPOUNDING SIMULATOR ===================
+st.markdown('<div class="section-title">Auto-Compounding Simulator</div>', unsafe_allow_html=True)
+
+# =================== INPUT ===================
+
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    capital = st.number_input("Capital initial ($)", value=10000.0, key="comp_cap")
+
+with c2:
+    apr = st.number_input("APR (%)", value=30.0, key="comp_apr")
+
+with c3:
+    days = st.number_input("Durée (jours)", value=30, key="comp_days")
+
+# =================== CALCULS ===================
+
+apr_decimal = apr / 100
+
+# No compounding
+no_compound = capital * (1 + apr_decimal * (days / 365))
+
+# Daily compounding
+daily_rate = apr_decimal / 365
+daily_compound = capital * ((1 + daily_rate) ** days)
+
+# Weekly compounding
+weekly_rate = apr_decimal / 52
+weeks = days / 7
+weekly_compound = capital * ((1 + weekly_rate) ** weeks)
+
+# =================== DISPLAY ===================
+
+st.markdown('<div class="section-title">Résultats</div>', unsafe_allow_html=True)
+
+r1, r2, r3 = st.columns(3)
+
+with r1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Sans compounding</div>
+        <div class="result-value">${no_compound:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with r2:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Daily</div>
+        <div class="result-value">${daily_compound:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with r3:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Weekly</div>
+        <div class="result-value">${weekly_compound:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# =================== GAIN ===================
+
+gain_daily = daily_compound - no_compound
+gain_weekly = weekly_compound - no_compound
+
+st.markdown(f"""
+<div class="result-card-wide">
+    <div class="result-title">Gain du compounding</div>
+    <div class="result-value">
+        Daily : +${gain_daily:,.2f} | Weekly : +${gain_weekly:,.2f}
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
