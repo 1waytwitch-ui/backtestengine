@@ -2320,13 +2320,30 @@ st.markdown('<div class="section-title">Optimal Range Finder</div>', unsafe_allo
 
 # =================== INPUT ===================
 
-c1, c2 = st.columns(2)
+double_volatile = st.checkbox("Paie double volatile ?", value=False)
 
-with c1:
-    price_orf = st.number_input("Prix actuel ($)", value=1900.0, key="orf_price")
-
-with c2:
-    atr_orf = st.number_input("ATR ($)", value=80.0, key="orf_atr")
+if double_volatile:
+    c1, c2 = st.columns(2)
+    with c1:
+        price_a = st.number_input("Prix Token A ($)", value=1900.0, key="orf_price_a")
+    with c2:
+        atr_a = st.number_input("ATR Token A ($)", value=80.0, key="orf_atr_a")
+    
+    c3, c4 = st.columns(2)
+    with c3:
+        price_b = st.number_input("Prix Token B ($)", value=100.0, key="orf_price_b")
+    with c4:
+        atr_b = st.number_input("ATR Token B ($)", value=10.0, key="orf_atr_b")
+    
+    # On peut combiner les ATR ou faire un simple max
+    price_orf = (price_a + price_b)/2
+    atr_orf = max(atr_a, atr_b)
+else:
+    c1, c2 = st.columns(2)
+    with c1:
+        price_orf = st.number_input("Prix actuel ($)", value=1900.0, key="orf_price")
+    with c2:
+        atr_orf = st.number_input("ATR ($)", value=80.0, key="orf_atr")
 
 # =================== MULTIPLIERS ===================
 
