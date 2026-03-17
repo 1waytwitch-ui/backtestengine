@@ -252,57 +252,72 @@ st.markdown("""
 body {
     background-color: #0b0f0c;
 }
+
 .terminal {
     background-color: #000000;
     color: #00ff88;
     font-family: monospace;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,255,150,0.2);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,255,150,0.15);
+    font-size: 14px;
+    line-height: 1.4;
 }
-.green { color: #00ff88; }
-.gray { color: #9aa0a6; }
+
+/* Curseur clignotant */
+.cursor {
+    display: inline-block;
+    width: 10px;
+    background-color: #00ff88;
+    margin-left: 5px;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
 </style>
 """, unsafe_allow_html=True)
 
-# Fonction effet typing
-def type_text(text, speed=0.01):
-    placeholder = st.empty()
-    typed = ""
-    for char in text:
-        typed += char
-        placeholder.markdown(f"<div class='terminal'>{typed}</div>", unsafe_allow_html=True)
-        time.sleep(speed)
+# CONTENU TERMINAL
+terminal_placeholder = st.empty()
 
-# Header
-st.markdown("<div class='terminal'>$ backtest-engine-lp --update</div>", unsafe_allow_html=True)
-time.sleep(0.5)
+content = []
+
+def render():
+    terminal_placeholder.markdown(
+        "<div class='terminal'>" + "<br>".join(content) + "<span class='cursor'></span></div>",
+        unsafe_allow_html=True
+    )
+
+# Ligne 1
+content.append("$ backtest-engine-lp --update")
+render()
+time.sleep(1)
 
 # Outils existants
-st.markdown("<div class='terminal'>\n> Chargement des modules existants...\n</div>", unsafe_allow_html=True)
+content.append("> Modules chargés :")
+render()
 
 tools = [
-    "✔ Pool Setup",
-    "✔ Price & Range",
-    "✔ Automation avancée",
-    "✔ IL Simulator",
-    "✔ APR réel",
-    "✔ ATR avancée",
-    "✔ Break Even LP Calculator",
-    "✔ Zeroswap Rebalance",
-    "✔ Refill LP",
-    "✔ Guide complet",
-    "✔ Atelier vidéo Impermanent Loss & Calculatrice IL"
+    "✔ Pool Setup | Price & Range | Automation avancée",
+    "✔ IL Simulator | APR réel | ATR avancée",
+    "✔ Break Even | Zeroswap Rebalance | Refill LP",
+    "✔ Guide complet + Atelier vidéo IL & Calculatrice"
 ]
 
-for tool in tools:
-    st.markdown(f"<div class='terminal'>{tool}</div>", unsafe_allow_html=True)
-    time.sleep(0.15)
+for t in tools:
+    content.append(t)
+    render()
+    time.sleep(0.6)
 
 time.sleep(0.5)
 
-# Mise à jour
-st.markdown("<div class='terminal'>\n> Vérification des nouveautés...\n</div>", unsafe_allow_html=True)
+# Updates
+content.append("> Vérification des nouveautés...")
+render()
 
 updates = [
     "✔ LP Health Score activé",
@@ -310,18 +325,20 @@ updates = [
     "✔ Optimal Range Finder ajouté"
 ]
 
-for update in updates:
-    st.markdown(f"<div class='terminal'>{update}</div>", unsafe_allow_html=True)
-    time.sleep(0.2)
+for u in updates:
+    content.append(u)
+    render()
+    time.sleep(0.5)
 
-time.sleep(0.5)
+time.sleep(0.4)
 
 # Message final
-type_text('\n$ echo "Profitez des nouvelles fonctionnalités pour optimiser vos backtests !"\n')
-time.sleep(0.3)
+content.append('$ echo "Optimisation des outils en cours..."')
+render()
+time.sleep(1)
 
-st.markdown("<div class='terminal'>Profitez des nouvelles fonctionnalités pour optimiser vos backtests !</div>", unsafe_allow_html=True)
-st.markdown("<div class='terminal'>█</div>", unsafe_allow_html=True)
+content.append("Optimisation des outils en cours... vous pouvez optimiser vos stratégies")
+render()
 
 # ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
