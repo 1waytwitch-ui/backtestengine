@@ -2421,41 +2421,29 @@ st.markdown(f"""
 st.markdown('<div class="section-title">Auto-Compounding Simulator</div>', unsafe_allow_html=True)
 
 # =================== INPUT ===================
-
-c1, c2 = st.columns(2)
-
-with c1:
-    capital = st.number_input("Capital initial ($)", value=10000.0, key="comp_cap")
-
-with c2:
-    apr = st.number_input("APR (%)", value=60.0, key="comp_apr")
+capital = st.number_input("Capital initial ($)", value=10000.0, key="comp_cap")
+apr = st.number_input("APR (%)", value=60.0, key="comp_apr")
 
 # =================== CALCULS ===================
-
 apr_decimal = apr / 100
-years = 1  # On fixe 1 an
+years = 1  # Projection sur 1 an
 
 # Sans compounding
-no_compound = capital * (1 + apr_decimal * years)
+no_compound = capital * (1 + apr_decimal)
 
 # Daily compounding
-daily_rate = apr_decimal / 365
-daily_compound = capital * ((1 + daily_rate) ** 365)
+daily_compound = capital * ((1 + apr_decimal / 365) ** 365)
 
 # Weekly compounding
-weekly_rate = apr_decimal / 52
-weekly_compound = capital * ((1 + weekly_rate) ** 52)
+weekly_compound = capital * ((1 + apr_decimal / 52) ** 52)
 
 # Monthly compounding
-monthly_rate = apr_decimal / 12
-monthly_compound = capital * ((1 + monthly_rate) ** 12)
+monthly_compound = capital * ((1 + apr_decimal / 12) ** 12)
 
-# Yearly compounding
-yearly_rate = apr_decimal
-yearly_compound = capital * (1 + yearly_rate)
+# Yearly compounding (équivalent à no_compound)
+yearly_compound = capital * (1 + apr_decimal)
 
 # =================== DISPLAY ===================
-
 st.markdown('<div class="section-title">Résultats après 1 an</div>', unsafe_allow_html=True)
 
 r1, r2, r3, r4 = st.columns(4)
@@ -2492,16 +2480,6 @@ with r4:
     </div>
     """, unsafe_allow_html=True)
 
-# =================== OPTIONNEL: gain total sur 1 an ===================
-
-st.markdown(f"""
-<div class="result-card-wide">
-    <div class="result-title">Gain du compounding sur 1 an</div>
-    <div class="result-value">
-        Daily : +${daily_compound - no_compound:,.2f} | Weekly : +${weekly_compound - no_compound:,.2f} | Monthly : +${monthly_compound - no_compound:,.2f} | Yearly : +${yearly_compound - no_compound:,.2f}
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
