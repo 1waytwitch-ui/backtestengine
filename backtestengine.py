@@ -2252,8 +2252,8 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-# =================== AUTO RANGE (RATIO CONSERVE) ===================
-st.markdown('<div class="section-title">Auto Range (Conservation Position)</div>', unsafe_allow_html=True)
+# =================== AUTO RANGE (STRUCTURE CONSERVEE) ===================
+st.markdown('<div class="section-title">Auto Range</div>', unsafe_allow_html=True)
 
 # =================== INPUT ===================
 
@@ -2265,27 +2265,27 @@ with col1:
 with col2:
     multiplier = st.slider("Facteur de range", 1.0, 4.0, 2.0, 0.5)
 
-# =================== CALCUL RANGE ===================
+# =================== POSITION ACTUELLE ===================
 
-optimal_low = tokenA_price_h - (atr_auto * multiplier)
-optimal_high = tokenA_price_h + (atr_auto * multiplier)
+old_range_width = P_high_h - P_low_h
+
+old_position = (tokenA_price_h - P_low_h) / old_range_width
+old_position = max(0, min(1, old_position))
+
+# =================== NOUVEAU RANGE ===================
+
+new_range_width = atr_auto * multiplier * 2
+
+optimal_low = tokenA_price_h - (old_position * new_range_width)
+optimal_high = optimal_low + new_range_width
 
 if optimal_low < 0:
     optimal_low = 0
+    optimal_high = new_range_width
 
-range_width_opt = optimal_high - optimal_low
+# =================== VERIFICATION ===================
 
-# =================== RATIO ACTUEL (CONSERVE) ===================
-
-lp_value_h = tokenA_lp_h * tokenA_price_h + tokenB_lp_h * tokenB_price_h
-
-ratio_A_h = (tokenA_lp_h * tokenA_price_h) / lp_value_h
-ratio_B_h = (tokenB_lp_h * tokenB_price_h) / lp_value_h
-
-# =================== POSITION DANS NOUVEAU RANGE ===================
-
-price_position_new = (tokenA_price_h - optimal_low) / range_width_opt
-price_position_new = max(0, min(1, price_position_new))
+new_position = (tokenA_price_h - optimal_low) / new_range_width
 
 # =================== DISPLAY ===================
 
@@ -2311,26 +2311,17 @@ with r3:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Largeur %</div>
-        <div class="result-value">{(range_width_opt/tokenA_price_h)*100:.1f}%</div>
+        <div class="result-value">{(new_range_width/tokenA_price_h)*100:.1f}%</div>
     </div>
     """, unsafe_allow_html=True)
 
-# =================== INFO POSITION ===================
+# =================== INFO ===================
 
 st.markdown(f"""
 <div class="result-card-wide">
-    <div class="result-title">Structure conservée</div>
+    <div class="result-title">Position conservée</div>
     <div class="result-value">
-        Token A : {ratio_A_h*100:.1f}% | Token B : {ratio_B_h*100:.1f}%
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown(f"""
-<div class="result-card-wide">
-    <div class="result-title">Position dans nouveau range</div>
-    <div class="result-value">
-        {price_position_new*100:.1f}% du range
+        Avant : {old_position*100:.1f}% | Après : {new_position*100:.1f}%
     </div>
 </div>
 """, unsafe_allow_html=True)
