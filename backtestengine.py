@@ -2252,6 +2252,107 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
+# =================== AUTO RANGE + REBALANCE ===================
+st.markdown('<div class="section-title">Auto Range & Rebalance</div>', unsafe_allow_html=True)
+
+# =================== INPUT ===================
+
+col1, col2 = st.columns(2)
+
+with col1:
+    atr_auto = st.number_input("ATR pour optimisation ($)", value=80.0, key="auto_atr")
+
+with col2:
+    multiplier = st.slider("Facteur de range", 1.0, 4.0, 2.0, 0.5)
+
+# =================== CALCUL RANGE OPTIMAL ===================
+
+optimal_low = tokenA_price_h - (atr_auto * multiplier)
+optimal_high = tokenA_price_h + (atr_auto * multiplier)
+
+# Clamp sécurité
+if optimal_low < 0:
+    optimal_low = 0
+
+# =================== RATIO OPTIMAL ===================
+
+price_position_opt = (tokenA_price_h - optimal_low) / (optimal_high - optimal_low)
+price_position_opt = max(0, min(1, price_position_opt))
+
+target_ratio_A_opt = 1 - price_position_opt
+target_ratio_B_opt = price_position_opt
+
+# =================== DISPLAY RANGE ===================
+
+r1, r2, r3 = st.columns(3)
+
+with r1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Range bas</div>
+        <div class="result-value">{optimal_low:.0f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with r2:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Range haut</div>
+        <div class="result-value">{optimal_high:.0f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with r3:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Largeur %</div>
+        <div class="result-value">{((optimal_high - optimal_low)/tokenA_price_h)*100:.1f}%</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# =================== RATIO CIBLE ===================
+
+st.markdown(f"""
+<div class="result-card-wide">
+    <div class="result-title">Allocation optimale</div>
+    <div class="result-value">
+        Token A : {target_ratio_A_opt*100:.1f}% | Token B : {target_ratio_B_opt*100:.1f}%
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# =================== BOUTON REBALANCE ===================
+
+if st.button("🔁 Appliquer Rebalance Optimal"):
+
+    # Nouvelle allocation en valeur
+    total_value = tokenA_lp_h * tokenA_price_h + tokenB_lp_h * tokenB_price_h
+
+    target_A_value = total_value * target_ratio_A_opt
+    target_B_value = total_value * target_ratio_B_opt
+
+    target_A_qty = target_A_value / tokenA_price_h
+    target_B_qty = target_B_value / tokenB_price_h
+
+    st.markdown(f"""
+    <div class="result-card-wide" style="border:2px solid #00ff99;">
+        <div class="result-title">Nouvelle position recommandée</div>
+        <div class="result-value">
+            Token A : {target_A_qty:.4f} <br>
+            Token B : {target_B_qty:.2f}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Nouveau Range</div>
+        <div class="result-value">
+            {optimal_low:.0f} → {optimal_high:.0f}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
