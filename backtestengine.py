@@ -2417,69 +2417,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# =================== AUTO COMPOUNDING SIMULATOR ===================
-st.markdown('<div class="section-title">Auto-Compounding Simulator</div>', unsafe_allow_html=True)
-
-# =================== INPUT ===================
-capital = st.number_input("Capital initial ($)", value=10000.0, key="comp_cap")
-apr = st.number_input("APR (%)", value=60.0, key="comp_apr")
-
-# =================== CALCULS ===================
-apr_decimal = apr / 100
-years = 1  # Projection sur 1 an
-
-# Sans compounding
-no_compound = capital * (1 + apr_decimal)
-
-# Daily compounding
-daily_compound = capital * ((1 + apr_decimal / 365) ** 365)
-
-# Weekly compounding
-weekly_compound = capital * ((1 + apr_decimal / 52) ** 52)
-
-# Monthly compounding
-monthly_compound = capital * ((1 + apr_decimal / 12) ** 12)
-
-# Yearly compounding (équivalent à no_compound)
-yearly_compound = capital * (1 + apr_decimal)
-
-# =================== DISPLAY ===================
-st.markdown('<div class="section-title">Résultats après 1 an</div>', unsafe_allow_html=True)
-
-r1, r2, r3, r4 = st.columns(4)
-
-with r1:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Sans compounding</div>
-        <div class="result-value">${no_compound:,.2f}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with r2:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Daily</div>
-        <div class="result-value">${daily_compound:,.2f}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with r3:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Weekly</div>
-        <div class="result-value">${weekly_compound:,.2f}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with r4:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Monthly</div>
-        <div class="result-value">${monthly_compound:,.2f}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
