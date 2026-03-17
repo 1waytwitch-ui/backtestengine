@@ -2331,13 +2331,17 @@ if double_volatile:
     
     c3, c4 = st.columns(2)
     with c3:
-        price_b = st.number_input("Prix Token B ($)", value=100.0, key="orf_price_b")
+        price_b = st.number_input("Prix Token B ($)", value=50.0, key="orf_price_b")
     with c4:
-        atr_b = st.number_input("ATR Token B ($)", value=10.0, key="orf_atr_b")
+        atr_b = st.number_input("ATR Token B ($)", value=5.0, key="orf_atr_b")
     
-    # On peut combiner les ATR ou faire un simple max
+    # ATR pondéré par volatilité relative
+    atr_pct_a = atr_a / price_a
+    atr_pct_b = atr_b / price_b
+    atr_combined_pct = max(atr_pct_a, atr_pct_b)
     price_orf = (price_a + price_b)/2
-    atr_orf = max(atr_a, atr_b)
+    atr_orf = atr_combined_pct * price_orf
+    
 else:
     c1, c2 = st.columns(2)
     with c1:
