@@ -1706,10 +1706,21 @@ else:
 
 # =================== REFILL SIMULATION ===================
 
-refill_half = refill_amount / 2
+# Position du prix dans le range
+price_position = (tokenA_price - P_low) / (P_high - P_low)
+price_position = max(0, min(1, price_position))
 
-tokenA_added = refill_half / tokenA_price
-tokenB_added = refill_half / tokenB_price
+# Ratio cible basé sur le range
+target_ratio_A = 1 - price_position
+target_ratio_B = price_position
+
+# Allocation du refill
+tokenA_value_added = refill_amount * target_ratio_A
+tokenB_value_added = refill_amount * target_ratio_B
+
+# Conversion en quantité
+tokenA_added = tokenA_value_added / tokenA_price
+tokenB_added = tokenB_value_added / tokenB_price
 
 new_tokenA = tokenA_lp + tokenA_added
 new_tokenB = tokenB_lp + tokenB_added
