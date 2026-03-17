@@ -8,6 +8,7 @@ import plotly.express as px
 import plotly.io as pio
 import yfinance as yf
 import math
+import time
 
 
 # Forcer l'application en mode écran large
@@ -244,6 +245,83 @@ def get_price_usd(token):
         return 0.0, False
 
 
+
+# resumé
+st.markdown("""
+<style>
+body {
+    background-color: #0b0f0c;
+}
+.terminal {
+    background-color: #000000;
+    color: #00ff88;
+    font-family: monospace;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,255,150,0.2);
+}
+.green { color: #00ff88; }
+.gray { color: #9aa0a6; }
+</style>
+""", unsafe_allow_html=True)
+
+# Fonction effet typing
+def type_text(text, speed=0.01):
+    placeholder = st.empty()
+    typed = ""
+    for char in text:
+        typed += char
+        placeholder.markdown(f"<div class='terminal'>{typed}</div>", unsafe_allow_html=True)
+        time.sleep(speed)
+
+# Header
+st.markdown("<div class='terminal'>$ backtest-engine-lp --update</div>", unsafe_allow_html=True)
+time.sleep(0.5)
+
+# Outils existants
+st.markdown("<div class='terminal'>\n> Chargement des modules existants...\n</div>", unsafe_allow_html=True)
+
+tools = [
+    "✔ Pool Setup",
+    "✔ Price & Range",
+    "✔ Automation avancée",
+    "✔ IL Simulator",
+    "✔ APR réel",
+    "✔ ATR avancée",
+    "✔ Break Even LP Calculator",
+    "✔ Zeroswap Rebalance",
+    "✔ Refill LP",
+    "✔ Guide complet",
+    "✔ Atelier vidéo Impermanent Loss & Calculatrice IL"
+]
+
+for tool in tools:
+    st.markdown(f"<div class='terminal'>{tool}</div>", unsafe_allow_html=True)
+    time.sleep(0.15)
+
+time.sleep(0.5)
+
+# Mise à jour
+st.markdown("<div class='terminal'>\n> Vérification des nouveautés...\n</div>", unsafe_allow_html=True)
+
+updates = [
+    "✔ LP Health Score activé",
+    "✔ Auto Range disponible",
+    "✔ Optimal Range Finder ajouté"
+]
+
+for update in updates:
+    st.markdown(f"<div class='terminal'>{update}</div>", unsafe_allow_html=True)
+    time.sleep(0.2)
+
+time.sleep(0.5)
+
+# Message final
+type_text('\n$ echo "Profitez des nouvelles fonctionnalités pour optimiser vos backtests !"\n')
+time.sleep(0.3)
+
+st.markdown("<div class='terminal'>Profitez des nouvelles fonctionnalités pour optimiser vos backtests !</div>", unsafe_allow_html=True)
+st.markdown("<div class='terminal'>█</div>", unsafe_allow_html=True)
 
 # ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
