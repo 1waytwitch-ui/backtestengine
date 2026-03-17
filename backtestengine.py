@@ -2252,8 +2252,8 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
-# =================== AUTO RANGE + REBALANCE ===================
-st.markdown('<div class="section-title">Auto Range & Rebalance</div>', unsafe_allow_html=True)
+# =================== AUTO RANGE (RATIO CONSERVE) ===================
+st.markdown('<div class="section-title">Auto Range (Conservation Position)</div>', unsafe_allow_html=True)
 
 # =================== INPUT ===================
 
@@ -2265,24 +2265,29 @@ with col1:
 with col2:
     multiplier = st.slider("Facteur de range", 1.0, 4.0, 2.0, 0.5)
 
-# =================== CALCUL RANGE OPTIMAL ===================
+# =================== CALCUL RANGE ===================
 
 optimal_low = tokenA_price_h - (atr_auto * multiplier)
 optimal_high = tokenA_price_h + (atr_auto * multiplier)
 
-# Clamp sécurité
 if optimal_low < 0:
     optimal_low = 0
 
-# =================== RATIO OPTIMAL ===================
+range_width_opt = optimal_high - optimal_low
 
-price_position_opt = (tokenA_price_h - optimal_low) / (optimal_high - optimal_low)
-price_position_opt = max(0, min(1, price_position_opt))
+# =================== RATIO ACTUEL (CONSERVE) ===================
 
-target_ratio_A_opt = 1 - price_position_opt
-target_ratio_B_opt = price_position_opt
+lp_value_h = tokenA_lp_h * tokenA_price_h + tokenB_lp_h * tokenB_price_h
 
-# =================== DISPLAY RANGE ===================
+ratio_A_h = (tokenA_lp_h * tokenA_price_h) / lp_value_h
+ratio_B_h = (tokenB_lp_h * tokenB_price_h) / lp_value_h
+
+# =================== POSITION DANS NOUVEAU RANGE ===================
+
+price_position_new = (tokenA_price_h - optimal_low) / range_width_opt
+price_position_new = max(0, min(1, price_position_new))
+
+# =================== DISPLAY ===================
 
 r1, r2, r3 = st.columns(3)
 
@@ -2306,52 +2311,29 @@ with r3:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Largeur %</div>
-        <div class="result-value">{((optimal_high - optimal_low)/tokenA_price_h)*100:.1f}%</div>
+        <div class="result-value">{(range_width_opt/tokenA_price_h)*100:.1f}%</div>
     </div>
     """, unsafe_allow_html=True)
 
-# =================== RATIO CIBLE ===================
+# =================== INFO POSITION ===================
 
 st.markdown(f"""
 <div class="result-card-wide">
-    <div class="result-title">Allocation optimale</div>
+    <div class="result-title">Structure conservée</div>
     <div class="result-value">
-        Token A : {target_ratio_A_opt*100:.1f}% | Token B : {target_ratio_B_opt*100:.1f}%
+        Token A : {ratio_A_h*100:.1f}% | Token B : {ratio_B_h*100:.1f}%
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# =================== BOUTON REBALANCE ===================
-
-if st.button("🔁 Appliquer Rebalance Optimal"):
-
-    # Nouvelle allocation en valeur
-    total_value = tokenA_lp_h * tokenA_price_h + tokenB_lp_h * tokenB_price_h
-
-    target_A_value = total_value * target_ratio_A_opt
-    target_B_value = total_value * target_ratio_B_opt
-
-    target_A_qty = target_A_value / tokenA_price_h
-    target_B_qty = target_B_value / tokenB_price_h
-
-    st.markdown(f"""
-    <div class="result-card-wide" style="border:2px solid #00ff99;">
-        <div class="result-title">Nouvelle position recommandée</div>
-        <div class="result-value">
-            Token A : {target_A_qty:.4f} <br>
-            Token B : {target_B_qty:.2f}
-        </div>
+st.markdown(f"""
+<div class="result-card-wide">
+    <div class="result-title">Position dans nouveau range</div>
+    <div class="result-value">
+        {price_position_new*100:.1f}% du range
     </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-    <div class="result-card-wide">
-        <div class="result-title">Nouveau Range</div>
-        <div class="result-value">
-            {optimal_low:.0f} → {optimal_high:.0f}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+</div>
+""", unsafe_allow_html=True)
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
