@@ -2075,6 +2075,129 @@ with st.expander("Formules avancées utilisées pour l'analyse Refill LP"):
         unsafe_allow_html=True
     )
 
+# =================== LP HEALTH SCORE ===================
+st.markdown('<div class="section-title">LP Health Score</div>', unsafe_allow_html=True)
+
+# =================== INPUTS ===================
+
+c1, c2 = st.columns(2)
+
+with c1:
+    tokenA_price_h = st.number_input("Prix Token A ($) ", value=1900.0, key="h_a_price")
+
+with c2:
+    tokenB_price_h = st.number_input("Prix Token B ($) ", value=1.0, key="h_b_price")
+
+q1, q2 = st.columns(2)
+
+with q1:
+    tokenA_lp_h = st.number_input("Quantité Token A LP ", value=4.0, key="h_a_lp")
+
+with q2:
+    tokenB_lp_h = st.number_input("Quantité Token B LP ", value=3000.0, key="h_b_lp")
+
+r1, r2 = st.columns(2)
+
+with r1:
+    P_low_h = st.number_input("Borne basse ", value=1700.0, key="h_low")
+
+with r2:
+    P_high_h = st.number_input("Borne haute ", value=2100.0, key="h_high")
+
+# =================== CALCULS ===================
+
+lp_value_h = tokenA_lp_h * tokenA_price_h + tokenB_lp_h * tokenB_price_h
+
+ratio_A_h = (tokenA_lp_h * tokenA_price_h) / lp_value_h
+ratio_B_h = (tokenB_lp_h * tokenB_price_h) / lp_value_h
+
+# Position dans le range
+price_position_h = (tokenA_price_h - P_low_h) / (P_high_h - P_low_h)
+price_position_h = max(0, min(1, price_position_h))
+
+# =================== SCORE 1 : POSITION ===================
+# Idéal = proche du bas (0 → meilleur pour accumulation)
+
+position_score = (1 - price_position_h) * 100
+
+# =================== SCORE 2 : EQUILIBRE ===================
+# Compare ratio actuel vs ratio théorique
+
+target_ratio_A_h = 1 - price_position_h
+
+imbalance = abs(ratio_A_h - target_ratio_A_h)
+
+balance_score = max(0, 100 - imbalance * 200)
+
+# =================== SCORE 3 : EXPOSITION ===================
+# Si trop exposé dans le mauvais sens
+
+if price_position_h < 0.3:
+    exposure_penalty = ratio_B_h
+elif price_position_h > 0.7:
+    exposure_penalty = ratio_A_h
+else:
+    exposure_penalty = abs(ratio_A_h - 0.5)
+
+exposure_score = max(0, 100 - exposure_penalty * 100)
+
+# =================== SCORE FINAL ===================
+
+health_score = (
+    position_score * 0.4 +
+    balance_score * 0.3 +
+    exposure_score * 0.3
+)
+
+# =================== INTERPRETATION ===================
+
+if health_score > 80:
+    status = "🟢 Position optimale"
+elif health_score > 60:
+    status = "🟡 Position correcte"
+elif health_score > 40:
+    status = "🟠 Position à surveiller"
+else:
+    status = "🔴 Position risquée"
+
+# =================== DISPLAY ===================
+
+st.markdown('<div class="section-title">Résultat</div>', unsafe_allow_html=True)
+
+s1, s2, s3 = st.columns(3)
+
+with s1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Health Score</div>
+        <div class="result-value">{health_score:.1f} / 100</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s2:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Position Score</div>
+        <div class="result-value">{position_score:.0f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s3:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Balance Score</div>
+        <div class="result-value">{balance_score:.0f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="result-card-wide">
+    <div class="result-title">Statut</div>
+    <div class="result-value">{status}</div>
+</div>
+""", unsafe_allow_html=True)
+
+
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
 st.markdown("""
