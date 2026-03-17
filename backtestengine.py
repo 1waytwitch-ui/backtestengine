@@ -2104,6 +2104,9 @@ with r1:
 with r2:
     P_high_h = st.number_input("Borne haute ", value=2100.0, key="h_high")
 
+# ATR input (manuel)
+atr = st.number_input("ATR ($)", value=80.0)
+
 # =================== CALCULS ===================
 
 lp_value_h = tokenA_lp_h * tokenA_price_h + tokenB_lp_h * tokenB_price_h
@@ -2111,26 +2114,24 @@ lp_value_h = tokenA_lp_h * tokenA_price_h + tokenB_lp_h * tokenB_price_h
 ratio_A_h = (tokenA_lp_h * tokenA_price_h) / lp_value_h
 ratio_B_h = (tokenB_lp_h * tokenB_price_h) / lp_value_h
 
+range_width = P_high_h - P_low_h
+
 # Position dans le range
-price_position_h = (tokenA_price_h - P_low_h) / (P_high_h - P_low_h)
+price_position_h = (tokenA_price_h - P_low_h) / range_width
 price_position_h = max(0, min(1, price_position_h))
 
 # =================== SCORE 1 : POSITION ===================
-# Idéal = proche du bas (0 → meilleur pour accumulation)
 
 position_score = (1 - price_position_h) * 100
 
 # =================== SCORE 2 : EQUILIBRE ===================
-# Compare ratio actuel vs ratio théorique
 
 target_ratio_A_h = 1 - price_position_h
-
 imbalance = abs(ratio_A_h - target_ratio_A_h)
 
 balance_score = max(0, 100 - imbalance * 200)
 
 # =================== SCORE 3 : EXPOSITION ===================
-# Si trop exposé dans le mauvais sens
 
 if price_position_h < 0.3:
     exposure_penalty = ratio_B_h
@@ -2141,13 +2142,42 @@ else:
 
 exposure_score = max(0, 100 - exposure_penalty * 100)
 
+# =================== SCORE 4 : VOLATILITE (ATR) ===================
+
+# Ratio ATR vs range
+atr_ratio = atr / range_width
+
+# Si ATR élevé → plus de risque → score baisse
+volatility_score = max(0, 100 - atr_ratio * 150)
+
 # =================== SCORE FINAL ===================
 
 health_score = (
-    position_score * 0.4 +
-    balance_score * 0.3 +
-    exposure_score * 0.3
+    position_score * 0.3 +
+    balance_score * 0.25 +
+    exposure_score * 0.2 +
+    volatility_score * 0.25
 )
+
+# =================== REBALANCE LOGIC ===================
+
+rebalance_needed = False
+rebalance_reason = ""
+
+# Cas 1 : trop déséquilibré
+if imbalance > 0.2:
+    rebalance_needed = True
+    rebalance_reason = "Déséquilibre des tokens"
+
+# Cas 2 : prix proche des extrêmes
+elif price_position_h < 0.1 or price_position_h > 0.9:
+    rebalance_needed = True
+    rebalance_reason = "Prix proche des bornes"
+
+# Cas 3 : volatilité dangereuse
+elif atr_ratio > 0.25:
+    rebalance_needed = True
+    rebalance_reason = "Volatilité élevée (ATR)"
 
 # =================== INTERPRETATION ===================
 
@@ -2164,7 +2194,7 @@ else:
 
 st.markdown('<div class="section-title">Résultat</div>', unsafe_allow_html=True)
 
-s1, s2, s3 = st.columns(3)
+s1, s2, s3, s4 = st.columns(4)
 
 with s1:
     st.markdown(f"""
@@ -2177,7 +2207,7 @@ with s1:
 with s2:
     st.markdown(f"""
     <div class="result-card">
-        <div class="result-title">Position Score</div>
+        <div class="result-title">Position</div>
         <div class="result-value">{position_score:.0f}</div>
     </div>
     """, unsafe_allow_html=True)
@@ -2185,11 +2215,20 @@ with s2:
 with s3:
     st.markdown(f"""
     <div class="result-card">
-        <div class="result-title">Balance Score</div>
+        <div class="result-title">Balance</div>
         <div class="result-value">{balance_score:.0f}</div>
     </div>
     """, unsafe_allow_html=True)
 
+with s4:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Volatilité</div>
+        <div class="result-value">{volatility_score:.0f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Status global
 st.markdown(f"""
 <div class="result-card-wide">
     <div class="result-title">Statut</div>
@@ -2197,6 +2236,21 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# Rebalance alert
+if rebalance_needed:
+    st.markdown(f"""
+    <div class="result-card-wide" style="border:2px solid #ff4b4b;">
+        <div class="result-title">⚠️ Rebalance recommandé</div>
+        <div class="result-value">{rebalance_reason}</div>
+    </div>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Rebalance</div>
+        <div class="result-value">Aucune action nécessaire</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
