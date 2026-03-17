@@ -264,7 +264,6 @@ body {
     line-height: 1.4;
 }
 
-/* Curseur clignotant */
 .cursor {
     display: inline-block;
     width: 10px;
@@ -281,65 +280,65 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# CONTENU TERMINAL
-terminal_placeholder = st.empty()
+# --- Session state pour le contenu du terminal ---
+if "content" not in st.session_state:
+    st.session_state.content = []
+    st.session_state.finished = False  # Indique si l'animation est terminée
 
-content = []
+terminal_placeholder = st.empty()
 
 def render():
     terminal_placeholder.markdown(
-        "<div class='terminal'>" + "<br>".join(content) + "<span class='cursor'></span></div>",
+        "<div class='terminal'>" + "<br>".join(st.session_state.content) + "<span class='cursor'></span></div>",
         unsafe_allow_html=True
     )
 
-# Ligne 1
-content.append("$ backtest-engine-lp --update")
-render()
-time.sleep(1)
-
-# Outils existants
-content.append("> Modules chargés :")
-render()
-
-tools = [
-    "✔ Pool Setup | Price & Range | Automation avancée",
-    "✔ IL Simulator | APR réel | ATR avancée",
-    "✔ Break Even | Zeroswap Rebalance | Refill LP",
-    "✔ Guide complet + Atelier vidéo IL & Calculatrice"
-]
-
-for t in tools:
-    content.append(t)
+# --- Animation du terminal (executée une seule fois) ---
+if not st.session_state.finished:
+    # Ligne 1
+    st.session_state.content.append("$ backtest-engine-lp --update")
     render()
-    time.sleep(3)
+    time.sleep(1)
 
-time.sleep(2)
-
-# Updates
-content.append("> Vérification des nouveautés...")
-render()
-
-updates = [
-    "✔ LP Health Score activé",
-    "✔ Auto Range disponible",
-    "✔ Optimal Range Finder ajouté"
-]
-
-for u in updates:
-    content.append(u)
+    # Outils existants
+    st.session_state.content.append("> Modules chargés :")
     render()
-    time.sleep(3)
 
-time.sleep(2)
+    tools = [
+        "✔ Pool Setup | Price & Range | Automation avancée",
+        "✔ IL Simulator | APR réel | ATR avancée",
+        "✔ Break Even | Zeroswap Rebalance | Refill LP",
+        "✔ Guide complet + Atelier vidéo IL & Calculatrice"
+    ]
 
-# Message final
-content.append('$ echo "Optimisation des outils en cours..."')
-render()
-time.sleep(3)
+    for t in tools:
+        st.session_state.content.append(t)
+        render()
+        time.sleep(1)  # plus rapide pour test
 
-content.append("Optimisation des outils en cours... vous pouvez optimiser vos stratégies")
-render()
+    st.session_state.content.append("> Vérification des nouveautés...")
+    render()
+    time.sleep(1)
 
+    updates = [
+        "✔ LP Health Score activé",
+        "✔ Auto Range disponible",
+        "✔ Optimal Range Finder ajouté"
+    ]
+
+    for u in updates:
+        st.session_state.content.append(u)
+        render()
+        time.sleep(1)
+
+    st.session_state.content.append('$ echo "Optimisation des outils en cours..."')
+    render()
+    time.sleep(1)
+
+    st.session_state.content.append("Optimisation des outils en cours... vous pouvez optimiser vos stratégies")
+    render()
+
+    st.session_state.finished = True  # Animation terminée
 
 # ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
