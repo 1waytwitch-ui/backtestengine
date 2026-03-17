@@ -2315,16 +2315,6 @@ with r3:
     </div>
     """, unsafe_allow_html=True)
 
-# =================== INFO ===================
-
-st.markdown(f"""
-<div class="result-card-wide">
-    <div class="result-title">Position conservée</div>
-    <div class="result-value">
-        Avant : {old_position*100:.1f}% | Après : {new_position*100:.1f}%
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
