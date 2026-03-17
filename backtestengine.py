@@ -311,9 +311,9 @@ tools = [
 for t in tools:
     content.append(t)
     render()
-    time.sleep(0.6)
+    time.sleep(3)
 
-time.sleep(0.5)
+time.sleep(2)
 
 # Updates
 content.append("> Vérification des nouveautés...")
@@ -328,17 +328,18 @@ updates = [
 for u in updates:
     content.append(u)
     render()
-    time.sleep(0.5)
+    time.sleep(3)
 
-time.sleep(0.4)
+time.sleep(2)
 
 # Message final
 content.append('$ echo "Optimisation des outils en cours..."')
 render()
-time.sleep(1)
+time.sleep(3)
 
 content.append("Optimisation des outils en cours... vous pouvez optimiser vos stratégies")
 render()
+
 
 # ---- DISCLAIMER ----
 if st.session_state.show_disclaimer:
