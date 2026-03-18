@@ -521,6 +521,8 @@ st.markdown("""
     font-family: monospace;
     font-size: 12px;
     line-height: 1.3;
+    max-height: 450px;
+    overflow-y: auto;
 }
 
 .checklist-header {
@@ -535,12 +537,10 @@ div[data-baseweb="checkbox"] label {
     font-size: 12px;
 }
 
-/* compact spacing */
 div[data-baseweb="checkbox"] {
     margin-bottom: 2px;
 }
 
-/* bouton */
 .stButton>button {
     background-color: black;
     color: #00ff88;
@@ -548,7 +548,6 @@ div[data-baseweb="checkbox"] {
     font-family: monospace;
 }
 
-/* warning */
 .warning-box {
     background-color:#000000;
     border:1px solid #00ff88;
@@ -559,7 +558,6 @@ div[data-baseweb="checkbox"] {
     font-size:12px;
     margin-bottom:15px;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -589,11 +587,11 @@ if "checklist_validee" not in st.session_state:
 
 min_valid = 9
 
-# ======= AFFICHAGE CHECKLIST (UNIQUEMENT SI NON VALIDÉE) =======
+# ======= AFFICHAGE CHECKLIST (SI NON VALIDÉE) =======
 if not st.session_state.checklist_validee:
 
     st.markdown("""
-    <div class="checklist-terminal">
+    <div class="checklist-terminal" id="checklist-terminal">
     <div class="checklist-header">
     $ init checklist_protocol --lp_safety
     </div>
@@ -603,7 +601,6 @@ if not st.session_state.checklist_validee:
     for item in checklist_items:
         checked = st.checkbox(item, key=item)
 
-        # affichage type terminal
         prefix = "[✔]" if checked else "[ ]"
         st.markdown(f"<div style='color:#00ff88'> {prefix} {item}</div>", unsafe_allow_html=True)
 
@@ -641,13 +638,23 @@ if not st.session_state.checklist_validee:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
+    # ======= AUTO-SCROLL INTELLIGENT =======
+    st.markdown("""
+    <script>
+    const term = document.getElementById("checklist-terminal");
+    if (term) {
+        term.scrollTop = term.scrollHeight;
+    }
+    </script>
+    """, unsafe_allow_html=True)
+
     st.stop()
 
 
 # ======= MESSAGE UNLOCK =======
 st.markdown("""
 <div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
-> Déverouillage de l'outil en cours...
+> unlocking tool access...
 </div>
 """, unsafe_allow_html=True)
 
