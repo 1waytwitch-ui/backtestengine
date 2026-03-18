@@ -248,6 +248,7 @@ def get_price_usd(token):
 
 
 # --- résumé ---
+# --- STYLE ---
 st.markdown("""
 <style>
 body {
@@ -263,6 +264,9 @@ body {
     box-shadow: 0 0 15px rgba(0,255,150,0.15);
     font-size: 14px;
     line-height: 1.4;
+
+    max-height: 450px;
+    overflow-y: auto;
 }
 
 .cursor {
@@ -293,7 +297,19 @@ terminal_placeholder = st.empty()
 
 def render():
     terminal_placeholder.markdown(
-        "<div class='terminal'>" + "<br>".join(st.session_state.content) + "<span class='cursor'></span></div>",
+        """
+        <div id='terminal' class='terminal'>
+        """ + "<br>".join(st.session_state.content) + """
+        <span class='cursor'></span>
+        </div>
+
+        <script>
+        const term = document.getElementById("terminal");
+        if (term) {
+            term.scrollTop = term.scrollHeight;
+        }
+        </script>
+        """,
         unsafe_allow_html=True
     )
 
@@ -304,8 +320,6 @@ def type_line(line):
         current += char
         st.session_state.content[-1] = current
         render()
-
-        # vitesse variable (effet humain)
         time.sleep(random.uniform(0.008, 0.03))
 
 # --- GLITCH SUBTIL ---
@@ -317,14 +331,13 @@ def subtle_glitch(line, chance=0.2):
         render()
         time.sleep(0.05)
 
-# --- AFFICHAGE LIGNE ---
+# --- AJOUT LIGNE ---
 def add_line(line, glitch=False):
     st.session_state.content.append("")
     if glitch:
         subtle_glitch(line)
     type_line(line)
     time.sleep(random.uniform(0.05, 0.2))
-
 
 # --- LOADING BAR ---
 def loading_bar(total=20):
@@ -335,7 +348,6 @@ def loading_bar(total=20):
         st.session_state.content[-1] = line
         render()
         time.sleep(0.06)
-
 
 # --- ANIMATION PRINCIPALE ---
 if not st.session_state.finished:
@@ -408,6 +420,8 @@ if st.session_state.finished and not st.session_state.disclaimer_shown:
         add_line(line)
 
     st.session_state.disclaimer_shown = True
+
+
 # -----------------------
 # CODE SECRET - THEME TERMINAL AVEC BOUTON VALIDER
 # -----------------------
