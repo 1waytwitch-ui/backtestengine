@@ -656,7 +656,7 @@ if not st.session_state.checklist_validee:
 # ======= UNLOCK MESSAGE ======
 st.markdown("""
 <div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
-> unlocking tool access...
+> déverouillage des outils...
 </div>
 """, unsafe_allow_html=True)
 
