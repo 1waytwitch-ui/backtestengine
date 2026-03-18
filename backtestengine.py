@@ -508,9 +508,9 @@ if not st.session_state.authenticated:
 
 
 # ======= STYLE CHECKLIST TERMINAL ======
+# ======= STYLE TERMINAL ======
 st.markdown("""
 <style>
-
 .checklist-terminal {
     background-color: #000000;
     border: 1px solid #00ff88;
@@ -524,30 +524,17 @@ st.markdown("""
     max-height: 450px;
     overflow-y: auto;
 }
-
 .checklist-header {
     color: #00ff88;
     font-size: 14px;
     margin-bottom: 8px;
 }
-
-div[data-baseweb="checkbox"] label {
-    font-family: monospace;
-    color: #00ff88;
-    font-size: 12px;
-}
-
-div[data-baseweb="checkbox"] {
-    margin-bottom: 2px;
-}
-
 .stButton>button {
     background-color: black;
     color: #00ff88;
     border: 1px solid #00ff88;
     font-family: monospace;
 }
-
 .warning-box {
     background-color:#000000;
     border:1px solid #00ff88;
@@ -561,8 +548,7 @@ div[data-baseweb="checkbox"] {
 </style>
 """, unsafe_allow_html=True)
 
-
-# ======= ITEMS =======
+# ======= CHECKLIST ITEMS =======
 checklist_items = [
     "Je comprends que mon capital n'est productif que lorsqu'il est dans le range",
     "J'ai défini un range cohérent avec la volatilité actuelle et de la tendence du marché",
@@ -587,7 +573,7 @@ if "checklist_validee" not in st.session_state:
 
 min_valid = 9
 
-# ======= AFFICHAGE CHECKLIST (SI NON VALIDÉE) =======
+# ======= AFFICHAGE CHECKLIST (auto-check) =======
 if not st.session_state.checklist_validee:
 
     st.markdown("""
@@ -597,48 +583,37 @@ if not st.session_state.checklist_validee:
     </div>
     """, unsafe_allow_html=True)
 
-    user_check = []
+    # Affichage auto-check [✔]
     for item in checklist_items:
-        checked = st.checkbox(item, key=item)
+        st.markdown(f"<div style='color:#00ff88'>[✔] {item}</div>", unsafe_allow_html=True)
 
-        prefix = "[✔]" if checked else "[ ]"
-        st.markdown(f"<div style='color:#00ff88'> {prefix} {item}</div>", unsafe_allow_html=True)
-
-        user_check.append(checked)
-
-    score = sum(user_check)
+    # Progress bar
+    score = len(checklist_items)
     total = len(checklist_items)
-
-    # ======= PROGRESS BAR TERMINAL =======
     progress = int((score / total) * 20)
     bar = "█" * progress + "░" * (20 - progress)
-
     st.markdown(f"""
     <div style='color:#00ff88; font-family:monospace; font-size:12px; margin-top:8px;'>
     > progress: [{bar}] {score}/{total}
     </div>
     """, unsafe_allow_html=True)
 
-    # ======= BOUTON =======
+    # Bouton final pour valider
     if st.button("$ validate --checklist"):
         if score >= min_valid:
             st.session_state.checklist_validee = True
             st.rerun()
         else:
-            st.session_state.checklist_validee = False
-
-    # ======= WARNING =======
-    if score < min_valid:
-        st.markdown(f"""
-        <div class="warning-box">
-        > [!] ACCESS DENIED  
-        > score: {score}/{total} | required: {min_valid}
-        </div>
-        """, unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="warning-box">
+            > [!] ACCESS DENIED  
+            > score: {score}/{total} | required: {min_valid}
+            </div>
+            """, unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # ======= AUTO-SCROLL INTELLIGENT =======
+    # Auto-scroll intelligent
     st.markdown("""
     <script>
     const term = document.getElementById("checklist-terminal");
@@ -650,14 +625,12 @@ if not st.session_state.checklist_validee:
 
     st.stop()
 
-
 # ======= MESSAGE UNLOCK =======
 st.markdown("""
 <div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
 > unlocking tool access...
 </div>
 """, unsafe_allow_html=True)
-
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
