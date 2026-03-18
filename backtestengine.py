@@ -508,7 +508,6 @@ if not st.session_state.authenticated:
 
 
 # ======= STYLE CHECKLIST TERMINAL ======
-# ======= STYLE TERMINAL ======
 st.markdown("""
 <style>
 .checklist-terminal {
@@ -545,10 +544,30 @@ st.markdown("""
     font-size:12px;
     margin-bottom:15px;
 }
+.cursor {
+    display: inline-block;
+    width: 8px;
+    background-color: #00ff88;
+    margin-left: 3px;
+    animation: blink 1s infinite;
+}
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
 </style>
 """, unsafe_allow_html=True)
 
-# ======= CHECKLIST ITEMS =======
+# ======= STATE ======
+if "checklist_validee" not in st.session_state:
+    st.session_state.checklist_validee = False
+if "checklist_content" not in st.session_state:
+    st.session_state.checklist_content = []
+
+min_valid = 9
+
+# ======= ITEMS ======
 checklist_items = [
     "Je comprends que mon capital n'est productif que lorsqu'il est dans le range",
     "J'ai défini un range cohérent avec la volatilité actuelle et de la tendence du marché",
@@ -567,70 +586,81 @@ checklist_items = [
     "Je comprends que l'APR affiché sur l'aggragateur est indicatif et non garanti"
 ]
 
-# ======= STATE =======
-if "checklist_validee" not in st.session_state:
-    st.session_state.checklist_validee = False
+# ======= PLACEHOLDER ======
+terminal_placeholder = st.empty()
 
-min_valid = 9
+# ======= RENDER ======
+def render():
+    terminal_placeholder.markdown(
+        """
+        <div id='checklist-terminal' class='checklist-terminal'>
+        """ + "<br>".join(st.session_state.checklist_content) + """
+        <span class='cursor'></span>
+        </div>
+        <script>
+        const term = document.getElementById("checklist-terminal");
+        if (term) { term.scrollTop = term.scrollHeight; }
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
 
-# ======= AFFICHAGE CHECKLIST (auto-check) =======
+# ======= TYPING LINE ======
+def type_line(line):
+    current = ""
+    st.session_state.checklist_content.append("")
+    for char in line:
+        current += char
+        st.session_state.checklist_content[-1] = current
+        render()
+        time.sleep(random.uniform(0.008, 0.03))
+
+# ======= GLITCH OPTIONNEL ======
+def subtle_glitch(line, chance=0.15):
+    if random.random() < chance:
+        chars = list("█▓▒░<>/\\|#@$%&*")
+        glitched = "".join(random.choice(chars) for _ in range(len(line)))
+        st.session_state.checklist_content[-1] = glitched
+        render()
+        time.sleep(0.03)
+
+# ======= ADD LINE ======
+def add_line(line, glitch=False):
+    if glitch:
+        subtle_glitch(line)
+    type_line(line)
+    time.sleep(random.uniform(0.05, 0.2))
+
+# ======= DISPLAY CHECKLIST ======
 if not st.session_state.checklist_validee:
 
-    st.markdown("""
-    <div class="checklist-terminal" id="checklist-terminal">
-    <div class="checklist-header">
-    $ init checklist_protocol --lp_safety
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Affichage auto-check [✔]
-    for item in checklist_items:
-        st.markdown(f"<div style='color:#00ff88'>[✔] {item}</div>", unsafe_allow_html=True)
-
-    # Progress bar
-    score = len(checklist_items)
-    total = len(checklist_items)
-    progress = int((score / total) * 20)
-    bar = "█" * progress + "░" * (20 - progress)
-    st.markdown(f"""
-    <div style='color:#00ff88; font-family:monospace; font-size:12px; margin-top:8px;'>
-    > progress: [{bar}] {score}/{total}
-    </div>
-    """, unsafe_allow_html=True)
+    if not st.session_state.checklist_content:
+        add_line("$ init checklist_protocol --lp_safety", glitch=True)
+        add_line("> auto-checking all items...", glitch=True)
+        for item in checklist_items:
+            add_line(f"[✔] {item}")
+        # Progress bar
+        score = len(checklist_items)
+        total = len(checklist_items)
+        progress = int((score / total) * 20)
+        bar = "█" * progress + "░" * (20 - progress)
+        add_line(f"> progress: [{bar}] {score}/{total}")
 
     # Bouton final pour valider
     if st.button("$ validate --checklist"):
-        if score >= min_valid:
-            st.session_state.checklist_validee = True
-            st.rerun()
-        else:
-            st.markdown(f"""
-            <div class="warning-box">
-            > [!] ACCESS DENIED  
-            > score: {score}/{total} | required: {min_valid}
-            </div>
-            """, unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Auto-scroll intelligent
-    st.markdown("""
-    <script>
-    const term = document.getElementById("checklist-terminal");
-    if (term) {
-        term.scrollTop = term.scrollHeight;
-    }
-    </script>
-    """, unsafe_allow_html=True)
+        st.session_state.checklist_validee = True
+        st.rerun()
 
     st.stop()
 
-# ======= MESSAGE UNLOCK =======
+# ======= UNLOCK MESSAGE ======
 st.markdown("""
 <div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
 > unlocking tool access...
 </div>
 """, unsafe_allow_html=True)
+
+
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
