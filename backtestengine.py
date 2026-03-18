@@ -9,7 +9,7 @@ import plotly.io as pio
 import yfinance as yf
 import math
 import time
-
+import random
 
 # Forcer l'application en mode écran large
 st.set_page_config(layout="wide")
@@ -246,6 +246,7 @@ def get_price_usd(token):
 
 
 
+
 # resumé
 st.markdown("""
 <style>
@@ -280,10 +281,13 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# --- Session state pour le contenu du terminal ---
+# --- Session state ---
 if "content" not in st.session_state:
     st.session_state.content = []
-    st.session_state.finished = False  # Indique si l'animation est terminée
+    st.session_state.finished = False
+
+if "disclaimer_shown" not in st.session_state:
+    st.session_state.disclaimer_shown = False
 
 terminal_placeholder = st.empty()
 
@@ -293,14 +297,45 @@ def render():
         unsafe_allow_html=True
     )
 
-# --- Animation du terminal (executée une seule fois) ---
+# --- Typing ---
+def type_line(line, speed=0.015):
+    current = ""
+    for char in line:
+        current += char
+        st.session_state.content[-1] = current
+        render()
+        time.sleep(speed)
+
+# --- Glitch effect ---
+def glitch_line(final_text, duration=0.5):
+    chars = list("█▓▒░<>/\\|#@$%&*")
+    end_time = time.time() + duration
+
+    while time.time() < end_time:
+        glitched = "".join(random.choice(chars) for _ in range(len(final_text)))
+        st.session_state.content[-1] = glitched
+        render()
+        time.sleep(0.05)
+
+    st.session_state.content[-1] = final_text
+    render()
+
+# --- Fake loading bar ---
+def loading_bar(total=20):
+    bar = ["░"] * total
+    for i in range(total):
+        bar[i] = "█"
+        line = "> decrypting disclaimer... [" + "".join(bar) + "]"
+        st.session_state.content[-1] = line
+        render()
+        time.sleep(0.08)
+
+# --- Animation principale ---
 if not st.session_state.finished:
-    # Ligne 1
     st.session_state.content.append("$ backtest-engine-lp --update")
     render()
     time.sleep(1)
 
-    # Outils existants
     st.session_state.content.append("> Modules chargés :")
     render()
 
@@ -314,7 +349,7 @@ if not st.session_state.finished:
     for t in tools:
         st.session_state.content.append(t)
         render()
-        time.sleep(1)  # plus rapide pour test
+        time.sleep(1)
 
     st.session_state.content.append("> Vérification des nouveautés...")
     render()
@@ -338,54 +373,55 @@ if not st.session_state.finished:
     st.session_state.content.append("Optimisation des outils en cours... vous pouvez optimiser vos stratégies")
     render()
 
-    st.session_state.finished = True  # Animation terminée
+    st.session_state.finished = True
 
-# ---- DISCLAIMER ----
-if st.session_state.show_disclaimer:
-    st.markdown("""
-    <style>
-    .disclaimer-card {
-        background-color: #0b0f14;
-        border-left: 6px solid #00ff88;
-        padding: 15px 20px;
-        border-radius: 8px;
-        color: #e6edf3;
-        margin-bottom: 25px;
-        font-size: 15px;
-        line-height: 1.5;
-        box-shadow: 0 0 12px rgba(0,255,136,0.05);
-        transition: 0.3s ease;
-    }
-    .disclaimer-card:hover {
-        box-shadow: 0 0 25px rgba(0,255,136,0.15);
-    }
-    .disclaimer-card .title {
-        font-weight: 700;
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-    .disclaimer-card .text {
-        font-weight: 400;
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-    </style>
 
-    <div class="disclaimer-card">
-        <div class="title">⚠️ DISCLAIMER IMPORTANT</div>
-        <div class="text">
-        Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie de farming automatisée peut perdre malgré des APY élevés.
-        </div>
-        <div class="text">
-        L’accès au backtest est exclusivement réservé aux membres de la Team Élite de la chaîne KBOUR Crypto. 
-        Le code d’accès est disponible dans le canal privé “DEFI Académie”. 
-        Cet outil peut comporter des approximations ou des inexactitudes. 
-        Il ne s’agit en aucun cas d’un conseil en investissement. 
-        Veuillez effectuer vos propres recherches et comprendre le mécanisme des pools de liquidités concentrés et du capital déposé. 
-        Si l’API est surchargée, certains prix devront être saisis manuellement !
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+# --- DISCLAIMER AVEC FX ---
+if st.session_state.finished and not st.session_state.disclaimer_shown:
+
+    # Ligne decrypting
+    st.session_state.content.append("")
+    type_line("> Initializing secure buffer...")
+    time.sleep(0.5)
+
+    st.session_state.content.append("")
+    loading_bar()
+
+    # glitch reveal
+    st.session_state.content.append("")
+    glitch_line("> ACCESSING ENCRYPTED DISCLAIMER FILE")
+
+    time.sleep(0.5)
+
+    disclaimer_lines = [
+        "",
+        "$ cat disclaimer.txt",
+        "> [!] SYSTEM WARNING — DISCLAIMER LOADED",
+        "> ----------------------------------------",
+        "> ⚠️ DISCLAIMER IMPORTANT",
+        ">",
+        "> Un backtest en DeFi n’explique pas comment gagner,",
+        "> mais comment une stratégie peut perdre malgré des APY élevés.",
+        ">",
+        "> Accès réservé aux membres Team Élite (KBOUR Crypto)",
+        "> Code disponible dans le canal privé 'DEFI Académie'",
+        ">",
+        "> Cet outil peut contenir des approximations",
+        "> Ceci n’est PAS un conseil en investissement",
+        ">",
+        "> Faites vos propres recherches (DYOR)",
+        "> Comprenez les risques des pools de liquidités concentrés",
+        ">",
+        "> Si l’API est surchargée → saisie manuelle requise",
+        "> ----------------------------------------"
+    ]
+
+    for line in disclaimer_lines:
+        st.session_state.content.append("")
+        type_line(line)
+        time.sleep(0.2)
+
+    st.session_state.disclaimer_shown = True
 
 # -----------------------
 # CODE SECRET - THEME TERMINAL AVEC BOUTON VALIDER
