@@ -511,39 +511,36 @@ if not st.session_state.authenticated:
 st.markdown("""
 <style>
 
-/* Card globale */
 .checklist-terminal {
     background-color: #000000;
     border: 1px solid #00ff88;
-    border-radius: 10px;
-    padding: 15px;
-    margin-top: 20px;
-    box-shadow: 0 0 15px rgba(0,255,150,0.1);
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 15px;
+    box-shadow: 0 0 10px rgba(0,255,150,0.1);
     font-family: monospace;
+    font-size: 12px;
+    line-height: 1.3;
 }
 
-/* Header */
 .checklist-header {
     color: #00ff88;
-    font-size: 16px;
-    margin-bottom: 10px;
+    font-size: 14px;
+    margin-bottom: 8px;
 }
 
-/* Ligne terminal */
-.checkline {
-    color: #00ff88;
-    font-size: 13px;
-    margin-bottom: 5px;
-}
-
-/* Checkbox label */
 div[data-baseweb="checkbox"] label {
     font-family: monospace;
     color: #00ff88;
-    font-size: 13px;
+    font-size: 12px;
 }
 
-/* Bouton */
+/* compact spacing */
+div[data-baseweb="checkbox"] {
+    margin-bottom: 2px;
+}
+
+/* bouton */
 .stButton>button {
     background-color: black;
     color: #00ff88;
@@ -551,31 +548,19 @@ div[data-baseweb="checkbox"] label {
     font-family: monospace;
 }
 
-/* Warning box */
+/* warning */
 .warning-box {
     background-color:#000000;
     border:1px solid #00ff88;
-    border-radius:8px;
-    padding:12px;
+    border-radius:6px;
+    padding:10px;
     color:#00ff88;
     font-family: monospace;
-    font-size:13px;
-    margin-bottom:20px;
+    font-size:12px;
+    margin-bottom:15px;
 }
 
 </style>
-""", unsafe_allow_html=True)
-
-
-# ======= HEADER TERMINAL ======
-st.markdown("""
-<div class="checklist-terminal">
-<div class="checklist-header">
-$ init checklist_protocol --lp_safety
-</div>
-<div class="checkline">
-> Vérification des prérequis utilisateur...
-</div>
 """, unsafe_allow_html=True)
 
 
@@ -598,37 +583,73 @@ checklist_items = [
     "Je comprends que l'APR affiché sur l'aggragateur est indicatif et non garanti"
 ]
 
+# ======= STATE =======
+if "checklist_validee" not in st.session_state:
+    st.session_state.checklist_validee = False
 
-# ======= CHECKBOXES (inchangé) =======
-user_check = [st.checkbox(f"> {item}", key=item) for item in checklist_items]
-
-
-# ======= FERMETURE CARD =======
-st.markdown("</div>", unsafe_allow_html=True)
-
-
-# ======= BOUTON VALIDATION =======
-if st.button("$ validate --checklist"):
-    st.session_state.checklist_validee = True
-
-
-# ======= LOGIQUE (INCHANGÉE) =======
 min_valid = 9
-score = sum(user_check)
-total = len(checklist_items)
 
+# ======= AFFICHAGE CHECKLIST (UNIQUEMENT SI NON VALIDÉE) =======
+if not st.session_state.checklist_validee:
 
-# ======= WARNING TERMINAL =======
-if not st.session_state.get("checklist_validee", False) or score < min_valid:
-    st.markdown(f"""
-    <div class="warning-box">
-    > [!] ACCESS DENIED  
-    > score: {score}/{total} | required: {min_valid}  
-    > veuillez compléter et valider le protocole
+    st.markdown("""
+    <div class="checklist-terminal">
+    <div class="checklist-header">
+    $ init checklist_protocol --lp_safety
     </div>
     """, unsafe_allow_html=True)
+
+    user_check = []
+    for item in checklist_items:
+        checked = st.checkbox(item, key=item)
+
+        # affichage type terminal
+        prefix = "[✔]" if checked else "[ ]"
+        st.markdown(f"<div style='color:#00ff88'> {prefix} {item}</div>", unsafe_allow_html=True)
+
+        user_check.append(checked)
+
+    score = sum(user_check)
+    total = len(checklist_items)
+
+    # ======= PROGRESS BAR TERMINAL =======
+    progress = int((score / total) * 20)
+    bar = "█" * progress + "░" * (20 - progress)
+
+    st.markdown(f"""
+    <div style='color:#00ff88; font-family:monospace; font-size:12px; margin-top:8px;'>
+    > progress: [{bar}] {score}/{total}
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ======= BOUTON =======
+    if st.button("$ validate --checklist"):
+        if score >= min_valid:
+            st.session_state.checklist_validee = True
+            st.rerun()
+        else:
+            st.session_state.checklist_validee = False
+
+    # ======= WARNING =======
+    if score < min_valid:
+        st.markdown(f"""
+        <div class="warning-box">
+        > [!] ACCESS DENIED  
+        > score: {score}/{total} | required: {min_valid}
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
     st.stop()
 
+
+# ======= MESSAGE UNLOCK =======
+st.markdown("""
+<div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
+> Déverouillage de l'outil en cours...
+</div>
+""", unsafe_allow_html=True)
 
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
