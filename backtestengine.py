@@ -510,40 +510,74 @@ if not st.session_state.authenticated:
 # ======= STYLE CHECKLIST TERMINAL ======
 st.markdown("""
 <style>
-/* Label des checkboxes */
+
+/* Card globale */
+.checklist-terminal {
+    background-color: #000000;
+    border: 1px solid #00ff88;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 0 15px rgba(0,255,150,0.1);
+    font-family: monospace;
+}
+
+/* Header */
+.checklist-header {
+    color: #00ff88;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Ligne terminal */
+.checkline {
+    color: #00ff88;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+/* Checkbox label */
 div[data-baseweb="checkbox"] label {
-    font-family: "Courier New", monospace;
+    font-family: monospace;
     color: #00ff88;
     font-size: 13px;
 }
 
-/* Card de la checklist */
-.checklist-card {
-    background-color: #0b0f14;
+/* Bouton */
+.stButton>button {
+    background-color: black;
+    color: #00ff88;
     border: 1px solid #00ff88;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-top: 20px;
+    font-family: monospace;
 }
+
+/* Warning box */
+.warning-box {
+    background-color:#000000;
+    border:1px solid #00ff88;
+    border-radius:8px;
+    padding:12px;
+    color:#00ff88;
+    font-family: monospace;
+    font-size:13px;
+    margin-bottom:20px;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
-# ======= HEADER DE LA CHECKLIST ======
+
+# ======= HEADER TERMINAL ======
 st.markdown("""
-<div class="checklist-card" style="
-    background-color:#0f141b;
-    border:1px solid #1f2a36;
-    border-radius:12px;
-    padding:16px;
-    margin-top:20px;
-    margin-bottom:10px;
-    box-shadow:0 0 12px rgba(0,255,136,0.05);
-">
-    <span style="font-weight:700; font-size:20px; color:#00ff88;">
-        Checklist avant utilisation de l'outil
-    </span>
+<div class="checklist-terminal">
+<div class="checklist-header">
+$ init checklist_protocol --lp_safety
+</div>
+<div class="checkline">
+> Vérification des prérequis utilisateur...
 </div>
 """, unsafe_allow_html=True)
+
 
 # ======= ITEMS =======
 checklist_items = [
@@ -564,33 +598,33 @@ checklist_items = [
     "Je comprends que l'APR affiché sur l'aggragateur est indicatif et non garanti"
 ]
 
-# ======= CHECKBOXES =======
-user_check = [st.checkbox(item, key=item) for item in checklist_items]
+
+# ======= CHECKBOXES (inchangé) =======
+user_check = [st.checkbox(f"> {item}", key=item) for item in checklist_items]
+
+
+# ======= FERMETURE CARD =======
+st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ======= BOUTON VALIDATION =======
-if st.button("Valider le questionnaire"):
+if st.button("$ validate --checklist"):
     st.session_state.checklist_validee = True
 
-# ======= BLOCAGE SI NON SUFFISANT =======
-min_valid = 9  # par exemple, nombre minimum de réponses pour débloquer
 
+# ======= LOGIQUE (INCHANGÉE) =======
+min_valid = 9
 score = sum(user_check)
 total = len(checklist_items)
 
+
+# ======= WARNING TERMINAL =======
 if not st.session_state.get("checklist_validee", False) or score < min_valid:
     st.markdown(f"""
-    <div style="
-        background-color:#0f141b;
-        border:1px solid #1f2a36;
-        border-radius:10px;
-        padding:16px;
-        color:#00ff88;
-        font-family: 'Courier New', monospace;
-        font-size:14px;
-        margin-bottom:20px;
-    ">
-    ⚠️ Veuillez compléter et valider le questionnaire pour accéder à l'application.  
-    Réponses actuelles : {score}/{total} (minimum requis : {min_valid})
+    <div class="warning-box">
+    > [!] ACCESS DENIED  
+    > score: {score}/{total} | required: {min_valid}  
+    > veuillez compléter et valider le protocole
     </div>
     """, unsafe_allow_html=True)
     st.stop()
