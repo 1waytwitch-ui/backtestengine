@@ -247,7 +247,7 @@ def get_price_usd(token):
 
 
 
-# resumé
+# --- résumé ---
 st.markdown("""
 <style>
 body {
@@ -281,7 +281,7 @@ body {
 </style>
 """, unsafe_allow_html=True)
 
-# --- Session state ---
+# --- STATE ---
 if "content" not in st.session_state:
     st.session_state.content = []
     st.session_state.finished = False
@@ -297,30 +297,36 @@ def render():
         unsafe_allow_html=True
     )
 
-# --- Typing ---
-def type_line(line, speed=0.015):
+# --- TYPING REALISTE ---
+def type_line(line):
     current = ""
     for char in line:
         current += char
         st.session_state.content[-1] = current
         render()
-        time.sleep(speed)
 
-# --- Glitch effect ---
-def glitch_line(final_text, duration=0.5):
-    chars = list("█▓▒░<>/\\|#@$%&*")
-    end_time = time.time() + duration
+        # vitesse variable (effet humain)
+        time.sleep(random.uniform(0.008, 0.03))
 
-    while time.time() < end_time:
-        glitched = "".join(random.choice(chars) for _ in range(len(final_text)))
+# --- GLITCH SUBTIL ---
+def subtle_glitch(line, chance=0.2):
+    if random.random() < chance:
+        chars = list("█▓▒░<>/\\|#@$%&*")
+        glitched = "".join(random.choice(chars) for _ in range(len(line)))
         st.session_state.content[-1] = glitched
         render()
         time.sleep(0.05)
 
-    st.session_state.content[-1] = final_text
-    render()
+# --- AFFICHAGE LIGNE ---
+def add_line(line, glitch=False):
+    st.session_state.content.append("")
+    if glitch:
+        subtle_glitch(line)
+    type_line(line)
+    time.sleep(random.uniform(0.05, 0.2))
 
-# --- Fake loading bar ---
+
+# --- LOADING BAR ---
 def loading_bar(total=20):
     bar = ["░"] * total
     for i in range(total):
@@ -328,16 +334,15 @@ def loading_bar(total=20):
         line = "> decrypting disclaimer... [" + "".join(bar) + "]"
         st.session_state.content[-1] = line
         render()
-        time.sleep(0.08)
+        time.sleep(0.06)
 
-# --- Animation principale ---
+
+# --- ANIMATION PRINCIPALE ---
 if not st.session_state.finished:
-    st.session_state.content.append("$ backtest-engine-lp --update")
-    render()
-    time.sleep(1)
 
-    st.session_state.content.append("> Modules chargés :")
-    render()
+    add_line("$ backtest-engine-lp --update", glitch=True)
+
+    add_line("> Modules chargés :")
 
     tools = [
         "✔ Pool Setup | Price & Range | Automation avancée",
@@ -347,13 +352,9 @@ if not st.session_state.finished:
     ]
 
     for t in tools:
-        st.session_state.content.append(t)
-        render()
-        time.sleep(1)
+        add_line(t)
 
-    st.session_state.content.append("> Vérification des nouveautés...")
-    render()
-    time.sleep(1)
+    add_line("> Vérification des nouveautés...")
 
     updates = [
         "✔ LP Health Score activé",
@@ -362,36 +363,23 @@ if not st.session_state.finished:
     ]
 
     for u in updates:
-        st.session_state.content.append(u)
-        render()
-        time.sleep(1)
+        add_line(u)
 
-    st.session_state.content.append('$ echo "Optimisation des outils en cours..."')
-    render()
-    time.sleep(1)
-
-    st.session_state.content.append("Optimisation des outils en cours... vous pouvez optimiser vos stratégies")
-    render()
+    add_line('$ echo "Optimisation des outils en cours..."', glitch=True)
+    add_line("Optimisation des outils en cours... vous pouvez optimiser vos stratégies")
 
     st.session_state.finished = True
 
 
-# --- DISCLAIMER AVEC FX ---
+# --- DISCLAIMER FX ---
 if st.session_state.finished and not st.session_state.disclaimer_shown:
 
-    # Ligne decrypting
-    st.session_state.content.append("")
-    type_line("> Initializing secure buffer...")
-    time.sleep(0.5)
+    add_line("> Initializing secure buffer...", glitch=True)
 
     st.session_state.content.append("")
     loading_bar()
 
-    # glitch reveal
-    st.session_state.content.append("")
-    glitch_line("> ACCESSING ENCRYPTED DISCLAIMER FILE")
-
-    time.sleep(0.5)
+    add_line("> ACCESSING ENCRYPTED DISCLAIMER FILE", glitch=True)
 
     disclaimer_lines = [
         "",
@@ -417,12 +405,9 @@ if st.session_state.finished and not st.session_state.disclaimer_shown:
     ]
 
     for line in disclaimer_lines:
-        st.session_state.content.append("")
-        type_line(line)
-        time.sleep(0.2)
+        add_line(line)
 
     st.session_state.disclaimer_shown = True
-
 # -----------------------
 # CODE SECRET - THEME TERMINAL AVEC BOUTON VALIDER
 # -----------------------
