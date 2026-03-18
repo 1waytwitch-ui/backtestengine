@@ -423,89 +423,122 @@ if st.session_state.finished and not st.session_state.disclaimer_shown:
 
 
 # -----------------------
-# CODE SECRET - THEME TERMINAL AVEC BOUTON VALIDER
+# CODE SECRET - THEME TERMINAL AVEC BOUTON VALIDER + TYPING
 # -----------------------
 SECRET_CODE = st.secrets["Secret_Code"]
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
+if "secret_content" not in st.session_state:
+    st.session_state.secret_content = []
+
+terminal_placeholder = st.empty()
+
+# ======= RENDER ======
+def render():
+    terminal_placeholder.markdown(
+        """
+        <div id='secret-terminal' class='checklist-terminal'>
+        """ + "<br>".join(st.session_state.secret_content) + """
+        <span class='cursor'></span>
+        </div>
+        <script>
+        const term = document.getElementById("secret-terminal");
+        if (term) { term.scrollTop = term.scrollHeight; }
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ======= STYLE TERMINAL ======
+st.markdown("""
+<style>
+.checklist-terminal {
+    background-color: #000000;
+    border: 1px solid #00ff88;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 0 12px rgba(0,255,150,0.15);
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.3;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.cursor {
+    display: inline-block;
+    width: 8px;
+    background-color: #00ff88;
+    margin-left: 3px;
+    animation: blink 1s infinite;
+}
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+.stButton>button {
+    background-color: black;
+    color: #00ff88;
+    border: 1px solid #00ff88;
+    font-family: monospace;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ======= TYPING / GLITCH ======
+def type_line(line):
+    st.session_state.secret_content.append("")
+    current = ""
+    for char in line:
+        current += char
+        st.session_state.secret_content[-1] = current
+        render()
+        time.sleep(random.uniform(0.01, 0.03))
+
+def subtle_glitch(line, chance=0.15):
+    if random.random() < chance:
+        chars = list("█▓▒░<>/\\|#@$%&*")
+        glitched = "".join(random.choice(chars) for _ in range(len(line)))
+        st.session_state.secret_content[-1] = glitched
+        render()
+        time.sleep(0.03)
+
+def add_line(line, glitch=False):
+    if glitch:
+        subtle_glitch(line)
+    type_line(line)
+    time.sleep(random.uniform(0.05, 0.15))
+
+# ======= TERMINAL AUTHENTICATION ======
 if not st.session_state.authenticated:
 
-    # HTML + CSS overlay + boutons en thème terminal
-    st.markdown("""
-    <style>
-    .login-card {
-        background-color: #0f141b;
-        border: 1px solid #1f2a36;
-        border-radius: 12px;
-        max-width: 420px;
-        margin: 3rem auto;
-        padding: 24px;
-        box-shadow: 0 0 18px rgba(0,255,136,0.05);
-        font-family: "Courier New", monospace;
-        color: #e6edf3;
-        text-align: center;
-    }
-    .login-title { 
-        font-size: 24px; 
-        font-weight: 700; 
-        color: #00ff88 !important; 
-        margin-bottom: 6px; 
-    }
-    .login-subtitle { 
-        font-size: 13px; 
-        color: #c9d1d9; 
-        margin-bottom: 18px; 
-        line-height: 1.4em;
-    }
-    .elite-btn, .stButton button {
-        display: inline-block;
-        background-color: #00ff88 !important;
-        color: #0b0f14 !important;
-        font-size: 14px !important;
-        font-weight: 700 !important;
-        text-decoration: none !important;
-        padding: 8px 14px !important;
-        border-radius: 10px !important;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-        margin-bottom: 18px;
-        border: none !important;
-        cursor: pointer;
-    }
-    .elite-btn:hover, .stButton button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0,255,136,0.4);
-    }
-    </style>
+    if not st.session_state.secret_content:
+        add_line("$ ACCESS PROTOCOL INITIALIZATION", glitch=True)
+        add_line("> Vérification des droits de la Team Élite KBOUR Crypto...")
+        add_line("> Veuillez saisir le code d'accès ci-dessous")
 
-    <div class="login-card">
-        <div class="login-title">Accès sécurisé</div>
-        <div class="login-subtitle">
-            Réservé aux membres de la <b>Team Élite KBOUR Crypto</b><br>
-            Code disponible dans <b>DEFI Académie</b>
-        </div>
-        <!-- BOUTON EXTERNE -->
-        <a href="https://kbourcrypto.app/" 
-           target="_blank" class="elite-btn">
-           Rejoindre la Team Élite
-        </a>
-    </div>
-    """, unsafe_allow_html=True)
+    # INPUT STREAMLIT
+    code_input = st.text_input("Code d'accès", key="secret_code", type="password")
 
-    # INPUT STREAMLIT séparé pour que ce soit cliquable
-    st.text_input("Code d'accès", key="secret_code", type="password")
-
-    # BOUTON STREAMLIT VALIDER stylé
+    # BOUTON STREAMLIT
     if st.button("Valider", use_container_width=True):
-        if st.session_state.secret_code == SECRET_CODE:
+        if code_input == SECRET_CODE:
             st.session_state.authenticated = True
             st.rerun()
         else:
+            add_line("> [!] CODE INCORRECT", glitch=True)
             st.error("Code incorrect")
-
     st.stop()
 
+# ======= UNLOCK MESSAGE ======
+st.markdown("""
+<div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
+> ACCESS GRANTED — Welcome Elite Member
+</div>
+""", unsafe_allow_html=True)
 
 # ======= STYLE CHECKLIST TERMINAL ======
 st.markdown("""
