@@ -680,7 +680,7 @@ if not st.session_state.checklist_validee:
         add_line(f"> progress: [{bar}] {score}/{total}")
 
     # Bouton final pour valider
-    if st.button("$ validate --checklist"):
+    if st.button("$ J'AI COMPRIS !"):
         st.session_state.checklist_validee = True
         st.rerun()
 
