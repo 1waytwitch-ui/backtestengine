@@ -11,10 +11,10 @@ import math
 import time
 import random
 
-# Forcer l'application en mode écran large
+# Forcer mode écran large
 st.set_page_config(layout="wide")
 
-# ---- HEADER FIXE COMPACT & THEME TERMINAL ----
+# ---- HEADER FIXE ----
 st.markdown("""
 <style>
 .deFi-banner {
@@ -421,7 +421,7 @@ if st.session_state.finished and not st.session_state.disclaimer_shown:
 
     st.session_state.disclaimer_shown = True
 
-# ======= DISCLAIMER ======
+# ======= DISCLAIMER fixe ======
 st.markdown("""
 <div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
 > Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie peut perdre malgré des APY élevés.
