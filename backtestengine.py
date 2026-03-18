@@ -536,7 +536,7 @@ if not st.session_state.authenticated:
 # ======= UNLOCK MESSAGE ======
 st.markdown("""
 <div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
-> ACCESS GRANTED — Welcome Elite Member
+> ACCES AUTHORISE — Bonjour et bienvenue !
 </div>
 """, unsafe_allow_html=True)
 
