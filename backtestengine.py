@@ -421,6 +421,13 @@ if st.session_state.finished and not st.session_state.disclaimer_shown:
 
     st.session_state.disclaimer_shown = True
 
+# ======= DISCLAIMER ======
+st.markdown("""
+<div style='color:#00ff88; font-family:monospace; font-size:13px; margin-top:10px;'>
+> Un backtest en DeFi n’explique pas comment gagner, mais comment une stratégie peut perdre malgré des APY élevés.
+</div>
+""", unsafe_allow_html=True)
+
 
 # -----------------------
 # CODE SECRET - THEME TERMINAL AVEC BOUTON VALIDER + TYPING
