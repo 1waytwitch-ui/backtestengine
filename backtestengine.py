@@ -711,88 +711,66 @@ st.markdown("""
 # =======================
 # METEO DEFI CONFIG
 # =======================
+# Forcer mode écran large
+st.set_page_config(layout="wide")
 
 METEO = {
-    "title": "Météo DeFi ☀️☀️ RANGE LP hebdo #8",
-    "market": "Volatilité BTC/ETH qui remonte → marché toujours dans un range.",
+    "title": "☀️ RANGE LP hebdo #8",
+    "market": "Volatilité BTC/ETH ↑ → marché en range.",
     "strategies": [
-        "💸 WETH / 💵 USDC : range moyen 18% ATR ⌛ 130$ ⤴️",
-        "💸 USDC / 💵 cbBTC : range moyen 14% ATR ⌛ 3087$ ⤴️",
-        "💸 WETH / 💸 cbBTC : range normal (vol relative ETH/BTC) 8% ATR ⌛ 130$ 🔜 3087$ ⤴️"
+        "WETH/USDC → 18% ATR ⌛130$ ⤴️",
+        "USDC/cbBTC → 14% ATR ⌛3087$ ⤴️",
+        "WETH/cbBTC → 8% ATR 🔜 130$ → 3087$"
     ],
-    "conclusion": "On capte la volatilité, pas la direction tout en ajustant les ranges à la tendance."
+    "conclusion": "On capte la vol, pas la direction."
 }
 
 # =======================
-# STYLE TERMINAL
+# STYLE COMPACT
 # =======================
 
 st.markdown("""
 <style>
 .defi-meteo-box {
-    background-color: #000000;
-    padding: 15px;
-    border-radius: 8px;
+    background-color: #000;
+    padding: 10px 12px;
+    border-radius: 6px;
     border: 1px solid #00ff88;
     color: #00ff88;
     font-family: "Courier New", monospace;
-    margin-top: 10px;
-    white-space: pre-line;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # =======================
-# STATE
+# BUILD (1 seule fois)
 # =======================
 
-if "meteo_lines" not in st.session_state:
-    st.session_state.meteo_lines = []
+if "meteo_cached" not in st.session_state:
 
-placeholder = st.empty()
-
-def render():
-    placeholder.markdown(
-        "<div class='defi-meteo-box'>" +
-        "\n".join(st.session_state.meteo_lines) +
-        "</div>",
-        unsafe_allow_html=True
-    )
-
-def type_line(line):
-    current = ""
-    st.session_state.meteo_lines.append("")
-    for char in line:
-        current += char
-        st.session_state.meteo_lines[-1] = current
-        render()
-        time.sleep(random.uniform(0.002, 0.006))
-
-# =======================
-# DISPLAY
-# =======================
-
-def show_defi_meteo():
-    st.session_state.meteo_lines = []
-
-    type_line(f"> {METEO['title']}")
-    type_line("")
-    type_line(f"> {METEO['market']}")
-    type_line("")
-    type_line("> ⚙️ STRATÉGIES LP :")
+    lines = []
+    lines.append(f"> {METEO['title']}")
+    lines.append(f"> {METEO['market']}")
+    lines.append("> LP:")
 
     for strat in METEO["strategies"]:
-        type_line(f"> {strat}")
+        lines.append(f"  - {strat}")
 
-    type_line("")
-    type_line(f"> {METEO['conclusion']}")
+    lines.append(f"> {METEO['conclusion']}")
+
+    st.session_state.meteo_cached = "<br>".join(lines)
 
 # =======================
-# CALL
+# DISPLAY (statique)
 # =======================
 
-show_defi_meteo()
-
+st.markdown(
+    f"<div class='defi-meteo-box'>{st.session_state.meteo_cached}</div>",
+    unsafe_allow_html=True
+)
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
