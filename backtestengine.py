@@ -708,6 +708,91 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+# =======================
+# METEO DEFI CONFIG
+# =======================
+
+METEO = {
+    "title": "Météo DeFi ☀️☀️ RANGE LP hebdo #8",
+    "market": "Volatilité BTC/ETH qui remonte → marché toujours dans un range.",
+    "strategies": [
+        "💸 WETH / 💵 USDC : range moyen 18% ATR ⌛ 130$ ⤴️",
+        "💸 USDC / 💵 cbBTC : range moyen 14% ATR ⌛ 3087$ ⤴️",
+        "💸 WETH / 💸 cbBTC : range normal (vol relative ETH/BTC) 8% ATR ⌛ 130$ 🔜 3087$ ⤴️"
+    ],
+    "conclusion": "On capte la volatilité, pas la direction tout en ajustant les ranges à la tendance."
+}
+
+# =======================
+# STYLE TERMINAL
+# =======================
+
+st.markdown("""
+<style>
+.defi-meteo-box {
+    background-color: #000000;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #00ff88;
+    color: #00ff88;
+    font-family: "Courier New", monospace;
+    margin-top: 10px;
+    white-space: pre-line;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =======================
+# STATE
+# =======================
+
+if "meteo_lines" not in st.session_state:
+    st.session_state.meteo_lines = []
+
+placeholder = st.empty()
+
+def render():
+    placeholder.markdown(
+        "<div class='defi-meteo-box'>" +
+        "\n".join(st.session_state.meteo_lines) +
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+def type_line(line):
+    current = ""
+    st.session_state.meteo_lines.append("")
+    for char in line:
+        current += char
+        st.session_state.meteo_lines[-1] = current
+        render()
+        time.sleep(random.uniform(0.002, 0.006))
+
+# =======================
+# DISPLAY
+# =======================
+
+def show_defi_meteo():
+    st.session_state.meteo_lines = []
+
+    type_line(f"> {METEO['title']}")
+    type_line("")
+    type_line(f"> {METEO['market']}")
+    type_line("")
+    type_line("> ⚙️ STRATÉGIES LP :")
+
+    for strat in METEO["strategies"]:
+        type_line(f"> {strat}")
+
+    type_line("")
+    type_line(f"> {METEO['conclusion']}")
+
+# =======================
+# CALL
+# =======================
+
+show_defi_meteo()
+
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
