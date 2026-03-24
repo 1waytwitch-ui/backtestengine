@@ -12,7 +12,7 @@ import time
 import random
 
 # Forcer mode écran large
-
+st.set_page_config(layout="wide")
 
 # --------- CONFIG ----------
 st.set_page_config(
