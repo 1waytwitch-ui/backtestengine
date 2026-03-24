@@ -12,7 +12,7 @@ import time
 import random
 
 # Forcer mode écran large
-st.set_page_config(layout="wide")
+
 
 # --------- CONFIG ----------
 st.set_page_config(
@@ -1365,7 +1365,6 @@ if st.button("Calculer ATR et RANGE"):
 
 
 # ======================= BE LP (Terminal Style Complet) =======================
-st.set_page_config(layout="wide")
 
 # --- Header Terminal Style ---
 st.markdown("""
@@ -1541,7 +1540,7 @@ for i, card in enumerate(cards):
         """, unsafe_allow_html=True)
 
 # ======================= LESS IL / ZERO SWAP TERMINAL STYLE =======================
-st.set_page_config(layout="wide")
+
 
 # --- Header Terminal Style ---
 st.markdown("""
@@ -2954,7 +2953,7 @@ st.markdown("""
     </span>
 </div>
 """, unsafe_allow_html=True)
-st.set_page_config(layout="wide")
+
 
 # colonne unique large
 col, = st.columns(1)
@@ -2989,7 +2988,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-st.set_page_config(layout="wide")
+
 
 desmos_url = "https://www.desmos.com/calculator/i7mnoyyqdb?lang=fr"
 
