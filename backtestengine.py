@@ -554,7 +554,11 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+
 # ======= STYLE CHECKLIST TERMINAL ======
+# Forcer mode écran large
+st.set_page_config(layout="wide")
+
 st.markdown("""
 <style>
 .checklist-terminal {
