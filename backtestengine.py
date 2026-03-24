@@ -670,6 +670,9 @@ def type_line(line):
 
 # ======= GLITCH OPTIONNEL ======
 def subtle_glitch(line, chance=0.15):
+    if not st.session_state.checklist_content:
+        return  # ✅ sécurité ajoutée
+
     if random.random() < chance:
         chars = list("█▓▒░<>/\\|#@$%&*")
         glitched = "".join(random.choice(chars) for _ in range(len(line)))
@@ -679,9 +682,9 @@ def subtle_glitch(line, chance=0.15):
 
 # ======= ADD LINE ======
 def add_line(line, glitch=False):
+    type_line(line)  # ✅ corrigé (avant glitch)
     if glitch:
         subtle_glitch(line)
-    type_line(line)
     time.sleep(random.uniform(0.05, 0.2))
 
 # ======= DISPLAY CHECKLIST ======
@@ -712,6 +715,7 @@ st.markdown("""
 > déverouillage des outils...
 </div>
 """, unsafe_allow_html=True)
+
 
 
 # =======================
