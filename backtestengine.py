@@ -2386,7 +2386,6 @@ with st.expander("Formules avancées utilisées pour l'analyse Refill LP"):
 st.markdown('<div class="section-title">LP Health Score</div>', unsafe_allow_html=True)
 
 # =================== INPUTS ===================
-
 c1, c2 = st.columns(2)
 
 with c1:
@@ -2415,7 +2414,6 @@ with r2:
 atr = st.number_input("ATR ($)", value=80.0)
 
 # =================== CALCULS ===================
-
 lp_value_h = tokenA_lp_h * tokenA_price_h + tokenB_lp_h * tokenB_price_h
 
 ratio_A_h = (tokenA_lp_h * tokenA_price_h) / lp_value_h
@@ -2428,18 +2426,14 @@ price_position_h = (tokenA_price_h - P_low_h) / range_width
 price_position_h = max(0, min(1, price_position_h))
 
 # =================== SCORE 1 : POSITION ===================
-
 position_score = (1 - price_position_h) * 100
 
 # =================== SCORE 2 : EQUILIBRE ===================
-
 target_ratio_A_h = 1 - price_position_h
 imbalance = abs(ratio_A_h - target_ratio_A_h)
-
 balance_score = max(0, 100 - imbalance * 200)
 
 # =================== SCORE 3 : EXPOSITION ===================
-
 if price_position_h < 0.3:
     exposure_penalty = ratio_B_h
 elif price_position_h > 0.7:
@@ -2450,15 +2444,10 @@ else:
 exposure_score = max(0, 100 - exposure_penalty * 100)
 
 # =================== SCORE 4 : VOLATILITE (ATR) ===================
-
-# Ratio ATR vs range
 atr_ratio = atr / range_width
-
-# Si ATR élevé → plus de risque → score baisse
 volatility_score = max(0, 100 - atr_ratio * 150)
 
 # =================== SCORE FINAL ===================
-
 health_score = (
     position_score * 0.3 +
     balance_score * 0.25 +
@@ -2467,27 +2456,20 @@ health_score = (
 )
 
 # =================== REBALANCE LOGIC ===================
-
 rebalance_needed = False
 rebalance_reason = ""
 
-# Cas 1 : trop déséquilibré
 if imbalance > 0.2:
     rebalance_needed = True
     rebalance_reason = "Déséquilibre des tokens"
-
-# Cas 2 : prix proche des extrêmes
 elif price_position_h < 0.1 or price_position_h > 0.9:
     rebalance_needed = True
     rebalance_reason = "Prix proche des bornes"
-
-# Cas 3 : volatilité dangereuse
 elif atr_ratio > 0.25:
     rebalance_needed = True
     rebalance_reason = "Volatilité élevée (ATR)"
 
 # =================== INTERPRETATION ===================
-
 if health_score > 80:
     status = "🟢 Position optimale"
 elif health_score > 60:
@@ -2500,6 +2482,19 @@ else:
 # =================== DISPLAY ===================
 
 st.markdown('<div class="section-title">Résultat</div>', unsafe_allow_html=True)
+
+# ----- Ajout des interprétations pour les utilisateurs -----
+st.markdown("""
+<div style="font-size:12px; color:#aaa; margin-bottom:10px; font-family: Courier, monospace;">
+💡 Explications :
+<ul>
+<li><b>Health Score</b> : score global de santé de la position LP (100 = optimale).</li>
+<li><b>Position</b> : indique si le prix du token est proche du bas ou du haut du range (100 = bas du range, 0 = haut).</li>
+<li><b>Balance</b> : équilibre des tokens dans la LP par rapport à la position idéale.</li>
+<li><b>Volatilité</b> : impact de l’ATR (mouvement attendu) sur le risque de la LP.</li>
+</ul>
+</div>
+""", unsafe_allow_html=True)
 
 s1, s2, s3, s4 = st.columns(4)
 
@@ -2562,8 +2557,6 @@ else:
 # =================== AUTO RANGE (STRUCTURE CONSERVEE) ===================
 st.markdown('<div class="section-title">Auto Range</div>', unsafe_allow_html=True)
 
-# =================== INPUT ===================
-
 col1, col2 = st.columns(2)
 
 with col1:
@@ -2572,14 +2565,10 @@ with col1:
 with col2:
     multiplier = st.slider("Facteur de range", 1.0, 4.0, 2.0, 0.5)
 
-# =================== POSITION ACTUELLE ===================
-
 old_range_width = P_high_h - P_low_h
 
 old_position = (tokenA_price_h - P_low_h) / old_range_width
 old_position = max(0, min(1, old_position))
-
-# =================== NOUVEAU RANGE ===================
 
 new_range_width = atr_auto * multiplier * 2
 
@@ -2590,11 +2579,7 @@ if optimal_low < 0:
     optimal_low = 0
     optimal_high = new_range_width
 
-# =================== VERIFICATION ===================
-
 new_position = (tokenA_price_h - optimal_low) / new_range_width
-
-# =================== DISPLAY ===================
 
 r1, r2, r3 = st.columns(3)
 
@@ -2621,7 +2606,6 @@ with r3:
         <div class="result-value">{(new_range_width/tokenA_price_h)*100:.1f}%</div>
     </div>
     """, unsafe_allow_html=True)
-
 # =================== OPTIMAL RANGE FINDER ===================
 st.markdown('<div class="section-title">Optimal Range Finder</div>', unsafe_allow_html=True)
 
