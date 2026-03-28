@@ -2470,7 +2470,7 @@ elif atr_ratio > 0.25:
     rebalance_reason = "Volatilité élevée (ATR)"
 
 # =================== INTERPRETATION ===================
-if health_score > 80:
+if health_score > 75:
     status = "🟢 Position optimale"
 elif health_score > 60:
     status = "🟡 Position correcte"
