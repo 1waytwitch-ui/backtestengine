@@ -15,10 +15,10 @@ import random
 st.set_page_config(layout="wide")
 
 # --------- CONFIG ----------
-st.set_page_config(layout="wide")
+st.set_page_config(
     page_title="BACKTEST ENGINE LP",
     page_icon="💧",
-    layout="centered"
+    layout="wide"
 )
 
 # ---- HEADER FIXE ----
