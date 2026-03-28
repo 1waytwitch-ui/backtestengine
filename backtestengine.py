@@ -2479,28 +2479,12 @@ elif health_score > 40:
 else:
     status = "🔴 Position risquée"
 
-# =================== DISPLAY ===================
-
-st.markdown('<div class="section-title">Résultat</div>', unsafe_allow_html=True)
-
-# ----- Ajout des interprétations pour les utilisateurs -----
-st.markdown("""
-<div style="font-size:12px; color:#aaa; margin-bottom:10px; font-family: Courier, monospace;">
-💡 Explications :
-<ul>
-<li><b>Health Score</b> : score global de santé de la position LP (100 = optimale).</li>
-<li><b>Position</b> : indique si le prix du token est proche du bas ou du haut du range (100 = bas du range, 0 = haut).</li>
-<li><b>Balance</b> : équilibre des tokens dans la LP par rapport à la position idéale.</li>
-<li><b>Volatilité</b> : impact de l’ATR (mouvement attendu) sur le risque de la LP.</li>
-</ul>
-</div>
-""", unsafe_allow_html=True)
-
+# =================== DISPLAY AVEC TOOLTIP ===================
 s1, s2, s3, s4 = st.columns(4)
 
 with s1:
     st.markdown(f"""
-    <div class="result-card">
+    <div class="result-card" title="Score global de santé de la position LP (100 = optimale)">
         <div class="result-title">Health Score</div>
         <div class="result-value">{health_score:.1f} / 100</div>
     </div>
@@ -2508,7 +2492,7 @@ with s1:
 
 with s2:
     st.markdown(f"""
-    <div class="result-card">
+    <div class="result-card" title="Indique si le prix du token est proche du bas ou du haut du range (100 = bas du range, 0 = haut)">
         <div class="result-title">Position</div>
         <div class="result-value">{position_score:.0f}</div>
     </div>
@@ -2516,7 +2500,7 @@ with s2:
 
 with s3:
     st.markdown(f"""
-    <div class="result-card">
+    <div class="result-card" title="Équilibre des tokens dans la LP par rapport à la position idéale">
         <div class="result-title">Balance</div>
         <div class="result-value">{balance_score:.0f}</div>
     </div>
@@ -2524,7 +2508,7 @@ with s3:
 
 with s4:
     st.markdown(f"""
-    <div class="result-card">
+    <div class="result-card" title="Impact de la volatilité (ATR) sur le risque de la LP">
         <div class="result-title">Volatilité</div>
         <div class="result-value">{volatility_score:.0f}</div>
     </div>
@@ -2532,7 +2516,7 @@ with s4:
 
 # Status global
 st.markdown(f"""
-<div class="result-card-wide">
+<div class="result-card-wide" title="Évaluation globale de la santé de la position LP">
     <div class="result-title">Statut</div>
     <div class="result-value">{status}</div>
 </div>
@@ -2541,14 +2525,14 @@ st.markdown(f"""
 # Rebalance alert
 if rebalance_needed:
     st.markdown(f"""
-    <div class="result-card-wide" style="border:2px solid #ff4b4b;">
+    <div class="result-card-wide" style="border:2px solid #ff4b4b;" title="Indique la raison pour laquelle un rebalance est recommandé">
         <div class="result-title">⚠️ Rebalance recommandé</div>
         <div class="result-value">{rebalance_reason}</div>
     </div>
     """, unsafe_allow_html=True)
 else:
     st.markdown(f"""
-    <div class="result-card-wide">
+    <div class="result-card-wide" title="Aucune action de rebalance nécessaire">
         <div class="result-title">Rebalance</div>
         <div class="result-value">Aucune action nécessaire</div>
     </div>
