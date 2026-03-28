@@ -1760,14 +1760,14 @@ with col_dir:
         options=["Auto", "Dump", "Pump"]
     )
 
-# 🔥 NOUVEAU : sélection du rebalance partiel
+# 🔥 Rebalance partiel
 rebalance_pct = st.selectbox(
     "Rebalance partiel (%)",
     options=[25, 50, 75, 100],
     index=3
 ) / 100
 
-# Sauvegarde des anciennes bornes
+# Sauvegarde anciennes bornes
 old_P_low = P_low
 old_P_high = P_high
 
@@ -1823,9 +1823,20 @@ elif mode == "bull":
 else:
     direction_label = "— Ajuste une borne pour activer le recalcul —"
 
-# =================== 🔥 APPLICATION REBALANCE PARTIEL ===================
+# =================== REBALANCE PARTIEL ===================
 adj_P_low = old_P_low + (new_P_low - old_P_low) * rebalance_pct
 adj_P_high = old_P_high + (new_P_high - old_P_high) * rebalance_pct
+
+# =================== 🔥 COUT IMPLICITE (%) ===================
+sqrt_adj_low = math.sqrt(adj_P_low)
+sqrt_adj_high = math.sqrt(adj_P_high)
+
+ratio_adj = (sqrt_adj_high - sqrtP) / (
+    sqrtP * sqrt_adj_high * (sqrtP - sqrt_adj_low)
+)
+
+ratio_diff = ratio_adj - ratio
+implicit_cost = abs(ratio_diff) / ratio
 
 # =================== RESULTATS REBALANCE ===================
 st.markdown('<div class="section-title">Résultats - Rebalance / Élargissement</div>', unsafe_allow_html=True)
@@ -1837,7 +1848,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-r1, r2, r3 = st.columns(3)
+r1, r2, r3, r4 = st.columns(4)
 
 with r1:
     st.markdown(f"""
@@ -1863,15 +1874,23 @@ with r3:
 </div>
 """, unsafe_allow_html=True)
 
-# =================== 🔥 INTERPRETATION ===================
+with r4:
+    st.markdown(f"""
+<div class="result-card">
+<div class="result-title">Coût implicite</div>
+<div class="result-value">{implicit_cost*100:.2f}%</div>
+</div>
+""", unsafe_allow_html=True)
+
+# =================== INTERPRETATION ===================
 if rebalance_pct == 0.25:
-    interp = "🟢 Ajustement léger : conserve majoritairement la position initiale (faible impact, faible coût implicite)."
+    interp = "🟢 Ajustement léger : conserve majoritairement la position initiale (faible impact)."
 elif rebalance_pct == 0.50:
-    interp = "🟡 Ajustement équilibré : compromis entre conservation et adaptation au marché."
+    interp = "🟡 Ajustement équilibré : compromis entre conservation et adaptation."
 elif rebalance_pct == 0.75:
-    interp = "🟠 Ajustement agressif : forte adaptation au nouveau range, risque de swap implicite plus élevé."
+    interp = "🟠 Ajustement agressif : forte adaptation, coût implicite plus élevé."
 else:
-    interp = "🔴 Rebalance complet (100%) : Zero Swap pur, repositionnement total."
+    interp = "🔴 Rebalance complet (100%) : Zero Swap full, aucun coût implicite."
 
 st.markdown(f"""
 <div class="result-card">
