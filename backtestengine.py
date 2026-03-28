@@ -15,7 +15,7 @@ import random
 st.set_page_config(layout="wide")
 
 # --------- CONFIG ----------
-st.set_page_config(
+st.set_page_config(layout="wide")
     page_title="BACKTEST ENGINE LP",
     page_icon="💧",
     layout="centered"
