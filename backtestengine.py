@@ -1760,6 +1760,17 @@ with col_dir:
         options=["Auto", "Dump", "Pump"]
     )
 
+# 🔥 NOUVEAU : sélection du rebalance partiel
+rebalance_pct = st.selectbox(
+    "Rebalance partiel (%)",
+    options=[25, 50, 75, 100],
+    index=3
+) / 100
+
+# Sauvegarde des anciennes bornes
+old_P_low = P_low
+old_P_high = P_high
+
 mode = None
 if direction_select == "Dump":
     mode = "bear"
@@ -1812,6 +1823,10 @@ elif mode == "bull":
 else:
     direction_label = "— Ajuste une borne pour activer le recalcul —"
 
+# =================== 🔥 APPLICATION REBALANCE PARTIEL ===================
+adj_P_low = old_P_low + (new_P_low - old_P_low) * rebalance_pct
+adj_P_high = old_P_high + (new_P_high - old_P_high) * rebalance_pct
+
 # =================== RESULTATS REBALANCE ===================
 st.markdown('<div class="section-title">Résultats - Rebalance / Élargissement</div>', unsafe_allow_html=True)
 
@@ -1836,7 +1851,7 @@ with r2:
     st.markdown(f"""
 <div class="result-card">
 <div class="result-title">Nouvelle borne basse</div>
-<div class="result-value">{new_P_low:.2f}</div>
+<div class="result-value">{adj_P_low:.2f}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1844,7 +1859,24 @@ with r3:
     st.markdown(f"""
 <div class="result-card">
 <div class="result-title">Nouvelle borne haute</div>
-<div class="result-value">{new_P_high:.2f}</div>
+<div class="result-value">{adj_P_high:.2f}</div>
+</div>
+""", unsafe_allow_html=True)
+
+# =================== 🔥 INTERPRETATION ===================
+if rebalance_pct == 0.25:
+    interp = "🟢 Ajustement léger : conserve majoritairement la position initiale (faible impact, faible coût implicite)."
+elif rebalance_pct == 0.50:
+    interp = "🟡 Ajustement équilibré : compromis entre conservation et adaptation au marché."
+elif rebalance_pct == 0.75:
+    interp = "🟠 Ajustement agressif : forte adaptation au nouveau range, risque de swap implicite plus élevé."
+else:
+    interp = "🔴 Rebalance complet (100%) : Zero Swap pur, repositionnement total."
+
+st.markdown(f"""
+<div class="result-card">
+<div class="result-title">Interprétation</div>
+<div class="result-value">{interp}</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1860,7 +1892,7 @@ if tighten_percent > 0:
 
     sqrtP_reb = math.sqrt(P_rebalance)
     sqrtPl_reb = math.sqrt(new_tight_plow)
-    sqrtPh_reb = math.sqrt(new_P_high)
+    sqrtPh_reb = math.sqrt(adj_P_high)
 
     ratio_reb = (sqrtPh_reb - sqrtP_reb) / (
         sqrtP_reb * sqrtPh_reb * (sqrtP_reb - sqrtPl_reb)
@@ -1896,64 +1928,6 @@ if tighten_percent > 0 and new_tight_phigh:
 <div class="result-value">{new_tight_phigh:.2f}</div>
 </div>
 """, unsafe_allow_html=True)
-        
-# =================== FORMULES ===================
-with st.expander("Résumé complet des formules utilisées (Zero Swap Rebalance)"):
-
-    # Texte d’intro réduit (optionnel)
-    st.markdown(
-        '<div style="font-size:12px; color:#aaa; margin-bottom:10px; font-family: Courier, monospace;">'
-        'Ces formules permettent de calculer le range, le ratio et le rebalance automatiquement.'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    # Titres de section en monospace, petite taille, et en blanc cassé
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Prix courant</div>', unsafe_allow_html=True)
-    st.latex(r"P = \frac{Price_{TokenA}}{Price_{TokenB}}")
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Racines utilisées</div>', unsafe_allow_html=True)
-    st.latex(r"\sqrt{P}, \quad \sqrt{P_\mathrm{low}}, \quad \sqrt{P_\mathrm{high}}, \quad \sqrt{P_\mathrm{rebalance}}")
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio initial A/B</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \mathrm{ratio} = \frac{\sqrt{P_\mathrm{high}} - \sqrt{P}}
-    {\sqrt{P} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}}\right)}
-    """)
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">New Plow (déplacement borne basse)</div>', unsafe_allow_html=True)
-    st.latex(r"\mathrm{New\ Plow} = P_\mathrm{low}^{new}")
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle borne haute Zero-Swap</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \sqrt{\mathrm{New\ P\ High}} = \frac{\sqrt{P}}
-    {1 - \mathrm{ratio} \cdot \sqrt{P} \cdot \left(\sqrt{P} - \sqrt{P_\mathrm{low}^{new}}\right)}
-    """)
-
-    st.latex(r"""
-    \mathrm{New\ P\ High} = \left(\sqrt{\mathrm{New\ P\ High}}\right)^2
-    """)
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Resserrement (tighten)</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \mathrm{New\ Tight\ Plow} = P_\mathrm{rebalance} \cdot \left(1 - \frac{\mathrm{tighten\_percent}}{100}\right)
-    """)
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Ratio recalculé au rebalance</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \mathrm{ratio}_\mathrm{reb} = \frac{\sqrt{P_\mathrm{high}} - \sqrt{P_\mathrm{rebalance}}}
-    {\sqrt{P_\mathrm{rebalance}} \cdot \sqrt{P_\mathrm{high}} \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{P_\mathrm{low}}\right)}
-    """)
-
-    st.markdown('<div style="font-family: Courier, monospace; font-weight: 700; font-size: 14px; color: #ddd; margin-top: 15px;">Nouvelle borne haute Tight (Zero-Swap)</div>', unsafe_allow_html=True)
-    st.latex(r"""
-    \sqrt{\mathrm{New\ Tight\ P\ High}} = \frac{\sqrt{P_\mathrm{rebalance}}}
-    {1 - \mathrm{ratio}_\mathrm{reb} \cdot \sqrt{P_\mathrm{rebalance}} \cdot \left(\sqrt{P_\mathrm{rebalance}} - \sqrt{\mathrm{New\ Tight\ Plow}}\right)}
-    """)
-
-    st.latex(r"""
-    \mathrm{New\ Tight\ P\ High} = \left(\sqrt{\mathrm{New\ Tight\ P\ High}}\right)^2
-    """)
 
 # =================== LP REFILL BACKTEST ===================
 st.markdown('<div class="section-title">LP Refill BACKTEST</div>', unsafe_allow_html=True)
