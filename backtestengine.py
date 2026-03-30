@@ -728,9 +728,9 @@ METEO = {
     "title": "METEO DeFi☀️ RANGE LP hebdo #8",
     "market": "Volatilité BTC/ETH ↑ → marché en range.",
     "strategies": [
-        "WETH/USDC → 18% ATR ⌛130$ ⤴️",
-        "USDC/cbBTC → 14% ATR ⌛3087$ ⤴️",
-        "WETH/cbBTC → 8% ATR 🔜 130$ → 3087$"
+        "WETH/USDC → 16% ATR ⌛124$ ⤴️",
+        "USDC/cbBTC → 14% ATR ⌛2992$ ⤴️",
+        "WETH/cbBTC → 8% ATR 🔜 124$ → 2992$"
     ],
     "conclusion": "On capte la vol, pas la direction."
 }
