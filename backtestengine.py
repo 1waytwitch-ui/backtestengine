@@ -725,7 +725,7 @@ st.markdown("""
 st.set_page_config(layout="wide")
 
 METEO = {
-    "title": "METEO DeFi☀️ RANGE LP hebdo #8",
+    "title": "METEO DeFi☀️ RANGE LP hebdo #9",
     "market": "Volatilité BTC/ETH ↑ → marché en range.",
     "strategies": [
         "WETH/USDC → 16% ATR ⌛124$ ⤴️",
