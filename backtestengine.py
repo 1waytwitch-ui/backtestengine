@@ -327,7 +327,7 @@ def type_line(line):
         current += char
         st.session_state.content[-1] = current
         render()
-        time.sleep(random.uniform(0.008, 0.03))
+        time.sleep(random.uniform(0.001, 0.01))
 
 # --- GLITCH SUBTIL ---
 def subtle_glitch(line, chance=0.2):
@@ -336,7 +336,7 @@ def subtle_glitch(line, chance=0.2):
         glitched = "".join(random.choice(chars) for _ in range(len(line)))
         st.session_state.content[-1] = glitched
         render()
-        time.sleep(0.05)
+        time.sleep(0.01)
 
 # --- AJOUT LIGNE ---
 def add_line(line, glitch=False):
@@ -344,7 +344,7 @@ def add_line(line, glitch=False):
     if glitch:
         subtle_glitch(line)
     type_line(line)
-    time.sleep(random.uniform(0.05, 0.2))
+    time.sleep(random.uniform(0.01, 0.1))
 
 # --- LOADING BAR ---
 def loading_bar(total=20):
@@ -354,7 +354,7 @@ def loading_bar(total=20):
         line = "> decrypting disclaimer... [" + "".join(bar) + "]"
         st.session_state.content[-1] = line
         render()
-        time.sleep(0.06)
+        time.sleep(0.01)
 
 # --- ANIMATION PRINCIPALE ---
 if not st.session_state.finished:
@@ -510,7 +510,7 @@ def type_line(line):
         current += char
         st.session_state.secret_content[-1] = current
         render()
-        time.sleep(random.uniform(0.01, 0.03))
+        time.sleep(random.uniform(0.01, 0.01))
 
 def subtle_glitch(line, chance=0.15):
     if not st.session_state.secret_content:
@@ -521,13 +521,13 @@ def subtle_glitch(line, chance=0.15):
         glitched = "".join(random.choice(chars) for _ in range(len(line)))
         st.session_state.secret_content[-1] = glitched
         render()
-        time.sleep(0.03)
+        time.sleep(0.01)
 
 def add_line(line, glitch=False):
     type_line(line)  # ✅ corrigé (avant glitch)
     if glitch:
         subtle_glitch(line)
-    time.sleep(random.uniform(0.05, 0.15))
+    time.sleep(random.uniform(0.01, 0.1))
 
 # ======= TERMINAL AUTHENTICATION ======
 if not st.session_state.authenticated:
@@ -666,7 +666,7 @@ def type_line(line):
         current += char
         st.session_state.checklist_content[-1] = current
         render()
-        time.sleep(random.uniform(0.008, 0.03))
+        time.sleep(random.uniform(0.001, 0.01))
 
 # ======= GLITCH OPTIONNEL ======
 def subtle_glitch(line, chance=0.15):
@@ -678,14 +678,14 @@ def subtle_glitch(line, chance=0.15):
         glitched = "".join(random.choice(chars) for _ in range(len(line)))
         st.session_state.checklist_content[-1] = glitched
         render()
-        time.sleep(0.03)
+        time.sleep(0.01)
 
 # ======= ADD LINE ======
 def add_line(line, glitch=False):
     type_line(line)  # ✅ corrigé (avant glitch)
     if glitch:
         subtle_glitch(line)
-    time.sleep(random.uniform(0.05, 0.2))
+    time.sleep(random.uniform(0.01, 0.1))
 
 # ======= DISPLAY CHECKLIST ======
 if not st.session_state.checklist_validee:
