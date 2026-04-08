@@ -2600,21 +2600,21 @@ st.markdown('<div class="section-title">Optimal Range Finder</div>', unsafe_allo
 c1, c2, c3 = st.columns(3)
 
 with c1:
-    P0 = st.number_input("Prix actuel", value=1900.0)
+    P0 = st.number_input("Prix actuel", value=1900.0, key="clm_P0")
 
 with c2:
-    P_entry = st.number_input("Prix d'entrée", value=1900.0)
+    P_entry = st.number_input("Prix d'entrée", value=1900.0, key="clm_entry")
 
 with c3:
-    capital = st.number_input("Capital ($)", value=1000.0)
+    capital = st.number_input("Capital ($)", value=1000.0, key="clm_capital")
 
 r1, r2 = st.columns(2)
 
 with r1:
-    P_low = st.number_input("Borne basse", value=1700.0)
+    P_low = st.number_input("Borne basse", value=1700.0, key="clm_low")
 
 with r2:
-    P_high = st.number_input("Borne haute", value=2500.0)
+    P_high = st.number_input("Borne haute", value=2500.0, key="clm_high")
 
 # =================== VALIDATION ===================
 
@@ -2631,18 +2631,14 @@ if valid:
     sqrtPlow = math.sqrt(P_low)
     sqrtPhigh = math.sqrt(P_high)
 
-    # Calcul L à partir du capital (distribution automatique)
     denom = P0 * (1/sqrtP - 1/sqrtPhigh) + (sqrtP - sqrtPlow)
     L = capital / denom if denom != 0 else 0
 
-    # Quantités initiales
     x0 = L * (1/sqrtP - 1/sqrtPhigh)
     y0 = L * (sqrtP - sqrtPlow)
 
-    # BTC final si sortie bas
     token_final = L * (1/sqrtPlow - 1/sqrtPhigh)
 
-    # Prix moyen réel
     P_avg = capital / token_final if token_final > 0 else 0
 
     # =================== RESULTATS ===================
@@ -2675,23 +2671,27 @@ if valid:
         </div>
         """, unsafe_allow_html=True)
 
-    # =================== SLIDER DYNAMIQUE ===================
+    # =================== SLIDER ===================
 
     st.markdown('<div class="section-title">Accumulation dynamique</div>', unsafe_allow_html=True)
 
-    sim_price = st.slider("Simulation du prix", int(P_low), int(P0), int(P0))
+    sim_price = st.slider(
+        "Simulation du prix",
+        min_value=int(P_low),
+        max_value=int(P0),
+        value=int(P0),
+        key="clm_slider"
+    )
 
     sqrtSim = math.sqrt(sim_price)
-
     token_sim = L * (1/sqrtSim - 1/sqrtPhigh)
-
     accumulation = token_sim - x0
 
     st.markdown(f"""
     <div class="result-card-wide">
-        <div class="result-title">Accumulation de token</div>
+        <div class="result-title">Accumulation</div>
         <div class="result-value">
-            +{accumulation:.4f} token (Total: {token_sim:.4f})
+            +{accumulation:.4f} token | Total : {token_sim:.4f}
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -2700,12 +2700,16 @@ if valid:
 
     st.markdown('<div class="section-title">Optimiseur de range</div>', unsafe_allow_html=True)
 
-    target_price = st.number_input("Prix moyen cible", value=1500.0)
+    target_price = st.number_input(
+        "Prix moyen cible",
+        value=1500.0,
+        key="clm_target"
+    )
 
     best_low = None
     best_diff = 1e9
 
-    for test_low in range(int(P0*0.3), int(P0), int(P0*0.02)):
+    for test_low in range(int(P0*0.3), int(P0), max(1, int(P0*0.02))):
 
         sqrtPl = math.sqrt(test_low)
 
@@ -2737,46 +2741,6 @@ if valid:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-# =================== EXPLICATION ===================
-with st.expander("Comprendre la stratégie CLM"):
-
-    st.markdown(
-        '<div style="font-size:12px; color:#aaa; font-family: Courier, monospace;">'
-        "Cette approche permet de transformer une position LP en stratégie d'accumulation.\n\n"
-        "- En descendant dans le range, tu accumules progressivement du token\n"
-        "- Si le prix atteint le bas, tu es 100% exposé\n"
-        "- Le prix moyen calculé représente ton coût réel d'acquisition\n\n"
-        "L'optimiseur permet d'ajuster la borne basse pour atteindre un prix cible.\n"
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-# --- GUIDE COMPLET TERMINAL STYLE ---
-# --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
-st.markdown("""
-<br>
-<div style="
-    background-color: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    font-family: 'Courier New', monospace;
-    color: #e6edf3;
-">
-    <span style="
-        color: #00ff88;
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: 1px;
-    ">
-        GUIDE COMPLET - ENGAGER DU CAPITAL SUR UNE LP
-    </span>
-</div>
-""", unsafe_allow_html=True)
-
 guide_html = """
 <style>
 /* ===== GUIDE TERMINAL THEME ===== */
