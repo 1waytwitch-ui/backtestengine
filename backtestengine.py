@@ -2590,110 +2590,10 @@ with r3:
         <div class="result-value">{(new_range_width/tokenA_price_h)*100:.1f}%</div>
     </div>
     """, unsafe_allow_html=True)
+
+
 # =================== OPTIMAL RANGE FINDER ===================
 st.markdown('<div class="section-title">Optimal Range Finder</div>', unsafe_allow_html=True)
-
-# =================== INPUT ===================
-
-double_volatile = st.checkbox("Analyser une pair double volatile", value=False)
-
-if double_volatile:
-    c1, c2 = st.columns(2)
-    with c1:
-        price_a = st.number_input("Prix Token A ($)", value=1900.0, key="orf_price_a")
-    with c2:
-        atr_a = st.number_input("ATR Token A ($)", value=80.0, key="orf_atr_a")
-    
-    c3, c4 = st.columns(2)
-    with c3:
-        price_b = st.number_input("Prix Token B ($)", value=50.0, key="orf_price_b")
-    with c4:
-        atr_b = st.number_input("ATR Token B ($)", value=5.0, key="orf_atr_b")
-    
-    # ATR pondéré par volatilité relative
-    atr_pct_a = atr_a / price_a
-    atr_pct_b = atr_b / price_b
-    atr_combined_pct = max(atr_pct_a, atr_pct_b)
-    price_orf = (price_a + price_b)/2
-    atr_orf = atr_combined_pct * price_orf
-    
-else:
-    c1, c2 = st.columns(2)
-    with c1:
-        price_orf = st.number_input("Prix actuel ($)", value=1900.0, key="orf_price")
-    with c2:
-        atr_orf = st.number_input("ATR ($)", value=80.0, key="orf_atr")
-
-# =================== MULTIPLIERS ===================
-
-safe_mult = 3.0
-balanced_mult = 2.0
-aggressive_mult = 1.2
-
-# =================== CALCULS ===================
-
-def compute_range(price, atr, mult):
-    low = price - (atr * mult)
-    high = price + (atr * mult)
-    width_pct = ((high - low) / price) * 100
-    return low, high, width_pct
-
-safe_low, safe_high, safe_width = compute_range(price_orf, atr_orf, safe_mult)
-bal_low, bal_high, bal_width = compute_range(price_orf, atr_orf, balanced_mult)
-agg_low, agg_high, agg_width = compute_range(price_orf, atr_orf, aggressive_mult)
-
-# =================== DISPLAY ===================
-
-st.markdown('<div class="section-title">Suggestions</div>', unsafe_allow_html=True)
-
-s1, s2, s3 = st.columns(3)
-
-with s1:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Safe</div>
-        <div class="result-value">
-            {safe_low:.0f} → {safe_high:.0f}<br>
-            {safe_width:.1f}%
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with s2:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Balanced</div>
-        <div class="result-value">
-            {bal_low:.0f} → {bal_high:.0f}<br>
-            {bal_width:.1f}%
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with s3:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Aggressive</div>
-        <div class="result-value">
-            {agg_low:.0f} → {agg_high:.0f}<br>
-            {agg_width:.1f}%
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-# =================== INSIGHT ===================
-
-st.markdown(f"""
-<div class="result-card-wide">
-    <div class="result-title">RAPPEL</div>
-    <div class="result-value">
-        Safe = moins de sorties | Aggressive = plus de fees mais plus de risque
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# =================== CLM PRICE ENGINE ===================
-st.markdown('<div class="section-title">Optimisation Prix moyen</div>', unsafe_allow_html=True)
 
 # =================== INPUTS ===================
 
@@ -2703,147 +2603,154 @@ with c1:
     P0 = st.number_input("Prix actuel", value=1900.0)
 
 with c2:
-    P_low_clm = st.number_input("Borne basse CLM", value=1700.0)
+    P_entry = st.number_input("Prix d'entrée", value=1900.0)
 
 with c3:
-    P_high_clm = st.number_input("Borne haute CLM", value=2500.0)
-
-# Capital
-
-c4, c5 = st.columns(2)
-
-with c4:
     capital = st.number_input("Capital ($)", value=1000.0)
 
-with c5:
-    ratio_token = st.slider("Exposition Token (%)", 0, 100, 50)
+r1, r2 = st.columns(2)
 
-ratio_token /= 100
-ratio_stable = 1 - ratio_token
+with r1:
+    P_low = st.number_input("Borne basse", value=1700.0)
+
+with r2:
+    P_high = st.number_input("Borne haute", value=2500.0)
+
+# =================== VALIDATION ===================
+
+valid = P_low < P0 < P_high
+
+if not valid:
+    st.error("⚠️ Il faut : P_low < Prix actuel < P_high")
 
 # =================== CALCUL ===================
 
-import math
-
-if P_low_clm < P0 < P_high_clm:
+if valid:
 
     sqrtP = math.sqrt(P0)
-    sqrtPlow = math.sqrt(P_low_clm)
-    sqrtPhigh = math.sqrt(P_high_clm)
+    sqrtPlow = math.sqrt(P_low)
+    sqrtPhigh = math.sqrt(P_high)
 
-    # Split capital
-    token_value = capital * ratio_token
-    stable_value = capital * ratio_stable
+    # Calcul L à partir du capital (distribution automatique)
+    denom = P0 * (1/sqrtP - 1/sqrtPhigh) + (sqrtP - sqrtPlow)
+    L = capital / denom if denom != 0 else 0
 
-    x0 = token_value / P0
-    y0 = stable_value
+    # Quantités initiales
+    x0 = L * (1/sqrtP - 1/sqrtPhigh)
+    y0 = L * (sqrtP - sqrtPlow)
 
-    # L
-    Lx = x0 / (1/sqrtP - 1/sqrtPhigh)
-    Ly = y0 / (sqrtP - sqrtPlow)
-    L = (Lx + Ly) / 2
-
-    # BTC final
+    # BTC final si sortie bas
     token_final = L * (1/sqrtPlow - 1/sqrtPhigh)
 
-    # Prix moyen
+    # Prix moyen réel
     P_avg = capital / token_final if token_final > 0 else 0
 
-else:
-    token_final = 0
-    P_avg = 0
-    L = 0
+    # =================== RESULTATS ===================
 
-# =================== RESULTATS ===================
+    st.markdown('<div class="section-title">Résultats</div>', unsafe_allow_html=True)
 
-st.markdown('<div class="section-title">Résultats CLM</div>', unsafe_allow_html=True)
+    r1, r2, r3 = st.columns(3)
 
-r1, r2, r3 = st.columns(3)
+    with r1:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Token initial</div>
+            <div class="result-value">{x0:.4f}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-with r1:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Liquidité (L)</div>
-        <div class="result-value">{L:,.2f}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    with r2:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Token final</div>
+            <div class="result-value">{token_final:.4f}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-with r2:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Token final</div>
-        <div class="result-value">{token_final:.6f}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    with r3:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Prix moyen</div>
+            <div class="result-value">${P_avg:,.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-with r3:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Prix moyen</div>
-        <div class="result-value">${P_avg:,.2f}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    # =================== SLIDER DYNAMIQUE ===================
 
-# =================== SLIDER DYNAMIQUE ===================
+    st.markdown('<div class="section-title">Accumulation dynamique</div>', unsafe_allow_html=True)
 
-st.markdown('<div class="section-title">Simulation dynamique</div>', unsafe_allow_html=True)
+    sim_price = st.slider("Simulation du prix", int(P_low), int(P0), int(P0))
 
-sim_price = st.slider("Simulation prix sortie", int(P_low_clm), int(P_high_clm), int(P0))
+    sqrtSim = math.sqrt(sim_price)
 
-sqrtSim = math.sqrt(sim_price)
-
-# recalcul token si dans range
-if sim_price > P_low_clm:
     token_sim = L * (1/sqrtSim - 1/sqrtPhigh)
-else:
-    token_sim = token_final
 
-value_sim = token_sim * sim_price
+    accumulation = token_sim - x0
 
-st.markdown(f"""
-<div class="result-card-wide">
-    <div class="result-title">Valeur position simulée</div>
-    <div class="result-value">
-        ${value_sim:,.2f}
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Accumulation de token</div>
+        <div class="result-value">
+            +{accumulation:.4f} token (Total: {token_sim:.4f})
+        </div>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# =================== OPTIMISEUR ===================
+    # =================== OPTIMISEUR ===================
 
-st.markdown('<div class="section-title">Optimiseur de range</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Optimiseur de range</div>', unsafe_allow_html=True)
 
-target_price = st.number_input("Objectif prix moyen ($)", value=1500.0)
+    target_price = st.number_input("Prix moyen cible", value=1500.0)
 
-best_high = None
-best_diff = 1e9
+    best_low = None
+    best_diff = 1e9
 
-for test_high in range(int(P0*1.1), int(P0*3), int(P0*0.05)):
+    for test_low in range(int(P0*0.3), int(P0), int(P0*0.02)):
 
-    sqrtPh = math.sqrt(test_high)
+        sqrtPl = math.sqrt(test_low)
 
-    Lx = x0 / (1/sqrtP - 1/sqrtPh)
-    Ly = y0 / (sqrtP - sqrtPlow)
-    Ltest = (Lx + Ly) / 2
+        denom_test = P0 * (1/sqrtP - 1/sqrtPhigh) + (sqrtP - sqrtPl)
 
-    token_test = Ltest * (1/sqrtPlow - 1/sqrtPh)
-    P_test = capital / token_test if token_test > 0 else 0
+        if denom_test <= 0:
+            continue
 
-    diff = abs(P_test - target_price)
+        L_test = capital / denom_test
 
-    if diff < best_diff:
-        best_diff = diff
-        best_high = test_high
+        token_test = L_test * (1/sqrtPl - 1/sqrtPhigh)
 
-st.markdown(f"""
-<div class="result-card-wide">
-    <div class="result-title">Range optimisée</div>
-    <div class="result-value">
-        P_low : {P_low_clm} | P_high optimal : {best_high}
+        if token_test <= 0:
+            continue
+
+        P_test = capital / token_test
+
+        diff = abs(P_test - target_price)
+
+        if diff < best_diff:
+            best_diff = diff
+            best_low = test_low
+
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Range optimisée</div>
+        <div class="result-value">
+            P_low optimal : {best_low} | P_high : {P_high}
+        </div>
     </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
+# =================== EXPLICATION ===================
+with st.expander("Comprendre la stratégie CLM"):
+
+    st.markdown(
+        '<div style="font-size:12px; color:#aaa; font-family: Courier, monospace;">'
+        "Cette approche permet de transformer une position LP en stratégie d'accumulation.\n\n"
+        "- En descendant dans le range, tu accumules progressivement du token\n"
+        "- Si le prix atteint le bas, tu es 100% exposé\n"
+        "- Le prix moyen calculé représente ton coût réel d'acquisition\n\n"
+        "L'optimiseur permet d'ajuster la borne basse pour atteindre un prix cible.\n"
+        '</div>',
+        unsafe_allow_html=True
+    )
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
