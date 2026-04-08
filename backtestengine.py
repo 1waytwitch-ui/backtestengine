@@ -2692,6 +2692,158 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+# =================== CLM PRICE ENGINE ===================
+st.markdown('<div class="section-title">Optimisation Prix moyen</div>', unsafe_allow_html=True)
+
+# =================== INPUTS ===================
+
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    P0 = st.number_input("Prix actuel", value=1900.0)
+
+with c2:
+    P_low_clm = st.number_input("Borne basse CLM", value=1700.0)
+
+with c3:
+    P_high_clm = st.number_input("Borne haute CLM", value=2500.0)
+
+# Capital
+
+c4, c5 = st.columns(2)
+
+with c4:
+    capital = st.number_input("Capital ($)", value=1000.0)
+
+with c5:
+    ratio_token = st.slider("Exposition Token (%)", 0, 100, 50)
+
+ratio_token /= 100
+ratio_stable = 1 - ratio_token
+
+# =================== CALCUL ===================
+
+import math
+
+if P_low_clm < P0 < P_high_clm:
+
+    sqrtP = math.sqrt(P0)
+    sqrtPlow = math.sqrt(P_low_clm)
+    sqrtPhigh = math.sqrt(P_high_clm)
+
+    # Split capital
+    token_value = capital * ratio_token
+    stable_value = capital * ratio_stable
+
+    x0 = token_value / P0
+    y0 = stable_value
+
+    # L
+    Lx = x0 / (1/sqrtP - 1/sqrtPhigh)
+    Ly = y0 / (sqrtP - sqrtPlow)
+    L = (Lx + Ly) / 2
+
+    # BTC final
+    token_final = L * (1/sqrtPlow - 1/sqrtPhigh)
+
+    # Prix moyen
+    P_avg = capital / token_final if token_final > 0 else 0
+
+else:
+    token_final = 0
+    P_avg = 0
+    L = 0
+
+# =================== RESULTATS ===================
+
+st.markdown('<div class="section-title">Résultats CLM</div>', unsafe_allow_html=True)
+
+r1, r2, r3 = st.columns(3)
+
+with r1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Liquidité (L)</div>
+        <div class="result-value">{L:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with r2:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Token final</div>
+        <div class="result-value">{token_final:.6f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with r3:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Prix moyen</div>
+        <div class="result-value">${P_avg:,.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# =================== SLIDER DYNAMIQUE ===================
+
+st.markdown('<div class="section-title">Simulation dynamique</div>', unsafe_allow_html=True)
+
+sim_price = st.slider("Simulation prix sortie", int(P_low_clm), int(P_high_clm), int(P0))
+
+sqrtSim = math.sqrt(sim_price)
+
+# recalcul token si dans range
+if sim_price > P_low_clm:
+    token_sim = L * (1/sqrtSim - 1/sqrtPhigh)
+else:
+    token_sim = token_final
+
+value_sim = token_sim * sim_price
+
+st.markdown(f"""
+<div class="result-card-wide">
+    <div class="result-title">Valeur position simulée</div>
+    <div class="result-value">
+        ${value_sim:,.2f}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# =================== OPTIMISEUR ===================
+
+st.markdown('<div class="section-title">Optimiseur de range</div>', unsafe_allow_html=True)
+
+target_price = st.number_input("Objectif prix moyen ($)", value=1500.0)
+
+best_high = None
+best_diff = 1e9
+
+for test_high in range(int(P0*1.1), int(P0*3), int(P0*0.05)):
+
+    sqrtPh = math.sqrt(test_high)
+
+    Lx = x0 / (1/sqrtP - 1/sqrtPh)
+    Ly = y0 / (sqrtP - sqrtPlow)
+    Ltest = (Lx + Ly) / 2
+
+    token_test = Ltest * (1/sqrtPlow - 1/sqrtPh)
+    P_test = capital / token_test if token_test > 0 else 0
+
+    diff = abs(P_test - target_price)
+
+    if diff < best_diff:
+        best_diff = diff
+        best_high = test_high
+
+st.markdown(f"""
+<div class="result-card-wide">
+    <div class="result-title">Range optimisée</div>
+    <div class="result-value">
+        P_low : {P_low_clm} | P_high optimal : {best_high}
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
 
 # --- GUIDE COMPLET TERMINAL STYLE ---
 # --- CALCULATRICE IMPERMANENT LOSS (Terminal Style) ---
