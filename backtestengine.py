@@ -367,6 +367,7 @@ if not st.session_state.finished:
         "✔ Pool Setup | Price & Range | Automation avancée",
         "✔ IL Simulator | APR réel | ATR avancée",
         "✔ Break Even | Zeroswap Rebalance | Refill LP",
+        "✔ Optimal range finder | Prix moyen clm | Optimisation du range",
         "✔ Guide complet + Atelier vidéo IL & Calculatrice"
     ]
 
@@ -2593,7 +2594,7 @@ with r3:
 
 
 # =================== OPTIMAL RANGE FINDER ===================
-st.markdown('<div class="section-title">Optimal Range Finder</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Prix moyen CLM</div>', unsafe_allow_html=True)
 
 # =================== INPUTS ===================
 
