@@ -1253,166 +1253,175 @@ if selected_key == "pool_engine":
                 </div>
                 """, unsafe_allow_html=True)
     
-# ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
+# =========================== ROUTING MENU ===========================
+if selected_key == "impermanent_loss":
 
-# --- Style Terminal DeFi ---
-st.markdown("""
-<style>
-[data-testid="stAppViewContainer"] {
-    background-color: #0b0f14;
-    color: #e6edf3;
-    font-family: "Courier New", monospace;
-}
+    with st.expander("📉 Impermanent Loss", expanded=True):
 
-.section-title {
-    border-left: 4px solid #00ff88;
-    padding: 8px 14px;
-    margin-top: 24px;
-    margin-bottom: 14px;
-    font-weight: 600;
-    font-size: 16px;
-    background: rgba(0,255,136,0.05);
-    letter-spacing: 1px;
-}
+        st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_html=True)
 
-div[data-baseweb="input"] input {
-    background-color: #11161d !important;
-    color: #00ff88 !important;
-    border: 1px solid #1f2a36 !important;
-    padding-top: 6px !important;
-    padding-bottom: 6px !important;
-    font-size: 13px;
-}
+        # ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
 
-label { font-size: 12px !important; opacity: 0.7; }
+        # --- Style Terminal DeFi ---
+        st.markdown("""
+        <style>
+        [data-testid="stAppViewContainer"] {
+            background-color: #0b0f14;
+            color: #e6edf3;
+            font-family: "Courier New", monospace;
+        }
 
-.result-card, .result-card-wide {
-    background: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 10px;
-    padding: 14px;
-    text-align: left;
-    box-shadow: 0 0 12px rgba(0,255,136,0.05);
-    margin-top: 14px;
-}
+        .section-title {
+            border-left: 4px solid #00ff88;
+            padding: 8px 14px;
+            margin-top: 24px;
+            margin-bottom: 14px;
+            font-weight: 600;
+            font-size: 16px;
+            background: rgba(0,255,136,0.05);
+            letter-spacing: 1px;
+        }
 
-.result-card-wide { padding: 16px; }
+        div[data-baseweb="input"] input {
+            background-color: #11161d !important;
+            color: #00ff88 !important;
+            border: 1px solid #1f2a36 !important;
+            padding-top: 6px !important;
+            padding-bottom: 6px !important;
+            font-size: 13px;
+        }
 
-.result-title { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-.result-value { font-size: 18px; font-weight: 600; color: #00ff88; margin-top: 6px; }
+        label { font-size: 12px !important; opacity: 0.7; }
 
-.small-label {
-    font-size: 12px;
-    opacity: 0.7;
-    margin-bottom: 2px;
-}
-</style>
-""", unsafe_allow_html=True)
+        .result-card, .result-card-wide {
+            background: #0f141b;
+            border: 1px solid #1f2a36;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: left;
+            box-shadow: 0 0 12px rgba(0,255,136,0.05);
+            margin-top: 14px;
+        }
 
+        .result-card-wide { padding: 16px; }
 
-# =================== INPUTS ===================
-st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_html=True)
+        .result-title { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+        .result-value { font-size: 18px; font-weight: 600; color: #00ff88; margin-top: 6px; }
 
-row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
-with row1_col1:
-    st.markdown('<div class="small-label">P_deposit</div>', unsafe_allow_html=True)
-    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
-with row1_col2:
-    st.markdown('<div class="small-label">P_now</div>', unsafe_allow_html=True)
-    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
-with row1_col3:
-    st.markdown('<div class="small-label">Valeur deposit (USD)</div>', unsafe_allow_html=True)
-    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.6f", step=0.01, label_visibility="collapsed")
-
-row2_col1, row2_col2 = st.columns([1,1])
-with row2_col1:
-    st.markdown('<div class="small-label">P_lower</div>', unsafe_allow_html=True)
-    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001, label_visibility="collapsed")
-with row2_col2:
-    st.markdown('<div class="small-label">P_upper</div>', unsafe_allow_html=True)
-    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001, label_visibility="collapsed")
-
-# --- Calcul IL ---
-L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
-x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
-L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
-
-prices = np.linspace(P_lower*0.8, P_upper*1.3, 400)
-LP_values = V_LP(prices, L, P_lower, P_upper)
-HODL_values = V_HODL(prices, x0, y0)
-IL_curve = (LP_values / HODL_values - 1) * 100
-
-# --- Graph IL ---
-fig = go.Figure()
-
-fig.add_trace(go.Scatter(
-    x=prices, y=IL_curve, mode="lines", name="IL(%)",
-    line=dict(color="red", width=3)
-))
-
-for px, label, color in [
-    (P_lower, "Low", "green"),
-    (P_upper, "High", "green"),
-    (P_deposit, "Deposit", "blue"),
-    (P_now, "Now", "purple")
-]:
-    fig.add_vline(
-        x=px,
-        line=dict(color=color, width=2, dash="dot" if label in ["Low","High"] else "dash")
-    )
-    fig.add_annotation(
-        x=px,
-        y=max(IL_curve) if label in ["Low","High"] else min(IL_curve),
-        text=label,
-        showarrow=False,
-        font=dict(color=color, size=12),
-        yshift=10 if label in ["Low","High"] else -10
-    )
-
-fig.update_xaxes(
-    title="Prix",
-    title_font=dict(color="white", size=14),
-    tickfont=dict(color="white", size=12),
-    gridcolor="rgba(255,255,255,0.1)",
-    zerolinecolor="rgba(255,255,255,0.2)"
-)
-fig.update_yaxes(
-    title="IL (%)",
-    title_font=dict(color="white", size=14),
-    tickfont=dict(color="white", size=12),
-    gridcolor="rgba(255,255,255,0.1)",
-    zerolinecolor="rgba(255,255,255,0.2)"
-)
-
-fig.update_layout(
-    height=380,
-    plot_bgcolor="#0b0f14",
-    paper_bgcolor="#0b0f14",
-    title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)),
-    legend=dict(font=dict(color="white"))
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-# --- Valeurs actuelles IL ---
-IL_now = (V_LP(P_now, L, P_lower, P_upper)/V_HODL(P_now, x0, y0)-1)*100
-LP_now = V_LP(P_now, L, P_lower, P_upper)
-HODL_now = V_HODL(P_now, x0, y0)
-
-cols = st.columns(3)
-results = [
-    ("IL maintenant (%)", f"{IL_now:.2f}%"),
-    ("Valeur LP ($)", f"${LP_now:,.2f}"),
-    ("Valeur HODL ($)", f"${HODL_now:,.2f}")
-]
-for i, (title,val) in enumerate(results):
-    with cols[i]:
-        st.markdown(f"""
-        <div class="result-card">
-            <div class="result-title">{title}</div>
-            <div class="result-value">{val}</div>
-        </div>
+        .small-label {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 2px;
+        }
+        </style>
         """, unsafe_allow_html=True)
+
+        # =================== INPUTS ===================
+        st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_html=True)
+
+        row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+        with row1_col1:
+            st.markdown('<div class="small-label">P_deposit</div>', unsafe_allow_html=True)
+            P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
+        with row1_col2:
+            st.markdown('<div class="small-label">P_now</div>', unsafe_allow_html=True)
+            P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
+        with row1_col3:
+            st.markdown('<div class="small-label">Valeur deposit (USD)</div>', unsafe_allow_html=True)
+            v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.6f", step=0.01, label_visibility="collapsed")
+
+        row2_col1, row2_col2 = st.columns([1,1])
+        with row2_col1:
+            st.markdown('<div class="small-label">P_lower</div>', unsafe_allow_html=True)
+            P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001, label_visibility="collapsed")
+        with row2_col2:
+            st.markdown('<div class="small-label">P_upper</div>', unsafe_allow_html=True)
+            P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001, label_visibility="collapsed")
+
+        # --- Calcul IL ---
+        L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
+        x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
+        L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
+
+        prices = np.linspace(P_lower*0.8, P_upper*1.3, 400)
+        LP_values = V_LP(prices, L, P_lower, P_upper)
+        HODL_values = V_HODL(prices, x0, y0)
+        IL_curve = (LP_values / HODL_values - 1) * 100
+
+        # --- Graph IL ---
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=prices, y=IL_curve, mode="lines", name="IL(%)",
+            line=dict(color="red", width=3)
+        ))
+
+        for px, label, color in [
+            (P_lower, "Low", "green"),
+            (P_upper, "High", "green"),
+            (P_deposit, "Deposit", "blue"),
+            (P_now, "Now", "purple")
+        ]:
+            fig.add_vline(
+                x=px,
+                line=dict(color=color, width=2, dash="dot" if label in ["Low","High"] else "dash")
+            )
+            fig.add_annotation(
+                x=px,
+                y=max(IL_curve) if label in ["Low","High"] else min(IL_curve),
+                text=label,
+                showarrow=False,
+                font=dict(color=color, size=12),
+                yshift=10 if label in ["Low","High"] else -10
+            )
+
+        fig.update_xaxes(
+            title="Prix",
+            title_font=dict(color="white", size=14),
+            tickfont=dict(color="white", size=12),
+            gridcolor="rgba(255,255,255,0.1)",
+            zerolinecolor="rgba(255,255,255,0.2)"
+        )
+        fig.update_yaxes(
+            title="IL (%)",
+            title_font=dict(color="white", size=14),
+            tickfont=dict(color="white", size=12),
+            gridcolor="rgba(255,255,255,0.1)",
+            zerolinecolor="rgba(255,255,255,0.2)"
+        )
+
+        fig.update_layout(
+            height=380,
+            plot_bgcolor="#0b0f14",
+            paper_bgcolor="#0b0f14",
+            title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)),
+            legend=dict(font=dict(color="white"))
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        # --- Valeurs actuelles IL ---
+        IL_now = (V_LP(P_now, L, P_lower, P_upper)/V_HODL(P_now, x0, y0)-1)*100
+        LP_now = V_LP(P_now, L, P_lower, P_upper)
+        HODL_now = V_HODL(P_now, x0, y0)
+
+        cols = st.columns(3)
+        results = [
+            ("IL maintenant (%)", f"{IL_now:.2f}%"),
+            ("Valeur LP ($)", f"${LP_now:,.2f}"),
+            ("Valeur HODL ($)", f"${HODL_now:,.2f}")
+        ]
+
+        for i, (title,val) in enumerate(results):
+            with cols[i]:
+                st.markdown(f"""
+                <div class="result-card">
+                    <div class="result-title">{title}</div>
+                    <div class="result-value">{val}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+
 # --- APR ---
 def calculate_clmm_apr(fees_usd_period: float, active_liquidity_usd_avg: float, period_days: int) -> float:
     if active_liquidity_usd_avg <= 0 or period_days <= 0:
