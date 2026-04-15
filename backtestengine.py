@@ -1111,6 +1111,14 @@ if selected_key == "pool_setup":
             """, unsafe_allow_html=True)
 
 
+# ----------------------------- ROUTING MENU -----------------------------
+if selected_key == "automation":
+
+    with st.expander("⚡ Automation", expanded=True):
+
+        st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
+
+
 # =========================== AUTOMATION ===========================
 
 st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
