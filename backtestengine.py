@@ -1118,203 +1118,148 @@ if selected_key == "automation":
 
         st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
 
+        # =========================== AUTOMATION ===========================
+        st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
 
-# =========================== AUTOMATION ===========================
+        # ---- Range future / Time-buffer ----
+        col_range, col_time = st.columns([2,1])
 
-st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
+        # ---- Ratios pour trigger/future range ----
+        ratioA_trigger, ratioB_trigger = ratioA, ratioB
+        if invert_market:
+            ratioA_trigger, ratioB_trigger = ratioB, ratioA
 
-# ---- Range future / Time-buffer ----
-col_range, col_time = st.columns([2,1])
+        # ================= RANGE FUTURE =================
+        with col_range:
 
-# ---- Ratios pour trigger/future range ----
-ratioA_trigger, ratioB_trigger = ratioA, ratioB
-if invert_market:
-    ratioA_trigger, ratioB_trigger = ratioB_trigger, ratioA_trigger
+            st.markdown('<div class="section-title">Range future</div>', unsafe_allow_html=True)
 
-# ================= RANGE FUTURE =================
+            range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.1)
 
-with col_range:
+            low_offset_pct = -range_percent * 20 / 100
+            high_offset_pct = range_percent * 80 / 100
 
-    st.markdown('<div class="section-title">Range future</div>', unsafe_allow_html=True)
+            final_low = priceA * (1 + low_offset_pct/100)
+            final_high = priceA * (1 + high_offset_pct/100)
 
-    range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.1)
-
-    low_offset_pct = -range_percent * 20 / 100
-    high_offset_pct = range_percent * 80 / 100
-
-    final_low = priceA * (1 + low_offset_pct/100)
-    final_high = priceA * (1 + high_offset_pct/100)
-
-    st.markdown(f"""
-    <div class="result-card-wide">
-        <div class="result-title">Range calculé</div>
-        <div class="result-value">
-            {final_low:.6f} → {final_high:.6f}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ================= TIME BUFFER =================
-
-with col_time:
-
-    st.markdown('<div class="section-title">Time-buffer</div>', unsafe_allow_html=True)
-
-    vola = vol_30d * 100
-
-    if vola < 2:
-        recomand = "6 à 12 minutes"
-    elif vola < 5:
-        recomand = "18 à 48 minutes"
-    else:
-        recomand = "60 minutes et plus"
-
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">Recommandation</div>
-        <div class="result-value">{recomand}</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ================= TRIGGER =================
-
-col_trigger, col_rebalance = st.columns(2)
-
-with col_trigger:
-
-    st.markdown('<div class="section-title">Trigger d’anticipation (RATIO)</div>', unsafe_allow_html=True)
-
-    t1, t2 = st.columns(2)
-    with t1:
-        trig_low = st.slider("Trigger Low (%)", 0.0, 100.0, 10.0, step=0.1)
-    with t2:
-        trig_high = st.slider("Trigger High (%)", 0.0, 100.0, 90.0, step=0.1)
-
-    rw = final_high - final_low
-    trigger_low_price = final_low + (trig_low/100)*rw
-    trigger_high_price = final_low + (trig_high/100)*rw
-
-    r1, r2 = st.columns(2)
-
-    with r1:
-        st.markdown(f"""
-        <div class="result-card">
-            <div class="result-title">Trigger Low</div>
-            <div class="result-value">{trigger_low_price:.6f}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with r2:
-        st.markdown(f"""
-        <div class="result-card">
-            <div class="result-title">Trigger High</div>
-            <div class="result-value">{trigger_high_price:.6f}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-# ================= REBALANCE AVANCÉE =================
-
-with col_rebalance:
-
-    st.markdown('<div class="section-title">Rebalance avancée (futur range)</div>', unsafe_allow_html=True)
-
-    off_low_pct  = -ratioA * range_percent
-    off_high_pct =  ratioB * range_percent
-
-    bear_low  = priceA * (1 + off_low_pct / 100)
-    bear_high = priceA * (1 + off_high_pct / 100)
-
-    bull_low  = priceA * (1 - off_high_pct / 100)
-    bull_high = priceA * (1 - off_low_pct / 100)
-
-    col_b1, col_b2 = st.columns(2)
-
-    with col_b1:
-        st.markdown("""
-        <div class="result-card">
-            <div class="result-title">Marché Haussier (Pump)</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown(f"""
-        <div class="result-card-wide">
-            <div class="result-title">Range</div>
-            <div class="result-value">
-                {bull_low:.6f} → {bull_high:.6f}
+            st.markdown(f"""
+            <div class="result-card-wide">
+                <div class="result-title">Range calculé</div>
+                <div class="result-value">
+                    {final_low:.6f} → {final_high:.6f}
+                </div>
             </div>
-            <div class="result-subvalue">
-                {(-off_high_pct):.1f}% → {(-off_low_pct):.1f}%
+            """, unsafe_allow_html=True)
+
+        # ================= TIME BUFFER =================
+        with col_time:
+
+            st.markdown('<div class="section-title">Time-buffer</div>', unsafe_allow_html=True)
+
+            vola = vol_30d * 100
+
+            if vola < 2:
+                recomand = "6 à 12 minutes"
+            elif vola < 5:
+                recomand = "18 à 48 minutes"
+            else:
+                recomand = "60 minutes et plus"
+
+            st.markdown(f"""
+            <div class="result-card">
+                <div class="result-title">Recommandation</div>
+                <div class="result-value">{recomand}</div>
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-    with col_b2:
-        st.markdown("""
-        <div class="result-card">
-            <div class="result-title">Marché Baissier (Dump)</div>
-        </div>
-        """, unsafe_allow_html=True)
+        # ================= TRIGGER =================
+        col_trigger, col_rebalance = st.columns(2)
 
-        st.markdown(f"""
-        <div class="result-card-wide">
-            <div class="result-title">Range</div>
-            <div class="result-value">
-                {bear_low:.6f} → {bear_high:.6f}
-            </div>
-            <div class="result-subvalue">
-                {off_low_pct:.1f}% → {off_high_pct:.1f}%
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        with col_trigger:
 
+            st.markdown('<div class="section-title">Trigger d’anticipation (RATIO)</div>', unsafe_allow_html=True)
 
-# =================== FONCTIONS (INCHANGÉES) ===================
+            t1, t2 = st.columns(2)
+            with t1:
+                trig_low = st.slider("Trigger Low (%)", 0.0, 100.0, 10.0, step=0.1)
+            with t2:
+                trig_high = st.slider("Trigger High (%)", 0.0, 100.0, 90.0, step=0.1)
 
-def compute_L(P, P_l, P_u, V):
-    sqrtP = np.sqrt(P)
-    sqrtPl = np.sqrt(P_l)
-    sqrtPu = np.sqrt(P_u)
-    A = (1 / sqrtP - 1 / sqrtPu)
-    B = (sqrtP - sqrtPl)
-    return V / (P * A + B)
+            rw = final_high - final_low
+            trigger_low_price = final_low + (trig_low/100)*rw
+            trigger_high_price = final_low + (trig_high/100)*rw
 
-def tokens_from_L(L, P, P_l, P_u):
-    sqrtP = np.sqrt(P)
-    sqrtPl = np.sqrt(P_l)
-    sqrtPu = np.sqrt(P_u)
-    x = L * (1 / sqrtP - 1 / sqrtPu)
-    y = L * (sqrtP - sqrtPl)
-    return x, y
+            r1, r2 = st.columns(2)
 
-def normalize_L(L, x0, y0, P, V):
-    factor = V / (x0 * P + y0)
-    return L * factor, x0 * factor, y0 * factor
+            with r1:
+                st.markdown(f"""
+                <div class="result-card">
+                    <div class="result-title">Trigger Low</div>
+                    <div class="result-value">{trigger_low_price:.6f}</div>
+                </div>
+                """, unsafe_allow_html=True)
 
-def x_of_P(P, L, P_upper):
-    P_arr = np.asarray(P, float)
-    sqrtP = np.sqrt(P_arr)
-    x = L * (1 / sqrtP - 1 / np.sqrt(P_upper))
-    if isinstance(x, np.ndarray):
-        return np.where(x < 0, 0, x)
-    return max(x, 0.0)
+            with r2:
+                st.markdown(f"""
+                <div class="result-card">
+                    <div class="result-title">Trigger High</div>
+                    <div class="result-value">{trigger_high_price:.6f}</div>
+                </div>
+                """, unsafe_allow_html=True)
 
-def y_of_P(P, L, P_lower):
-    P_arr = np.asarray(P, float)
-    sqrtP = np.sqrt(P_arr)
-    y = L * (sqrtP - np.sqrt(P_lower))
-    if isinstance(y, np.ndarray):
-        return np.where(y < 0, 0, y)
-    return max(y, 0.0)
+        # ================= REBALANCE AVANCÉE =================
+        with col_rebalance:
 
-def V_LP(P, L, P_lower, P_upper):
-    P_arr = np.asarray(P, float)
-    return x_of_P(P_arr, L, P_upper) * P_arr + y_of_P(P_arr, L, P_lower)
+            st.markdown('<div class="section-title">Rebalance avancée (futur range)</div>', unsafe_allow_html=True)
 
-def V_HODL(P, x0, y0):
-    return x0 * P + y0
+            off_low_pct  = -ratioA * range_percent
+            off_high_pct =  ratioB * range_percent
+
+            bear_low  = priceA * (1 + off_low_pct / 100)
+            bear_high = priceA * (1 + off_high_pct / 100)
+
+            bull_low  = priceA * (1 - off_high_pct / 100)
+            bull_high = priceA * (1 - off_low_pct / 100)
+
+            col_b1, col_b2 = st.columns(2)
+
+            with col_b1:
+                st.markdown("""
+                <div class="result-card">
+                    <div class="result-title">Marché Haussier (Pump)</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="result-card-wide">
+                    <div class="result-title">Range</div>
+                    <div class="result-value">
+                        {bull_low:.6f} → {bull_high:.6f}
+                    </div>
+                    <div class="result-subvalue">
+                        {(-off_high_pct):.1f}% → {(-off_low_pct):.1f}%
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            with col_b2:
+                st.markdown("""
+                <div class="result-card">
+                    <div class="result-title">Marché Baissier (Dump)</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <div class="result-card-wide">
+                    <div class="result-title">Range</div>
+                    <div class="result-value">
+                        {bear_low:.6f} → {bear_high:.6f}
+                    </div>
+                    <div class="result-subvalue">
+                        {off_low_pct:.1f}% → {off_high_pct:.1f}%
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
     
 # ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
 
