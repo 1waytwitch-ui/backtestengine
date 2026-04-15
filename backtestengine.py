@@ -785,8 +785,6 @@ st.markdown(
 
 # =================== MENU NAVIGATION ===================
 
-# =================== MENU NAVIGATION ===================
-
 MENU_ITEMS = {
     "⚙️ Pool Setup": "pool_setup",
     "🤖 Automation": "automation",
@@ -813,15 +811,29 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== CSS NEON =====
+    # ===== CSS NEON + PULSE =====
     st.markdown("""
     <style>
-    /* radio container */
+
+    /* animation pulse */
+    @keyframes neonPulse {
+        0%   { text-shadow: 0 0 4px #00ff88, 0 0 8px #00ff88; }
+        50%  { text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88; }
+        100% { text-shadow: 0 0 4px #00ff88, 0 0 8px #00ff88; }
+    }
+
+    @keyframes neonBox {
+        0%   { box-shadow: 0 0 4px #00ff88; }
+        50%  { box-shadow: 0 0 12px #00ff88; }
+        100% { box-shadow: 0 0 4px #00ff88; }
+    }
+
+    /* items */
     div[role="radiogroup"] > label {
         display: flex;
         align-items: center;
         padding: 8px 10px;
-        margin: 2px 0;
+        margin: 3px 0;
         border-radius: 6px;
         transition: all 0.2s ease;
         font-family: monospace;
@@ -834,23 +846,34 @@ with st.sidebar:
         color: #00ff88;
     }
 
-    /* selected (radio checked) */
-    div[role="radiogroup"] > label[data-baseweb="radio"] > div:first-child {
-        background-color: #00ff88 !important;
-        box-shadow: 0 0 6px #00ff88;
-    }
-
-    /* selected text glow */
+    /* bouton actif glow */
     div[role="radiogroup"] input:checked + div {
         color: #00ff88 !important;
-        text-shadow: 0 0 6px #00ff88;
         font-weight: 500;
+        animation: neonPulse 1.6s infinite ease-in-out;
     }
 
-    /* remove default circle border */
+    /* fond actif + pulse */
+    div[role="radiogroup"] input:checked {
+        accent-color: #00ff88;
+    }
+
+    div[role="radiogroup"] input:checked + div::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: #00ff88;
+        animation: neonBox 1.6s infinite ease-in-out;
+    }
+
+    /* clean radio */
     div[role="radiogroup"] svg {
         display: none;
     }
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -862,9 +885,7 @@ with st.sidebar:
         label_visibility="collapsed"
     )
 
-# clé sélectionnée
 selected_key = MENU_ITEMS[selected]
-
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
