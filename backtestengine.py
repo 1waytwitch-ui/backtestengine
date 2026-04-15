@@ -887,7 +887,7 @@ with st.sidebar:
 selected_key = MENU_ITEMS[selected]
 
 # ----------------------------- ROUTING MENU -----------------------------
-if selected_key == "pool_setup":
+if selected_key == "pool_engine":
 
     with st.expander("⚙ Pool Setup", expanded=True):
 
