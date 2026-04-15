@@ -1253,6 +1253,63 @@ if selected_key == "pool_engine":
                 </div>
                 """, unsafe_allow_html=True)
     
+# ======================= IMPORTS =======================
+import numpy as np
+import plotly.graph_objects as go
+
+
+# ======================= FUNCTIONS (IMPORTANT: MUST BE ABOVE ROUTING) =======================
+
+def compute_L(P, P_l, P_u, V):
+    sqrtP = np.sqrt(P)
+    sqrtPl = np.sqrt(P_l)
+    sqrtPu = np.sqrt(P_u)
+    A = (1 / sqrtP - 1 / sqrtPu)
+    B = (sqrtP - sqrtPl)
+    return V / (P * A + B)
+
+
+def tokens_from_L(L, P, P_l, P_u):
+    sqrtP = np.sqrt(P)
+    sqrtPl = np.sqrt(P_l)
+    sqrtPu = np.sqrt(P_u)
+    x = L * (1 / sqrtP - 1 / sqrtPu)
+    y = L * (sqrtP - sqrtPl)
+    return x, y
+
+
+def normalize_L(L, x0, y0, P, V):
+    factor = V / (x0 * P + y0)
+    return L * factor, x0 * factor, y0 * factor
+
+
+def x_of_P(P, L, P_upper):
+    P_arr = np.asarray(P, float)
+    sqrtP = np.sqrt(P_arr)
+    x = L * (1 / sqrtP - 1 / np.sqrt(P_upper))
+    if isinstance(x, np.ndarray):
+        return np.where(x < 0, 0, x)
+    return max(x, 0.0)
+
+
+def y_of_P(P, L, P_lower):
+    P_arr = np.asarray(P, float)
+    sqrtP = np.sqrt(P_arr)
+    y = L * (sqrtP - np.sqrt(P_lower))
+    if isinstance(y, np.ndarray):
+        return np.where(y < 0, 0, y)
+    return max(y, 0.0)
+
+
+def V_LP(P, L, P_lower, P_upper):
+    P_arr = np.asarray(P, float)
+    return x_of_P(P_arr, L, P_upper) * P_arr + y_of_P(P_arr, L, P_lower)
+
+
+def V_HODL(P, x0, y0):
+    return x0 * P + y0
+
+
 # =========================== ROUTING MENU ===========================
 if selected_key == "impermanent_loss":
 
@@ -1260,99 +1317,49 @@ if selected_key == "impermanent_loss":
 
         st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_html=True)
 
-        # ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
-
-        # --- Style Terminal DeFi ---
-        st.markdown("""
-        <style>
-        [data-testid="stAppViewContainer"] {
-            background-color: #0b0f14;
-            color: #e6edf3;
-            font-family: "Courier New", monospace;
-        }
-
-        .section-title {
-            border-left: 4px solid #00ff88;
-            padding: 8px 14px;
-            margin-top: 24px;
-            margin-bottom: 14px;
-            font-weight: 600;
-            font-size: 16px;
-            background: rgba(0,255,136,0.05);
-            letter-spacing: 1px;
-        }
-
-        div[data-baseweb="input"] input {
-            background-color: #11161d !important;
-            color: #00ff88 !important;
-            border: 1px solid #1f2a36 !important;
-            padding-top: 6px !important;
-            padding-bottom: 6px !important;
-            font-size: 13px;
-        }
-
-        label { font-size: 12px !important; opacity: 0.7; }
-
-        .result-card, .result-card-wide {
-            background: #0f141b;
-            border: 1px solid #1f2a36;
-            border-radius: 10px;
-            padding: 14px;
-            text-align: left;
-            box-shadow: 0 0 12px rgba(0,255,136,0.05);
-            margin-top: 14px;
-        }
-
-        .result-card-wide { padding: 16px; }
-
-        .result-title { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-        .result-value { font-size: 18px; font-weight: 600; color: #00ff88; margin-top: 6px; }
-
-        .small-label {
-            font-size: 12px;
-            opacity: 0.7;
-            margin-bottom: 2px;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
         # =================== INPUTS ===================
-        st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_html=True)
-
         row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+
         with row1_col1:
             st.markdown('<div class="small-label">P_deposit</div>', unsafe_allow_html=True)
             P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
+
         with row1_col2:
             st.markdown('<div class="small-label">P_now</div>', unsafe_allow_html=True)
             P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
+
         with row1_col3:
             st.markdown('<div class="small-label">Valeur deposit (USD)</div>', unsafe_allow_html=True)
             v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.6f", step=0.01, label_visibility="collapsed")
 
         row2_col1, row2_col2 = st.columns([1,1])
+
         with row2_col1:
             st.markdown('<div class="small-label">P_lower</div>', unsafe_allow_html=True)
             P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001, label_visibility="collapsed")
+
         with row2_col2:
             st.markdown('<div class="small-label">P_upper</div>', unsafe_allow_html=True)
             P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001, label_visibility="collapsed")
 
-        # --- Calcul IL ---
+        # =================== CALCUL IL ===================
         L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
         x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
         L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
 
-        prices = np.linspace(P_lower*0.8, P_upper*1.3, 400)
+        prices = np.linspace(P_lower * 0.8, P_upper * 1.3, 400)
         LP_values = V_LP(prices, L, P_lower, P_upper)
         HODL_values = V_HODL(prices, x0, y0)
         IL_curve = (LP_values / HODL_values - 1) * 100
 
-        # --- Graph IL ---
+        # =================== GRAPH ===================
         fig = go.Figure()
 
         fig.add_trace(go.Scatter(
-            x=prices, y=IL_curve, mode="lines", name="IL(%)",
+            x=prices,
+            y=IL_curve,
+            mode="lines",
+            name="IL(%)",
             line=dict(color="red", width=3)
         ))
 
@@ -1364,31 +1371,16 @@ if selected_key == "impermanent_loss":
         ]:
             fig.add_vline(
                 x=px,
-                line=dict(color=color, width=2, dash="dot" if label in ["Low","High"] else "dash")
+                line=dict(color=color, width=2, dash="dot" if label in ["Low", "High"] else "dash")
             )
             fig.add_annotation(
                 x=px,
-                y=max(IL_curve) if label in ["Low","High"] else min(IL_curve),
+                y=max(IL_curve) if label in ["Low", "High"] else min(IL_curve),
                 text=label,
                 showarrow=False,
                 font=dict(color=color, size=12),
-                yshift=10 if label in ["Low","High"] else -10
+                yshift=10 if label in ["Low", "High"] else -10
             )
-
-        fig.update_xaxes(
-            title="Prix",
-            title_font=dict(color="white", size=14),
-            tickfont=dict(color="white", size=12),
-            gridcolor="rgba(255,255,255,0.1)",
-            zerolinecolor="rgba(255,255,255,0.2)"
-        )
-        fig.update_yaxes(
-            title="IL (%)",
-            title_font=dict(color="white", size=14),
-            tickfont=dict(color="white", size=12),
-            gridcolor="rgba(255,255,255,0.1)",
-            zerolinecolor="rgba(255,255,255,0.2)"
-        )
 
         fig.update_layout(
             height=380,
@@ -1400,19 +1392,20 @@ if selected_key == "impermanent_loss":
 
         st.plotly_chart(fig, use_container_width=True)
 
-        # --- Valeurs actuelles IL ---
-        IL_now = (V_LP(P_now, L, P_lower, P_upper)/V_HODL(P_now, x0, y0)-1)*100
+        # =================== RESULTS ===================
+        IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
         LP_now = V_LP(P_now, L, P_lower, P_upper)
         HODL_now = V_HODL(P_now, x0, y0)
 
         cols = st.columns(3)
+
         results = [
             ("IL maintenant (%)", f"{IL_now:.2f}%"),
             ("Valeur LP ($)", f"${LP_now:,.2f}"),
             ("Valeur HODL ($)", f"${HODL_now:,.2f}")
         ]
 
-        for i, (title,val) in enumerate(results):
+        for i, (title, val) in enumerate(results):
             with cols[i]:
                 st.markdown(f"""
                 <div class="result-card">
@@ -1420,7 +1413,6 @@ if selected_key == "impermanent_loss":
                     <div class="result-value">{val}</div>
                 </div>
                 """, unsafe_allow_html=True)
-
 
 # --- APR ---
 def calculate_clmm_apr(fees_usd_period: float, active_liquidity_usd_avg: float, period_days: int) -> float:
