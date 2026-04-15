@@ -786,8 +786,7 @@ st.markdown(
 # =================== MENU NAVIGATION ===================
 
 MENU_ITEMS = {
-    "⚙️ Pool Setup": "pool_setup",
-    "🤖 Automation": "automation",
+    "⚙️ Pool Engine (Setup + Automation)": "pool_engine",
     "📉 Impermanent Loss": "impermanent_loss",
     "📈 APR": "apr",
     "📊 ATR": "atr",
@@ -1110,13 +1109,6 @@ if selected_key == "pool_setup":
             </div>
             """, unsafe_allow_html=True)
 
-
-# ----------------------------- ROUTING MENU -----------------------------
-if selected_key == "automation":
-
-    with st.expander("⚡ Automation", expanded=True):
-
-        st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
 
         # =========================== AUTOMATION ===========================
         st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
