@@ -886,223 +886,229 @@ with st.sidebar:
     )
 
 selected_key = MENU_ITEMS[selected]
-# ----------------------------- LAYOUT -----------------------------
-col1, col2 = st.columns([1.3, 1])
 
-# ============================== GAUCHE ==============================
-with col1:
+# ----------------------------- ROUTING MENU -----------------------------
+if selected_key == "pool_setup":
 
-    st.markdown('<div class="section-title">Pool Setup</div>', unsafe_allow_html=True)
+    with st.expander("⚙ Pool Setup", expanded=True):
 
-    # --- PAIRE & STRATEGIE ---
-    left, right = st.columns(2)
-    with left:
-        pair_labels = [f"{a}/{b}" for a, b in PAIRS]
-        selected_pair = st.radio("Paire :", pair_labels, index=0)
-    with right:
-        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
+        # ----------------------------- LAYOUT -----------------------------
+        col1, col2 = st.columns([1.3, 1])
 
-    # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
-    if (
-        "last_pair" not in st.session_state
-        or st.session_state["last_pair"] != selected_pair
-    ):
-        for k in list(st.session_state.keys()):
-            if k.endswith("_prices_" + str(datetime.date.today())):
-                del st.session_state[k]
-        st.session_state["last_pair"] = selected_pair
+        # ============================== GAUCHE ==============================
+        with col1:
 
-    # --- EXTRACTION STRAT ---
-    tokenA, tokenB = selected_pair.split("/")
-    info = STRATEGIES[strategy_choice]
-    ratioA, ratioB = info["ratio"]
+            st.markdown('<div class="section-title">Pool Setup</div>', unsafe_allow_html=True)
 
-    invert_market = st.checkbox("Inversion marché (bull → bear)")
-    if invert_market:
-        ratioA, ratioB = ratioB, ratioA
+            # --- PAIRE & STRATEGIE ---
+            left, right = st.columns(2)
+            with left:
+                pair_labels = [f"{a}/{b}" for a, b in PAIRS]
+                selected_pair = st.radio("Paire :", pair_labels, index=0)
+            with right:
+                strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
-    # --- CAPITAL ---
-    capital = st.number_input("Capital (USD)", value=1000, step=50)
+            # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
+            if (
+                "last_pair" not in st.session_state
+                or st.session_state["last_pair"] != selected_pair
+            ):
+                for k in list(st.session_state.keys()):
+                    if k.endswith("_prices_" + str(datetime.date.today())):
+                        del st.session_state[k]
+                st.session_state["last_pair"] = selected_pair
 
-    # ================== PRIX TOKEN ==================
-    priceA_usd, okA = get_price_usd(tokenA)
-    priceB_usd, okB = get_price_usd(tokenB)
+            # --- EXTRACTION STRAT ---
+            tokenA, tokenB = selected_pair.split("/")
+            info = STRATEGIES[strategy_choice]
+            ratioA, ratioB = info["ratio"]
 
-    la, lb = st.columns(2)
-    with la:
-        if not okA:
-            priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
-    with lb:
-        if not okB:
-            priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
+            invert_market = st.checkbox("Inversion marché (bull → bear)")
+            if invert_market:
+                ratioA, ratioB = ratioB, ratioA
 
-    priceB_usd = max(priceB_usd, 1e-7)
-    priceA = priceA_usd / priceB_usd
+            # --- CAPITAL ---
+            capital = st.number_input("Capital (USD)", value=1000, step=50)
 
-    # ================== VOLATILITÉ PAIRE ==================
-    keyA = f"{tokenA}_prices_{datetime.date.today()}"
-    keyB = f"{tokenB}_prices_{datetime.date.today()}"
+            # ================== PRIX TOKEN ==================
+            priceA_usd, okA = get_price_usd(tokenA)
+            priceB_usd, okB = get_price_usd(tokenB)
 
-    if keyA not in st.session_state:
-        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
-    if keyB not in st.session_state:
-        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
+            la, lb = st.columns(2)
+            with la:
+                if not okA:
+                    priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
+            with lb:
+                if not okB:
+                    priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
 
-    pricesA = np.array(st.session_state[keyA])
-    pricesB = np.array(st.session_state[keyB])
+            priceB_usd = max(priceB_usd, 1e-7)
+            priceA = priceA_usd / priceB_usd
 
-    def compute_pair_volatility(pricesA, pricesB):
-        min_len = min(len(pricesA), len(pricesB))
-        pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
-        mask = (pricesA > 1e-8) & (pricesB > 1e-8)
-        pricesA, pricesB = pricesA[mask], pricesB[mask]
-        if len(pricesA) < 2:
-            return 0.0
-        pair_prices = pricesA / pricesB
-        returns = np.diff(pair_prices) / pair_prices[:-1]
-        returns = returns[~np.isnan(returns)]
-        return float(np.std(returns)) if len(returns) > 0 else 0.0
+            # ================== VOLATILITÉ PAIRE ==================
+            keyA = f"{tokenA}_prices_{datetime.date.today()}"
+            keyB = f"{tokenB}_prices_{datetime.date.today()}"
 
-    if selected_pair == "WETH/USDC":
-        vol_30d = compute_volatility(pricesA)
-    elif selected_pair == "CBBTC/USDC":
-        vol_30d = compute_volatility(pricesA)
-    elif selected_pair == "WETH/CBBTC":
-        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
-    elif selected_pair == "VIRTUAL/WETH":
-        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
-    elif selected_pair == "AERO/WETH":
-        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
-    else:
-        vol_30d = compute_pair_volatility(pricesA, pricesB)
+            if keyA not in st.session_state:
+                st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
+            if keyB not in st.session_state:
+                st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
 
-    if vol_30d == 0:
-        if selected_pair == "CBBTC/USDC":
-            vol_30d = 0.12
-        elif selected_pair == "VIRTUAL/WETH":
-            vol_30d = 0.45
-        elif selected_pair == "AERO/WETH":
-            vol_30d = 0.45
+            pricesA = np.array(st.session_state[keyA])
+            pricesB = np.array(st.session_state[keyB])
 
-    # ================== SUGGESTION ==================
-    vol_sugg = vol_30d * 100
+            def compute_pair_volatility(pricesA, pricesB):
+                min_len = min(len(pricesA), len(pricesB))
+                pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
+                mask = (pricesA > 1e-8) & (pricesB > 1e-8)
+                pricesA, pricesB = pricesA[mask], pricesB[mask]
+                if len(pricesA) < 2:
+                    return 0.0
+                pair_prices = pricesA / pricesB
+                returns = np.diff(pair_prices) / pair_prices[:-1]
+                returns = returns[~np.isnan(returns)]
+                return float(np.std(returns)) if len(returns) > 0 else 0.0
 
-    if vol_sugg < 2:
-        suggested_range = 3
-    elif vol_sugg < 4:
-        suggested_range = 7
-    elif vol_sugg < 7:
-        suggested_range = 10
-    elif vol_sugg < 10:
-        suggested_range = 16
-    else:
-        suggested_range = 20
+            if selected_pair == "WETH/USDC":
+                vol_30d = compute_volatility(pricesA)
+            elif selected_pair == "CBBTC/USDC":
+                vol_30d = compute_volatility(pricesA)
+            elif selected_pair == "WETH/CBBTC":
+                vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+            elif selected_pair == "VIRTUAL/WETH":
+                vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+            elif selected_pair == "AERO/WETH":
+                vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+            else:
+                vol_30d = compute_pair_volatility(pricesA, pricesB)
 
-    if selected_pair == "CBBTC/USDC":
-        suggested_range *= 1.3
-        vol_sugg_display = vol_sugg
-    elif selected_pair == "VIRTUAL/WETH":
-        suggested_range *= 6.2
-        vol_sugg_display = vol_sugg * 3.2
-    elif selected_pair == "AERO/WETH":
-        suggested_range *= 6.5
-        vol_sugg_display = vol_sugg * 2
-    elif selected_pair == "WETH/USDC":
-        suggested_range *= 3
-        vol_sugg_display = vol_sugg * 3
-    else:
-        suggested_range *= 3
-        vol_sugg_display = vol_sugg * 3
+            if vol_30d == 0:
+                if selected_pair == "CBBTC/USDC":
+                    vol_30d = 0.12
+                elif selected_pair == "VIRTUAL/WETH":
+                    vol_30d = 0.45
+                elif selected_pair == "AERO/WETH":
+                    vol_30d = 0.45
 
-    range_pct = st.number_input(
-        "Range (%)",
-        min_value=1.0,
-        max_value=200.0,
-        value=20.0,
-        key="range_pct"
-    )
+            # ================== SUGGESTION ==================
+            vol_sugg = vol_30d * 100
 
-    range_low = priceA * (1 - ratioA * range_pct / 100)
-    range_high = priceA * (1 + ratioB * range_pct / 100)
+            if vol_sugg < 2:
+                suggested_range = 3
+            elif vol_sugg < 4:
+                suggested_range = 7
+            elif vol_sugg < 7:
+                suggested_range = 10
+            elif vol_sugg < 10:
+                suggested_range = 16
+            else:
+                suggested_range = 20
 
-    if invert_market:
-        range_low, range_high = range_high, range_low
+            if selected_pair == "CBBTC/USDC":
+                suggested_range *= 1.3
+                vol_sugg_display = vol_sugg
+            elif selected_pair == "VIRTUAL/WETH":
+                suggested_range *= 6.2
+                vol_sugg_display = vol_sugg * 3.2
+            elif selected_pair == "AERO/WETH":
+                suggested_range *= 6.5
+                vol_sugg_display = vol_sugg * 2
+            elif selected_pair == "WETH/USDC":
+                suggested_range *= 3
+                vol_sugg_display = vol_sugg * 3
+            else:
+                suggested_range *= 3
+                vol_sugg_display = vol_sugg * 3
 
-    capitalA, capitalB = capital * ratioA, capital * ratioB
+            range_pct = st.number_input(
+                "Range (%)",
+                min_value=1.0,
+                max_value=200.0,
+                value=20.0,
+                key="range_pct"
+            )
+
+            range_low = priceA * (1 - ratioA * range_pct / 100)
+            range_high = priceA * (1 + ratioB * range_pct / 100)
+
+            if invert_market:
+                range_low, range_high = range_high, range_low
+
+            capitalA, capitalB = capital * ratioA, capital * ratioB
 
 
-# ============================== DROITE ==============================
-with col2:
+        # ============================== DROITE ==============================
+        with col2:
 
-    st.markdown('<div class="section-title">Price / Range</div>', unsafe_allow_html=True)
+            st.markdown('<div class="section-title">Price / Range</div>', unsafe_allow_html=True)
 
-    r1, r2 = st.columns(2)
+            r1, r2 = st.columns(2)
 
-    with r1:
-        st.markdown(f"""
-        <div class="result-card">
-            <div class="result-title">Prix actuel</div>
-            <div class="result-value">{priceA:.6f} $</div>
-        </div>
-        """, unsafe_allow_html=True)
+            with r1:
+                st.markdown(f"""
+                <div class="result-card">
+                    <div class="result-title">Prix actuel</div>
+                    <div class="result-value">{priceA:.6f} $</div>
+                </div>
+                """, unsafe_allow_html=True)
 
-    with r2:
-        st.markdown(f"""
-        <div class="result-card">
-            <div class="result-title">Range</div>
-            <div class="result-value">{range_low:.6f} → {range_high:.6f}</div>
-        </div>
-        """, unsafe_allow_html=True)
+            with r2:
+                st.markdown(f"""
+                <div class="result-card">
+                    <div class="result-title">Range</div>
+                    <div class="result-value">{range_low:.6f} → {range_high:.6f}</div>
+                </div>
+                """, unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class="result-card-wide">
-        <div class="result-title">Répartition capital</div>
-        <div class="result-value">
-            {capitalA:.2f} USD {tokenA}  |  {capitalB:.2f} USD {tokenB}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="result-card-wide">
+                <div class="result-title">Répartition capital</div>
+                <div class="result-value">
+                    {capitalA:.2f} USD {tokenA}  |  {capitalB:.2f} USD {tokenB}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
-    # === GAUGE A/B ===
-    fig_bar = go.Figure()
+            # === GAUGE A/B ===
+            fig_bar = go.Figure()
 
-    fig_bar.add_trace(go.Bar(
-        x=[ratioA * 100],
-        y=[tokenA],
-        orientation="h",
-        marker=dict(color="#FF8C00"),
-        showlegend=False
-    ))
+            fig_bar.add_trace(go.Bar(
+                x=[ratioA * 100],
+                y=[tokenA],
+                orientation="h",
+                marker=dict(color="#FF8C00"),
+                showlegend=False
+            ))
 
-    fig_bar.add_trace(go.Bar(
-        x=[ratioB * 100],
-        y=[tokenB],
-        orientation="h",
-        marker=dict(color="#6A5ACD"),
-        showlegend=False
-    ))
+            fig_bar.add_trace(go.Bar(
+                x=[ratioB * 100],
+                y=[tokenB],
+                orientation="h",
+                marker=dict(color="#6A5ACD"),
+                showlegend=False
+            ))
 
-    fig_bar.update_layout(
-        height=120,
-        margin=dict(l=10, r=10, t=10, b=10),
-        xaxis=dict(range=[0, 100]),
-        plot_bgcolor="#0f141b",
-        paper_bgcolor="#0f141b",
-        font=dict(color="#e6edf3", size=11)
-    )
+            fig_bar.update_layout(
+                height=120,
+                margin=dict(l=10, r=10, t=10, b=10),
+                xaxis=dict(range=[0, 100]),
+                plot_bgcolor="#0f141b",
+                paper_bgcolor="#0f141b",
+                font=dict(color="#e6edf3", size=11)
+            )
 
-    st.plotly_chart(fig_bar, use_container_width=True)
+            st.plotly_chart(fig_bar, use_container_width=True)
 
-    st.markdown(f"""
-    <div class="result-card-wide">
-        <div class="result-title">Résumé stratégie</div>
-        <div style="font-size:13px;opacity:0.8;margin-top:6px;">
-            <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
-            <b>Objectif :</b> {info['objectif']}<br>
-            <b>Contexte :</b> {info['contexte']}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="result-card-wide">
+                <div class="result-title">Résumé stratégie</div>
+                <div style="font-size:13px;opacity:0.8;margin-top:6px;">
+                    <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
+                    <b>Objectif :</b> {info['objectif']}<br>
+                    <b>Contexte :</b> {info['contexte']}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
 
 # =========================== AUTOMATION ===========================
