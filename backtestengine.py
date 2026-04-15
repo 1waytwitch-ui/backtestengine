@@ -786,23 +786,25 @@ st.markdown(
 # =================== MENU NAVIGATION ===================
 
 MENU_ITEMS = {
-    "⚙️ Pool Engine (Setup + Automation)": "pool_engine",
+    "⚙️ Pool Setup": "pool_setup",
+    "🤖 Automation": "automation",
+
     "📉 Impermanent Loss": "impermanent_loss",
     "📈 APR": "apr",
     "📊 ATR": "atr",
     "⚖️ Break-even LP": "break_even_lp",
     "🔁 Zero Swap": "zero_swap",
+
     "💧 LP Refill": "lp_refill",
     "❤️ LP Health Score": "lp_health_score",
     "🎯 Optimal Range": "optimal_range",
+
     "📘 Guide": "guide",
     "🧮 Calculatrice IL": "il_calculator",
     "🎓 Atelier IL": "atelier_il",
 }
 
 with st.sidebar:
-
-    # ===== HEADER =====
     st.markdown("""
     <div style='color:#00ff88; font-family:monospace; font-size:13px;
                 border-bottom:1px solid #1a2a1a; padding-bottom:10px; margin-bottom:15px;'>
@@ -810,455 +812,419 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # ===== CSS NEON + PULSE =====
-    st.markdown("""
-    <style>
+    st.markdown("### ⚙️ Setup")
+    setup_items = ["⚙️ Pool Setup", "🤖 Automation"]
 
-    /* animation pulse */
-    @keyframes neonPulse {
-        0%   { text-shadow: 0 0 4px #00ff88, 0 0 8px #00ff88; }
-        50%  { text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88; }
-        100% { text-shadow: 0 0 4px #00ff88, 0 0 8px #00ff88; }
-    }
+    st.markdown("### 📊 Analytics")
+    analytics_items = [
+        "📉 Impermanent Loss",
+        "📈 APR",
+        "📊 ATR",
+        "⚖️ Break-even LP",
+        "🔁 Zero Swap",
+    ]
 
-    @keyframes neonBox {
-        0%   { box-shadow: 0 0 4px #00ff88; }
-        50%  { box-shadow: 0 0 12px #00ff88; }
-        100% { box-shadow: 0 0 4px #00ff88; }
-    }
+    st.markdown("### 💧 Liquidity")
+    liquidity_items = [
+        "💧 LP Refill",
+        "❤️ LP Health Score",
+        "🎯 Optimal Range",
+    ]
 
-    /* items */
-    div[role="radiogroup"] > label {
-        display: flex;
-        align-items: center;
-        padding: 8px 10px;
-        margin: 3px 0;
-        border-radius: 6px;
-        transition: all 0.2s ease;
-        font-family: monospace;
-        color: #9aa0a6;
-    }
+    st.markdown("### 📚 Learning")
+    learning_items = [
+        "📘 Guide",
+        "🧮 Calculatrice IL",
+        "🎓 Atelier IL",
+    ]
 
-    /* hover */
-    div[role="radiogroup"] > label:hover {
-        background-color: rgba(0,255,136,0.08);
-        color: #00ff88;
-    }
+    # Fusion ordonnée
+    ordered_menu = (
+        setup_items +
+        analytics_items +
+        liquidity_items +
+        learning_items
+    )
 
-    /* bouton actif glow */
-    div[role="radiogroup"] input:checked + div {
-        color: #00ff88 !important;
-        font-weight: 500;
-        animation: neonPulse 1.6s infinite ease-in-out;
-    }
-
-    /* fond actif + pulse */
-    div[role="radiogroup"] input:checked {
-        accent-color: #00ff88;
-    }
-
-    div[role="radiogroup"] input:checked + div::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 3px;
-        background: #00ff88;
-        animation: neonBox 1.6s infinite ease-in-out;
-    }
-
-    /* clean radio */
-    div[role="radiogroup"] svg {
-        display: none;
-    }
-
-    </style>
-    """, unsafe_allow_html=True)
-
-    # ===== MENU =====
     selected = st.radio(
         "",
-        list(MENU_ITEMS.keys()),
+        ordered_menu,
         key="nav_menu",
         label_visibility="collapsed"
     )
 
-selected_key = MENU_ITEMS[selected]
+# ----------------------------- LAYOUT -----------------------------
+col1, col2 = st.columns([1.3, 1])
 
-# ----------------------------- ROUTING MENU -----------------------------
-if selected_key == "pool_engine":
+# ============================== GAUCHE ==============================
+with col1:
 
-    with st.expander("⚙ Pool Setup", expanded=True):
+    st.markdown('<div class="section-title">Pool Setup</div>', unsafe_allow_html=True)
 
-        # ----------------------------- LAYOUT -----------------------------
-        col1, col2 = st.columns([1.3, 1])
+    # --- PAIRE & STRATEGIE ---
+    left, right = st.columns(2)
+    with left:
+        pair_labels = [f"{a}/{b}" for a, b in PAIRS]
+        selected_pair = st.radio("Paire :", pair_labels, index=0)
+    with right:
+        strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
 
-        # ============================== GAUCHE ==============================
-        with col1:
+    # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
+    if (
+        "last_pair" not in st.session_state
+        or st.session_state["last_pair"] != selected_pair
+    ):
+        for k in list(st.session_state.keys()):
+            if k.endswith("_prices_" + str(datetime.date.today())):
+                del st.session_state[k]
+        st.session_state["last_pair"] = selected_pair
 
-            st.markdown('<div class="section-title">Pool Setup</div>', unsafe_allow_html=True)
+    # --- EXTRACTION STRAT ---
+    tokenA, tokenB = selected_pair.split("/")
+    info = STRATEGIES[strategy_choice]
+    ratioA, ratioB = info["ratio"]
 
-            # --- PAIRE & STRATEGIE ---
-            left, right = st.columns(2)
-            with left:
-                pair_labels = [f"{a}/{b}" for a, b in PAIRS]
-                selected_pair = st.radio("Paire :", pair_labels, index=0)
-            with right:
-                strategy_choice = st.radio("Stratégie :", list(STRATEGIES.keys()))
+    invert_market = st.checkbox("Inversion marché (bull → bear)")
+    if invert_market:
+        ratioA, ratioB = ratioB, ratioA
 
-            # --- RESET DU CACHE SI ON CHANGE DE PAIRE ---
-            if (
-                "last_pair" not in st.session_state
-                or st.session_state["last_pair"] != selected_pair
-            ):
-                for k in list(st.session_state.keys()):
-                    if k.endswith("_prices_" + str(datetime.date.today())):
-                        del st.session_state[k]
-                st.session_state["last_pair"] = selected_pair
+    # --- CAPITAL ---
+    capital = st.number_input("Capital (USD)", value=1000, step=50)
 
-            # --- EXTRACTION STRAT ---
-            tokenA, tokenB = selected_pair.split("/")
-            info = STRATEGIES[strategy_choice]
-            ratioA, ratioB = info["ratio"]
+    # ================== PRIX TOKEN ==================
+    priceA_usd, okA = get_price_usd(tokenA)
+    priceB_usd, okB = get_price_usd(tokenB)
 
-            invert_market = st.checkbox("Inversion marché (bull → bear)")
-            if invert_market:
-                ratioA, ratioB = ratioB, ratioA
+    la, lb = st.columns(2)
+    with la:
+        if not okA:
+            priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
+    with lb:
+        if not okB:
+            priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
 
-            # --- CAPITAL ---
-            capital = st.number_input("Capital (USD)", value=1000, step=50)
+    priceB_usd = max(priceB_usd, 1e-7)
+    priceA = priceA_usd / priceB_usd
 
-            # ================== PRIX TOKEN ==================
-            priceA_usd, okA = get_price_usd(tokenA)
-            priceB_usd, okB = get_price_usd(tokenB)
+    # ================== VOLATILITÉ PAIRE ==================
+    keyA = f"{tokenA}_prices_{datetime.date.today()}"
+    keyB = f"{tokenB}_prices_{datetime.date.today()}"
 
-            la, lb = st.columns(2)
-            with la:
-                if not okA:
-                    priceA_usd = st.number_input(f"Prix manuel {tokenA}", value=1.0)
-            with lb:
-                if not okB:
-                    priceB_usd = st.number_input(f"Prix manuel {tokenB}", value=1.0)
+    if keyA not in st.session_state:
+        st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
+    if keyB not in st.session_state:
+        st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
 
-            priceB_usd = max(priceB_usd, 1e-7)
-            priceA = priceA_usd / priceB_usd
+    pricesA = np.array(st.session_state[keyA])
+    pricesB = np.array(st.session_state[keyB])
 
-            # ================== VOLATILITÉ PAIRE ==================
-            keyA = f"{tokenA}_prices_{datetime.date.today()}"
-            keyB = f"{tokenB}_prices_{datetime.date.today()}"
+    def compute_pair_volatility(pricesA, pricesB):
+        min_len = min(len(pricesA), len(pricesB))
+        pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
+        mask = (pricesA > 1e-8) & (pricesB > 1e-8)
+        pricesA, pricesB = pricesA[mask], pricesB[mask]
+        if len(pricesA) < 2:
+            return 0.0
+        pair_prices = pricesA / pricesB
+        returns = np.diff(pair_prices) / pair_prices[:-1]
+        returns = returns[~np.isnan(returns)]
+        return float(np.std(returns)) if len(returns) > 0 else 0.0
 
-            if keyA not in st.session_state:
-                st.session_state[keyA] = get_market_chart(COINGECKO_IDS[tokenA])
-            if keyB not in st.session_state:
-                st.session_state[keyB] = get_market_chart(COINGECKO_IDS[tokenB])
+    if selected_pair == "WETH/USDC":
+        vol_30d = compute_volatility(pricesA)
+    elif selected_pair == "CBBTC/USDC":
+        vol_30d = compute_volatility(pricesA)
+    elif selected_pair == "WETH/CBBTC":
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+    elif selected_pair == "VIRTUAL/WETH":
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+    elif selected_pair == "AERO/WETH":
+        vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
+    else:
+        vol_30d = compute_pair_volatility(pricesA, pricesB)
 
-            pricesA = np.array(st.session_state[keyA])
-            pricesB = np.array(st.session_state[keyB])
+    if vol_30d == 0:
+        if selected_pair == "CBBTC/USDC":
+            vol_30d = 0.12
+        elif selected_pair == "VIRTUAL/WETH":
+            vol_30d = 0.45
+        elif selected_pair == "AERO/WETH":
+            vol_30d = 0.45
 
-            def compute_pair_volatility(pricesA, pricesB):
-                min_len = min(len(pricesA), len(pricesB))
-                pricesA, pricesB = pricesA[:min_len], pricesB[:min_len]
-                mask = (pricesA > 1e-8) & (pricesB > 1e-8)
-                pricesA, pricesB = pricesA[mask], pricesB[mask]
-                if len(pricesA) < 2:
-                    return 0.0
-                pair_prices = pricesA / pricesB
-                returns = np.diff(pair_prices) / pair_prices[:-1]
-                returns = returns[~np.isnan(returns)]
-                return float(np.std(returns)) if len(returns) > 0 else 0.0
+    # ================== SUGGESTION ==================
+    vol_sugg = vol_30d * 100
 
-            if selected_pair == "WETH/USDC":
-                vol_30d = compute_volatility(pricesA)
-            elif selected_pair == "CBBTC/USDC":
-                vol_30d = compute_volatility(pricesA)
-            elif selected_pair == "WETH/CBBTC":
-                vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
-            elif selected_pair == "VIRTUAL/WETH":
-                vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
-            elif selected_pair == "AERO/WETH":
-                vol_30d = compute_pair_volatility(pricesA, pricesB) / 2
-            else:
-                vol_30d = compute_pair_volatility(pricesA, pricesB)
+    if vol_sugg < 2:
+        suggested_range = 3
+    elif vol_sugg < 4:
+        suggested_range = 7
+    elif vol_sugg < 7:
+        suggested_range = 10
+    elif vol_sugg < 10:
+        suggested_range = 16
+    else:
+        suggested_range = 20
 
-            if vol_30d == 0:
-                if selected_pair == "CBBTC/USDC":
-                    vol_30d = 0.12
-                elif selected_pair == "VIRTUAL/WETH":
-                    vol_30d = 0.45
-                elif selected_pair == "AERO/WETH":
-                    vol_30d = 0.45
+    if selected_pair == "CBBTC/USDC":
+        suggested_range *= 1.3
+        vol_sugg_display = vol_sugg
+    elif selected_pair == "VIRTUAL/WETH":
+        suggested_range *= 6.2
+        vol_sugg_display = vol_sugg * 3.2
+    elif selected_pair == "AERO/WETH":
+        suggested_range *= 6.5
+        vol_sugg_display = vol_sugg * 2
+    elif selected_pair == "WETH/USDC":
+        suggested_range *= 3
+        vol_sugg_display = vol_sugg * 3
+    else:
+        suggested_range *= 3
+        vol_sugg_display = vol_sugg * 3
 
-            # ================== SUGGESTION ==================
-            vol_sugg = vol_30d * 100
+    range_pct = st.number_input(
+        "Range (%)",
+        min_value=1.0,
+        max_value=200.0,
+        value=20.0,
+        key="range_pct"
+    )
 
-            if vol_sugg < 2:
-                suggested_range = 3
-            elif vol_sugg < 4:
-                suggested_range = 7
-            elif vol_sugg < 7:
-                suggested_range = 10
-            elif vol_sugg < 10:
-                suggested_range = 16
-            else:
-                suggested_range = 20
+    range_low = priceA * (1 - ratioA * range_pct / 100)
+    range_high = priceA * (1 + ratioB * range_pct / 100)
 
-            if selected_pair == "CBBTC/USDC":
-                suggested_range *= 1.3
-                vol_sugg_display = vol_sugg
-            elif selected_pair == "VIRTUAL/WETH":
-                suggested_range *= 6.2
-                vol_sugg_display = vol_sugg * 3.2
-            elif selected_pair == "AERO/WETH":
-                suggested_range *= 6.5
-                vol_sugg_display = vol_sugg * 2
-            elif selected_pair == "WETH/USDC":
-                suggested_range *= 3
-                vol_sugg_display = vol_sugg * 3
-            else:
-                suggested_range *= 3
-                vol_sugg_display = vol_sugg * 3
+    if invert_market:
+        range_low, range_high = range_high, range_low
 
-            range_pct = st.number_input(
-                "Range (%)",
-                min_value=1.0,
-                max_value=200.0,
-                value=20.0,
-                key="range_pct"
-            )
-
-            range_low = priceA * (1 - ratioA * range_pct / 100)
-            range_high = priceA * (1 + ratioB * range_pct / 100)
-
-            if invert_market:
-                range_low, range_high = range_high, range_low
-
-            capitalA, capitalB = capital * ratioA, capital * ratioB
+    capitalA, capitalB = capital * ratioA, capital * ratioB
 
 
-        # ============================== DROITE ==============================
-        with col2:
+# ============================== DROITE ==============================
+with col2:
 
-            st.markdown('<div class="section-title">Price / Range</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">Price / Range</div>', unsafe_allow_html=True)
 
-            r1, r2 = st.columns(2)
+    r1, r2 = st.columns(2)
 
-            with r1:
-                st.markdown(f"""
-                <div class="result-card">
-                    <div class="result-title">Prix actuel</div>
-                    <div class="result-value">{priceA:.6f} $</div>
-                </div>
-                """, unsafe_allow_html=True)
+    with r1:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Prix actuel</div>
+            <div class="result-value">{priceA:.6f} $</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-            with r2:
-                st.markdown(f"""
-                <div class="result-card">
-                    <div class="result-title">Range</div>
-                    <div class="result-value">{range_low:.6f} → {range_high:.6f}</div>
-                </div>
-                """, unsafe_allow_html=True)
+    with r2:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Range</div>
+            <div class="result-value">{range_low:.6f} → {range_high:.6f}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-            <div class="result-card-wide">
-                <div class="result-title">Répartition capital</div>
-                <div class="result-value">
-                    {capitalA:.2f} USD {tokenA}  |  {capitalB:.2f} USD {tokenB}
-                </div>
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Répartition capital</div>
+        <div class="result-value">
+            {capitalA:.2f} USD {tokenA}  |  {capitalB:.2f} USD {tokenB}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # === GAUGE A/B ===
+    fig_bar = go.Figure()
+
+    fig_bar.add_trace(go.Bar(
+        x=[ratioA * 100],
+        y=[tokenA],
+        orientation="h",
+        marker=dict(color="#FF8C00"),
+        showlegend=False
+    ))
+
+    fig_bar.add_trace(go.Bar(
+        x=[ratioB * 100],
+        y=[tokenB],
+        orientation="h",
+        marker=dict(color="#6A5ACD"),
+        showlegend=False
+    ))
+
+    fig_bar.update_layout(
+        height=120,
+        margin=dict(l=10, r=10, t=10, b=10),
+        xaxis=dict(range=[0, 100]),
+        plot_bgcolor="#0f141b",
+        paper_bgcolor="#0f141b",
+        font=dict(color="#e6edf3", size=11)
+    )
+
+    st.plotly_chart(fig_bar, use_container_width=True)
+
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Résumé stratégie</div>
+        <div style="font-size:13px;opacity:0.8;margin-top:6px;">
+            <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
+            <b>Objectif :</b> {info['objectif']}<br>
+            <b>Contexte :</b> {info['contexte']}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# =========================== AUTOMATION ===========================
+
+st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
+
+# ---- Range future / Time-buffer ----
+col_range, col_time = st.columns([2,1])
+
+# ---- Ratios pour trigger/future range ----
+ratioA_trigger, ratioB_trigger = ratioA, ratioB
+if invert_market:
+    ratioA_trigger, ratioB_trigger = ratioB_trigger, ratioA_trigger
+
+# ================= RANGE FUTURE =================
+
+with col_range:
+
+    st.markdown('<div class="section-title">Range future</div>', unsafe_allow_html=True)
+
+    range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.1)
+
+    low_offset_pct = -range_percent * 20 / 100
+    high_offset_pct = range_percent * 80 / 100
+
+    final_low = priceA * (1 + low_offset_pct/100)
+    final_high = priceA * (1 + high_offset_pct/100)
+
+    st.markdown(f"""
+    <div class="result-card-wide">
+        <div class="result-title">Range calculé</div>
+        <div class="result-value">
+            {final_low:.6f} → {final_high:.6f}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ================= TIME BUFFER =================
+
+with col_time:
+
+    st.markdown('<div class="section-title">Time-buffer</div>', unsafe_allow_html=True)
+
+    vola = vol_30d * 100
+
+    if vola < 2:
+        recomand = "6 à 12 minutes"
+    elif vola < 5:
+        recomand = "18 à 48 minutes"
+    else:
+        recomand = "60 minutes et plus"
+
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Recommandation</div>
+        <div class="result-value">{recomand}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+# ================= TRIGGER =================
+
+col_trigger, col_rebalance = st.columns(2)
+
+with col_trigger:
+
+    st.markdown('<div class="section-title">Trigger d’anticipation (RATIO)</div>', unsafe_allow_html=True)
+
+    t1, t2 = st.columns(2)
+    with t1:
+        trig_low = st.slider("Trigger Low (%)", 0.0, 100.0, 10.0, step=0.1)
+    with t2:
+        trig_high = st.slider("Trigger High (%)", 0.0, 100.0, 90.0, step=0.1)
+
+    rw = final_high - final_low
+    trigger_low_price = final_low + (trig_low/100)*rw
+    trigger_high_price = final_low + (trig_high/100)*rw
+
+    r1, r2 = st.columns(2)
+
+    with r1:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Trigger Low</div>
+            <div class="result-value">{trigger_low_price:.6f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with r2:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">Trigger High</div>
+            <div class="result-value">{trigger_high_price:.6f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+# ================= REBALANCE AVANCÉE =================
+
+with col_rebalance:
+
+    st.markdown('<div class="section-title">Rebalance avancée (futur range)</div>', unsafe_allow_html=True)
+
+    off_low_pct  = -ratioA * range_percent
+    off_high_pct =  ratioB * range_percent
+
+    bear_low  = priceA * (1 + off_low_pct / 100)
+    bear_high = priceA * (1 + off_high_pct / 100)
+
+    bull_low  = priceA * (1 - off_high_pct / 100)
+    bull_high = priceA * (1 - off_low_pct / 100)
+
+    col_b1, col_b2 = st.columns(2)
+
+    with col_b1:
+        st.markdown("""
+        <div class="result-card">
+            <div class="result-title">Marché Haussier (Pump)</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="result-card-wide">
+            <div class="result-title">Range</div>
+            <div class="result-value">
+                {bull_low:.6f} → {bull_high:.6f}
             </div>
-            """, unsafe_allow_html=True)
-
-            # === GAUGE A/B ===
-            fig_bar = go.Figure()
-
-            fig_bar.add_trace(go.Bar(
-                x=[ratioA * 100],
-                y=[tokenA],
-                orientation="h",
-                marker=dict(color="#FF8C00"),
-                showlegend=False
-            ))
-
-            fig_bar.add_trace(go.Bar(
-                x=[ratioB * 100],
-                y=[tokenB],
-                orientation="h",
-                marker=dict(color="#6A5ACD"),
-                showlegend=False
-            ))
-
-            fig_bar.update_layout(
-                height=120,
-                margin=dict(l=10, r=10, t=10, b=10),
-                xaxis=dict(range=[0, 100]),
-                plot_bgcolor="#0f141b",
-                paper_bgcolor="#0f141b",
-                font=dict(color="#e6edf3", size=11)
-            )
-
-            st.plotly_chart(fig_bar, use_container_width=True)
-
-            st.markdown(f"""
-            <div class="result-card-wide">
-                <div class="result-title">Résumé stratégie</div>
-                <div style="font-size:13px;opacity:0.8;margin-top:6px;">
-                    <b>Ratio :</b> {int(ratioA*100)} / {int(ratioB*100)}<br>
-                    <b>Objectif :</b> {info['objectif']}<br>
-                    <b>Contexte :</b> {info['contexte']}
-                </div>
+            <div class="result-subvalue">
+                {(-off_high_pct):.1f}% → {(-off_low_pct):.1f}%
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
 
+    with col_b2:
+        st.markdown("""
+        <div class="result-card">
+            <div class="result-title">Marché Baissier (Dump)</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # =========================== AUTOMATION ===========================
-        st.markdown('<div class="section-title">Réglages Automation</div>', unsafe_allow_html=True)
-
-        # ---- Range future / Time-buffer ----
-        col_range, col_time = st.columns([2,1])
-
-        # ---- Ratios pour trigger/future range ----
-        ratioA_trigger, ratioB_trigger = ratioA, ratioB
-        if invert_market:
-            ratioA_trigger, ratioB_trigger = ratioB, ratioA
-
-        # ================= RANGE FUTURE =================
-        with col_range:
-
-            st.markdown('<div class="section-title">Range future</div>', unsafe_allow_html=True)
-
-            range_percent = st.slider("Range total (%)", 1.0, 90.0, 20.0, step=0.1)
-
-            low_offset_pct = -range_percent * 20 / 100
-            high_offset_pct = range_percent * 80 / 100
-
-            final_low = priceA * (1 + low_offset_pct/100)
-            final_high = priceA * (1 + high_offset_pct/100)
-
-            st.markdown(f"""
-            <div class="result-card-wide">
-                <div class="result-title">Range calculé</div>
-                <div class="result-value">
-                    {final_low:.6f} → {final_high:.6f}
-                </div>
+        st.markdown(f"""
+        <div class="result-card-wide">
+            <div class="result-title">Range</div>
+            <div class="result-value">
+                {bear_low:.6f} → {bear_high:.6f}
             </div>
-            """, unsafe_allow_html=True)
-
-        # ================= TIME BUFFER =================
-        with col_time:
-
-            st.markdown('<div class="section-title">Time-buffer</div>', unsafe_allow_html=True)
-
-            vola = vol_30d * 100
-
-            if vola < 2:
-                recomand = "6 à 12 minutes"
-            elif vola < 5:
-                recomand = "18 à 48 minutes"
-            else:
-                recomand = "60 minutes et plus"
-
-            st.markdown(f"""
-            <div class="result-card">
-                <div class="result-title">Recommandation</div>
-                <div class="result-value">{recomand}</div>
+            <div class="result-subvalue">
+                {off_low_pct:.1f}% → {off_high_pct:.1f}%
             </div>
-            """, unsafe_allow_html=True)
-
-        # ================= TRIGGER =================
-        col_trigger, col_rebalance = st.columns(2)
-
-        with col_trigger:
-
-            st.markdown('<div class="section-title">Trigger d’anticipation (RATIO)</div>', unsafe_allow_html=True)
-
-            t1, t2 = st.columns(2)
-            with t1:
-                trig_low = st.slider("Trigger Low (%)", 0.0, 100.0, 10.0, step=0.1)
-            with t2:
-                trig_high = st.slider("Trigger High (%)", 0.0, 100.0, 90.0, step=0.1)
-
-            rw = final_high - final_low
-            trigger_low_price = final_low + (trig_low/100)*rw
-            trigger_high_price = final_low + (trig_high/100)*rw
-
-            r1, r2 = st.columns(2)
-
-            with r1:
-                st.markdown(f"""
-                <div class="result-card">
-                    <div class="result-title">Trigger Low</div>
-                    <div class="result-value">{trigger_low_price:.6f}</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with r2:
-                st.markdown(f"""
-                <div class="result-card">
-                    <div class="result-title">Trigger High</div>
-                    <div class="result-value">{trigger_high_price:.6f}</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-        # ================= REBALANCE AVANCÉE =================
-        with col_rebalance:
-
-            st.markdown('<div class="section-title">Rebalance avancée (futur range)</div>', unsafe_allow_html=True)
-
-            off_low_pct  = -ratioA * range_percent
-            off_high_pct =  ratioB * range_percent
-
-            bear_low  = priceA * (1 + off_low_pct / 100)
-            bear_high = priceA * (1 + off_high_pct / 100)
-
-            bull_low  = priceA * (1 - off_high_pct / 100)
-            bull_high = priceA * (1 - off_low_pct / 100)
-
-            col_b1, col_b2 = st.columns(2)
-
-            with col_b1:
-                st.markdown("""
-                <div class="result-card">
-                    <div class="result-title">Marché Haussier (Pump)</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                st.markdown(f"""
-                <div class="result-card-wide">
-                    <div class="result-title">Range</div>
-                    <div class="result-value">
-                        {bull_low:.6f} → {bull_high:.6f}
-                    </div>
-                    <div class="result-subvalue">
-                        {(-off_high_pct):.1f}% → {(-off_low_pct):.1f}%
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with col_b2:
-                st.markdown("""
-                <div class="result-card">
-                    <div class="result-title">Marché Baissier (Dump)</div>
-                </div>
-                """, unsafe_allow_html=True)
-
-                st.markdown(f"""
-                <div class="result-card-wide">
-                    <div class="result-title">Range</div>
-                    <div class="result-value">
-                        {bear_low:.6f} → {bear_high:.6f}
-                    </div>
-                    <div class="result-subvalue">
-                        {off_low_pct:.1f}% → {off_high_pct:.1f}%
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-    
-# ======================= IMPORTS =======================
-import numpy as np
-import plotly.graph_objects as go
+        </div>
+        """, unsafe_allow_html=True)
 
 
-# ======================= FUNCTIONS (IMPORTANT: MUST BE ABOVE ROUTING) =======================
+# =================== FONCTIONS (INCHANGÉES) ===================
 
 def compute_L(P, P_l, P_u, V):
     sqrtP = np.sqrt(P)
@@ -1268,7 +1234,6 @@ def compute_L(P, P_l, P_u, V):
     B = (sqrtP - sqrtPl)
     return V / (P * A + B)
 
-
 def tokens_from_L(L, P, P_l, P_u):
     sqrtP = np.sqrt(P)
     sqrtPl = np.sqrt(P_l)
@@ -1277,11 +1242,9 @@ def tokens_from_L(L, P, P_l, P_u):
     y = L * (sqrtP - sqrtPl)
     return x, y
 
-
 def normalize_L(L, x0, y0, P, V):
     factor = V / (x0 * P + y0)
     return L * factor, x0 * factor, y0 * factor
-
 
 def x_of_P(P, L, P_upper):
     P_arr = np.asarray(P, float)
@@ -1291,7 +1254,6 @@ def x_of_P(P, L, P_upper):
         return np.where(x < 0, 0, x)
     return max(x, 0.0)
 
-
 def y_of_P(P, L, P_lower):
     P_arr = np.asarray(P, float)
     sqrtP = np.sqrt(P_arr)
@@ -1300,120 +1262,173 @@ def y_of_P(P, L, P_lower):
         return np.where(y < 0, 0, y)
     return max(y, 0.0)
 
-
 def V_LP(P, L, P_lower, P_upper):
     P_arr = np.asarray(P, float)
     return x_of_P(P_arr, L, P_upper) * P_arr + y_of_P(P_arr, L, P_lower)
 
-
 def V_HODL(P, x0, y0):
     return x0 * P + y0
 
+# ======================= IMPERMANENT LOSS & ATR (Terminal Style) =======================
 
-# =========================== ROUTING MENU ===========================
-if selected_key == "impermanent_loss":
+# --- Style Terminal DeFi ---
+st.markdown("""
+<style>
+[data-testid="stAppViewContainer"] {
+    background-color: #0b0f14;
+    color: #e6edf3;
+    font-family: "Courier New", monospace;
+}
 
-    with st.expander("📉 Impermanent Loss", expanded=True):
+.section-title {
+    border-left: 4px solid #00ff88;
+    padding: 8px 14px;
+    margin-top: 24px;
+    margin-bottom: 14px;
+    font-weight: 600;
+    font-size: 16px;
+    background: rgba(0,255,136,0.05);
+    letter-spacing: 1px;
+}
 
-        st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_html=True)
+div[data-baseweb="input"] input {
+    background-color: #11161d !important;
+    color: #00ff88 !important;
+    border: 1px solid #1f2a36 !important;
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+    font-size: 13px;
+}
 
-        # =================== INPUTS ===================
-        row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+label { font-size: 12px !important; opacity: 0.7; }
 
-        with row1_col1:
-            st.markdown('<div class="small-label">P_deposit</div>', unsafe_allow_html=True)
-            P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
+.result-card, .result-card-wide {
+    background: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: left;
+    box-shadow: 0 0 12px rgba(0,255,136,0.05);
+    margin-top: 14px;
+}
 
-        with row1_col2:
-            st.markdown('<div class="small-label">P_now</div>', unsafe_allow_html=True)
-            P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
+.result-card-wide { padding: 16px; }
 
-        with row1_col3:
-            st.markdown('<div class="small-label">Valeur deposit (USD)</div>', unsafe_allow_html=True)
-            v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.6f", step=0.01, label_visibility="collapsed")
+.result-title { font-size: 11px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+.result-value { font-size: 18px; font-weight: 600; color: #00ff88; margin-top: 6px; }
 
-        row2_col1, row2_col2 = st.columns([1,1])
+.small-label {
+    font-size: 12px;
+    opacity: 0.7;
+    margin-bottom: 2px;
+}
+</style>
+""", unsafe_allow_html=True)
 
-        with row2_col1:
-            st.markdown('<div class="small-label">P_lower</div>', unsafe_allow_html=True)
-            P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001, label_visibility="collapsed")
 
-        with row2_col2:
-            st.markdown('<div class="small-label">P_upper</div>', unsafe_allow_html=True)
-            P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001, label_visibility="collapsed")
+# =================== INPUTS ===================
+st.markdown('<div class="section-title">Impermanent Loss</div>', unsafe_allow_html=True)
 
-        # =================== CALCUL IL ===================
-        L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
-        x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
-        L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
+row1_col1, row1_col2, row1_col3 = st.columns([1,1,1])
+with row1_col1:
+    st.markdown('<div class="small-label">P_deposit</div>', unsafe_allow_html=True)
+    P_deposit = st.number_input("P_deposit", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
+with row1_col2:
+    st.markdown('<div class="small-label">P_now</div>', unsafe_allow_html=True)
+    P_now = st.number_input("P_now", value=3000.0, format="%.6f", step=0.001, label_visibility="collapsed")
+with row1_col3:
+    st.markdown('<div class="small-label">Valeur deposit (USD)</div>', unsafe_allow_html=True)
+    v_deposit = st.number_input("Valeur deposit (USD)", value=500.0, format="%.6f", step=0.01, label_visibility="collapsed")
 
-        prices = np.linspace(P_lower * 0.8, P_upper * 1.3, 400)
-        LP_values = V_LP(prices, L, P_lower, P_upper)
-        HODL_values = V_HODL(prices, x0, y0)
-        IL_curve = (LP_values / HODL_values - 1) * 100
+row2_col1, row2_col2 = st.columns([1,1])
+with row2_col1:
+    st.markdown('<div class="small-label">P_lower</div>', unsafe_allow_html=True)
+    P_lower = st.number_input("P_lower", value=2800.0, format="%.6f", step=0.001, label_visibility="collapsed")
+with row2_col2:
+    st.markdown('<div class="small-label">P_upper</div>', unsafe_allow_html=True)
+    P_upper = st.number_input("P_upper", value=3500.0, format="%.6f", step=0.001, label_visibility="collapsed")
 
-        # =================== GRAPH ===================
-        fig = go.Figure()
+# --- Calcul IL ---
+L_raw = compute_L(P_deposit, P_lower, P_upper, v_deposit)
+x0_raw, y0_raw = tokens_from_L(L_raw, P_deposit, P_lower, P_upper)
+L, x0, y0 = normalize_L(L_raw, x0_raw, y0_raw, P_deposit, v_deposit)
 
-        fig.add_trace(go.Scatter(
-            x=prices,
-            y=IL_curve,
-            mode="lines",
-            name="IL(%)",
-            line=dict(color="red", width=3)
-        ))
+prices = np.linspace(P_lower*0.8, P_upper*1.3, 400)
+LP_values = V_LP(prices, L, P_lower, P_upper)
+HODL_values = V_HODL(prices, x0, y0)
+IL_curve = (LP_values / HODL_values - 1) * 100
 
-        for px, label, color in [
-            (P_lower, "Low", "green"),
-            (P_upper, "High", "green"),
-            (P_deposit, "Deposit", "blue"),
-            (P_now, "Now", "purple")
-        ]:
-            fig.add_vline(
-                x=px,
-                line=dict(color=color, width=2, dash="dot" if label in ["Low", "High"] else "dash")
-            )
-            fig.add_annotation(
-                x=px,
-                y=max(IL_curve) if label in ["Low", "High"] else min(IL_curve),
-                text=label,
-                showarrow=False,
-                font=dict(color=color, size=12),
-                yshift=10 if label in ["Low", "High"] else -10
-            )
+# --- Graph IL ---
+fig = go.Figure()
 
-        fig.update_layout(
-            height=380,
-            plot_bgcolor="#0b0f14",
-            paper_bgcolor="#0b0f14",
-            title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)),
-            legend=dict(font=dict(color="white"))
-        )
+fig.add_trace(go.Scatter(
+    x=prices, y=IL_curve, mode="lines", name="IL(%)",
+    line=dict(color="red", width=3)
+))
 
-        st.plotly_chart(fig, use_container_width=True)
+for px, label, color in [
+    (P_lower, "Low", "green"),
+    (P_upper, "High", "green"),
+    (P_deposit, "Deposit", "blue"),
+    (P_now, "Now", "purple")
+]:
+    fig.add_vline(
+        x=px,
+        line=dict(color=color, width=2, dash="dot" if label in ["Low","High"] else "dash")
+    )
+    fig.add_annotation(
+        x=px,
+        y=max(IL_curve) if label in ["Low","High"] else min(IL_curve),
+        text=label,
+        showarrow=False,
+        font=dict(color=color, size=12),
+        yshift=10 if label in ["Low","High"] else -10
+    )
 
-        # =================== RESULTS ===================
-        IL_now = (V_LP(P_now, L, P_lower, P_upper) / V_HODL(P_now, x0, y0) - 1) * 100
-        LP_now = V_LP(P_now, L, P_lower, P_upper)
-        HODL_now = V_HODL(P_now, x0, y0)
+fig.update_xaxes(
+    title="Prix",
+    title_font=dict(color="white", size=14),
+    tickfont=dict(color="white", size=12),
+    gridcolor="rgba(255,255,255,0.1)",
+    zerolinecolor="rgba(255,255,255,0.2)"
+)
+fig.update_yaxes(
+    title="IL (%)",
+    title_font=dict(color="white", size=14),
+    tickfont=dict(color="white", size=12),
+    gridcolor="rgba(255,255,255,0.1)",
+    zerolinecolor="rgba(255,255,255,0.2)"
+)
 
-        cols = st.columns(3)
+fig.update_layout(
+    height=380,
+    plot_bgcolor="#0b0f14",
+    paper_bgcolor="#0b0f14",
+    title=dict(text="Impermanent Loss (%)", font=dict(color="white", size=16)),
+    legend=dict(font=dict(color="white"))
+)
 
-        results = [
-            ("IL maintenant (%)", f"{IL_now:.2f}%"),
-            ("Valeur LP ($)", f"${LP_now:,.2f}"),
-            ("Valeur HODL ($)", f"${HODL_now:,.2f}")
-        ]
+st.plotly_chart(fig, use_container_width=True)
 
-        for i, (title, val) in enumerate(results):
-            with cols[i]:
-                st.markdown(f"""
-                <div class="result-card">
-                    <div class="result-title">{title}</div>
-                    <div class="result-value">{val}</div>
-                </div>
-                """, unsafe_allow_html=True)
+# --- Valeurs actuelles IL ---
+IL_now = (V_LP(P_now, L, P_lower, P_upper)/V_HODL(P_now, x0, y0)-1)*100
+LP_now = V_LP(P_now, L, P_lower, P_upper)
+HODL_now = V_HODL(P_now, x0, y0)
 
+cols = st.columns(3)
+results = [
+    ("IL maintenant (%)", f"{IL_now:.2f}%"),
+    ("Valeur LP ($)", f"${LP_now:,.2f}"),
+    ("Valeur HODL ($)", f"${HODL_now:,.2f}")
+]
+for i, (title,val) in enumerate(results):
+    with cols[i]:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">{title}</div>
+            <div class="result-value">{val}</div>
+        </div>
+        """, unsafe_allow_html=True)
 # --- APR ---
 def calculate_clmm_apr(fees_usd_period: float, active_liquidity_usd_avg: float, period_days: int) -> float:
     if active_liquidity_usd_avg <= 0 or period_days <= 0:
