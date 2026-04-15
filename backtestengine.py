@@ -788,21 +788,34 @@ st.markdown(
 MENU_ITEMS = {
     "⚙️ Pool Setup": "pool_setup",
     "🤖 Automation": "automation",
-
     "📉 Impermanent Loss": "impermanent_loss",
     "📈 APR": "apr",
     "📊 ATR": "atr",
     "⚖️ Break-even LP": "break_even_lp",
     "🔁 Zero Swap": "zero_swap",
-
     "💧 LP Refill": "lp_refill",
     "❤️ LP Health Score": "lp_health_score",
     "🎯 Optimal Range": "optimal_range",
-
     "📘 Guide": "guide",
     "🧮 Calculatrice IL": "il_calculator",
     "🎓 Atelier IL": "atelier_il",
 }
+
+# état global
+if "nav_menu" not in st.session_state:
+    st.session_state.nav_menu = "⚙️ Pool Setup"
+
+def menu_section(title, items):
+    st.markdown(f"### {title}")
+    choice = st.radio(
+        "",
+        items,
+        key=title,
+        label_visibility="collapsed"
+    )
+    if choice:
+        st.session_state.nav_menu = choice
+
 
 with st.sidebar:
     st.markdown("""
@@ -812,46 +825,34 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("### ⚙️ Setup")
-    setup_items = ["⚙️ Pool Setup", "🤖 Automation"]
+    menu_section("⚙️ Setup", [
+        "⚙️ Pool Setup",
+        "🤖 Automation",
+    ])
 
-    st.markdown("### 📊 Analytics")
-    analytics_items = [
+    menu_section("📊 Analytics", [
         "📉 Impermanent Loss",
         "📈 APR",
         "📊 ATR",
         "⚖️ Break-even LP",
         "🔁 Zero Swap",
-    ]
+    ])
 
-    st.markdown("### 💧 Liquidity")
-    liquidity_items = [
+    menu_section("💧 Liquidity", [
         "💧 LP Refill",
         "❤️ LP Health Score",
         "🎯 Optimal Range",
-    ]
+    ])
 
-    st.markdown("### 📚 Learning")
-    learning_items = [
+    menu_section("📚 Learning", [
         "📘 Guide",
         "🧮 Calculatrice IL",
         "🎓 Atelier IL",
-    ]
+    ])
 
-    # Fusion ordonnée
-    ordered_menu = (
-        setup_items +
-        analytics_items +
-        liquidity_items +
-        learning_items
-    )
-
-    selected = st.radio(
-        "",
-        ordered_menu,
-        key="nav_menu",
-        label_visibility="collapsed"
-    )
+# valeur finale sélectionnée
+selected = st.session_state.nav_menu
+selected_key = MENU_ITEMS[selected]
 
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
