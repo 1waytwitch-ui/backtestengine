@@ -782,6 +782,77 @@ st.markdown(
     f"<div class='defi-meteo-box'>{st.session_state.meteo_cached}</div>",
     unsafe_allow_html=True
 )
+
+# =================== MENU NAVIGATION ===================
+
+MENU_ITEMS = {
+    "⚙️ Pool Setup": "pool_setup",
+    "🤖 Automation": "automation",
+
+    "📉 Impermanent Loss": "impermanent_loss",
+    "📈 APR": "apr",
+    "📊 ATR": "atr",
+    "⚖️ Break-even LP": "break_even_lp",
+    "🔁 Zero Swap": "zero_swap",
+
+    "💧 LP Refill": "lp_refill",
+    "❤️ LP Health Score": "lp_health_score",
+    "🎯 Optimal Range": "optimal_range",
+
+    "📘 Guide": "guide",
+    "🧮 Calculatrice IL": "il_calculator",
+    "🎓 Atelier IL": "atelier_il",
+}
+
+with st.sidebar:
+    st.markdown("""
+    <div style='color:#00ff88; font-family:monospace; font-size:13px;
+                border-bottom:1px solid #1a2a1a; padding-bottom:10px; margin-bottom:15px;'>
+        LP BACKTEST ENGINE
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("### ⚙️ Setup")
+    setup_items = ["⚙️ Pool Setup", "🤖 Automation"]
+
+    st.markdown("### 📊 Analytics")
+    analytics_items = [
+        "📉 Impermanent Loss",
+        "📈 APR",
+        "📊 ATR",
+        "⚖️ Break-even LP",
+        "🔁 Zero Swap",
+    ]
+
+    st.markdown("### 💧 Liquidity")
+    liquidity_items = [
+        "💧 LP Refill",
+        "❤️ LP Health Score",
+        "🎯 Optimal Range",
+    ]
+
+    st.markdown("### 📚 Learning")
+    learning_items = [
+        "📘 Guide",
+        "🧮 Calculatrice IL",
+        "🎓 Atelier IL",
+    ]
+
+    # Fusion ordonnée
+    ordered_menu = (
+        setup_items +
+        analytics_items +
+        liquidity_items +
+        learning_items
+    )
+
+    selected = st.radio(
+        "",
+        ordered_menu,
+        key="nav_menu",
+        label_visibility="collapsed"
+    )
+
 # ----------------------------- LAYOUT -----------------------------
 col1, col2 = st.columns([1.3, 1])
 
