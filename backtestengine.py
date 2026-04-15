@@ -785,6 +785,8 @@ st.markdown(
 
 # =================== MENU NAVIGATION ===================
 
+# =================== MENU NAVIGATION ===================
+
 MENU_ITEMS = {
     "⚙️ Pool Setup": "pool_setup",
     "🤖 Automation": "automation",
@@ -801,23 +803,9 @@ MENU_ITEMS = {
     "🎓 Atelier IL": "atelier_il",
 }
 
-# état global
-if "nav_menu" not in st.session_state:
-    st.session_state.nav_menu = "⚙️ Pool Setup"
-
-def menu_section(title, items):
-    st.markdown(f"### {title}")
-    choice = st.radio(
-        "",
-        items,
-        key=title,
-        label_visibility="collapsed"
-    )
-    if choice:
-        st.session_state.nav_menu = choice
-
-
 with st.sidebar:
+
+    # ===== HEADER =====
     st.markdown("""
     <div style='color:#00ff88; font-family:monospace; font-size:13px;
                 border-bottom:1px solid #1a2a1a; padding-bottom:10px; margin-bottom:15px;'>
@@ -825,33 +813,56 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    menu_section("⚙️ Setup", [
-        "⚙️ Pool Setup",
-        "🤖 Automation",
-    ])
+    # ===== CSS NEON =====
+    st.markdown("""
+    <style>
+    /* radio container */
+    div[role="radiogroup"] > label {
+        display: flex;
+        align-items: center;
+        padding: 8px 10px;
+        margin: 2px 0;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+        font-family: monospace;
+        color: #9aa0a6;
+    }
 
-    menu_section("📊 Analytics", [
-        "📉 Impermanent Loss",
-        "📈 APR",
-        "📊 ATR",
-        "⚖️ Break-even LP",
-        "🔁 Zero Swap",
-    ])
+    /* hover */
+    div[role="radiogroup"] > label:hover {
+        background-color: rgba(0,255,136,0.08);
+        color: #00ff88;
+    }
 
-    menu_section("💧 Liquidity", [
-        "💧 LP Refill",
-        "❤️ LP Health Score",
-        "🎯 Optimal Range",
-    ])
+    /* selected (radio checked) */
+    div[role="radiogroup"] > label[data-baseweb="radio"] > div:first-child {
+        background-color: #00ff88 !important;
+        box-shadow: 0 0 6px #00ff88;
+    }
 
-    menu_section("📚 Learning", [
-        "📘 Guide",
-        "🧮 Calculatrice IL",
-        "🎓 Atelier IL",
-    ])
+    /* selected text glow */
+    div[role="radiogroup"] input:checked + div {
+        color: #00ff88 !important;
+        text-shadow: 0 0 6px #00ff88;
+        font-weight: 500;
+    }
 
-# valeur finale sélectionnée
-selected = st.session_state.nav_menu
+    /* remove default circle border */
+    div[role="radiogroup"] svg {
+        display: none;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # ===== MENU =====
+    selected = st.radio(
+        "",
+        list(MENU_ITEMS.keys()),
+        key="nav_menu",
+        label_visibility="collapsed"
+    )
+
+# clé sélectionnée
 selected_key = MENU_ITEMS[selected]
 
 # ----------------------------- LAYOUT -----------------------------
