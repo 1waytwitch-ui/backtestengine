@@ -733,7 +733,7 @@ METEO = {
         "USDC/cbBTC → 14% ATR ⌛2992$ ⤴️",
         "WETH/cbBTC → 8% ATR 🔜 124$ → 2992$"
     ],
-    "conclusion": "On capte la vol, pas la direction."
+    "conclusion": "On capte la vol, pas la direction. Vous pouvez demander la météo à Dule ou apprendre à calculer vos ranges avec l'outil ATR !"
 }
 
 # =======================
