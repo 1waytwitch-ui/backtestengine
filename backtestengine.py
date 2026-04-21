@@ -2890,6 +2890,147 @@ for i, card in enumerate(cards):
         </div>
         """, unsafe_allow_html=True)
 
+# ======================= GRID STRATEGY ENGINE (POST-AMM STYLE) =======================
+
+st.markdown("""
+<br>
+<div style="
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
+">
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
+        GRID BUILDER : ACCUMULATION / DISTRIBUTION ENGINE
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+# =================== INPUTS ===================
+
+st.markdown('<div class="section-title">Paramètres marché</div>', unsafe_allow_html=True)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    asset_price = st.number_input("Prix actuel de l'actif ($)", value=2300.0, step=1.0)
+    capital = st.number_input("Capital total ($)", value=3000.0, step=100.0)
+
+with col2:
+    volatility = st.slider("Volatilité estimée (%)", 1.0, 10.0, 4.0)
+    risk_mode = st.selectbox("Mode stratégie", ["Conservatif", "Équilibré", "Agressif"])
+
+# =================== STRATEGY PARAMETERS ===================
+
+if risk_mode == "Conservatif":
+    step = 0.02
+    allocations = [0.15, 0.20, 0.30, 0.20, 0.15]
+
+elif risk_mode == "Équilibré":
+    step = 0.03
+    allocations = [0.10, 0.20, 0.40, 0.20, 0.10]
+
+else:
+    step = 0.04
+    allocations = [0.10, 0.15, 0.50, 0.15, 0.10]
+
+# =================== GRID GENERATION ===================
+
+levels = [-2, -1, 0, 1, 2]
+
+grid_prices = []
+grid_values = []
+
+for i, lvl in enumerate(levels):
+    price_level = asset_price * (1 + (lvl * step))
+    allocated_capital = capital * allocations[i]
+    
+    quantity = allocated_capital / price_level
+    
+    grid_prices.append(price_level)
+    grid_values.append({
+        "level": lvl,
+        "price": price_level,
+        "capital": allocated_capital,
+        "qty": quantity
+    })
+
+# =================== REVENUE SIMULATION ===================
+
+buy_zone = grid_values[0]["price"]
+sell_zone = grid_values[-1]["price"]
+
+cycle_return = ((sell_zone - buy_zone) / buy_zone) * 100
+
+# =================== DISPLAY ===================
+
+st.markdown('<div class="section-title">GRID OPTIMISÉE</div>', unsafe_allow_html=True)
+
+cards = []
+
+for g in grid_values:
+    direction = "BUY" if g["level"] < 0 else ("SELL" if g["level"] > 0 else "NEUTRAL")
+    
+    color = "#00ff88" if direction == "BUY" else ("#FFB020" if direction == "SELL" else "#2EF2A2")
+
+    cards.append({
+        "title": f"{direction} L{g['level']}",
+        "value": f"{g['price']:.2f} $",
+        "color": color
+    })
+
+cols = st.columns(len(cards))
+
+for i, card in enumerate(cards):
+    with cols[i]:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">{card['title']}</div>
+            <div class="result-value" style="color:{card['color']};">{card['value']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# =================== STATS ===================
+
+st.markdown('<div class="section-title">PERFORMANCE SIMULATION</div>', unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Cycle Return théorique</div>
+        <div class="result-value" style="color:#00ff88;">{cycle_return:.2f} %</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    avg_capital = sum([g["capital"] for g in grid_values])
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Capital engagé</div>
+        <div class="result-value" style="color:#2EF2A2;">{avg_capital:.2f} $</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    efficiency = cycle_return / volatility if volatility > 0 else 0
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">Efficiency Score</div>
+        <div class="result-value" style="color:#FFB020;">{efficiency:.2f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
 st.markdown("""
 <br>
 <div style="
