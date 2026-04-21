@@ -2806,7 +2806,7 @@ score = (
 )
 
 # =================== RESULTATS ===================
-st.markdown('<div class="section-title">Analyse de performance d'une LP</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Analyse de performance de la POOL</div>', unsafe_allow_html=True)
 
 cards = []
 
