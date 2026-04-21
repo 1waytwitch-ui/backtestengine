@@ -2744,6 +2744,110 @@ if valid:
         </div>
     </div>
     """, unsafe_allow_html=True)
+
+
+# ======================= FEES / TVL (Terminal Style) =======================
+
+# --- Header ---
+st.markdown("""
+<br>
+<div style="
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
+">
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
+        ANALYSE FEES / TVL + DILUTION
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
+# =================== INPUTS ===================
+st.markdown('<div class="section-title">Paramètres de la pool</div>', unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.subheader("POOL")
+    tvl = st.number_input("TVL ($)", value=2_000_000.0, step=1000.0, format="%.2f")
+    fees = st.number_input("Fees générés ($)", value=10_000.0, step=10.0, format="%.2f")
+
+with col2:
+    st.subheader("POSITION")
+    capital_lp = st.number_input("Capital déposé ($)", value=10_000.0, step=10.0, format="%.2f")
+
+with col3:
+    st.subheader("SIMULATION")
+    future_tvl = st.number_input("TVL future ($)", value=3_000_000.0, step=1000.0, format="%.2f")
+
+# =================== CALCULS ===================
+
+# Ratio fees / TVL
+ratio = (fees / tvl) * 100 if tvl > 0 else 0
+
+# Part dans la pool
+share = capital_lp / tvl if tvl > 0 else 0
+earnings = share * fees
+
+# Simulation dilution
+new_share = capital_lp / future_tvl if future_tvl > 0 else 0
+dilution = (share - new_share) * 100
+
+# =================== RESULTATS ===================
+st.markdown('<div class="section-title">Résultats Analyse LP</div>', unsafe_allow_html=True)
+
+cards = []
+
+cards.append({
+    "title": "Ratio Fees / TVL",
+    "value": f"{ratio:.4f} %",
+    "color": "#00ff88"
+})
+
+cards.append({
+    "title": "Part de la pool",
+    "value": f"{share*100:.4f} %",
+    "color": "#00ff88"
+})
+
+cards.append({
+    "title": "Revenus estimés",
+    "value": f"{earnings:.2f} $",
+    "color": "#2EF2A2"
+})
+
+cards.append({
+    "title": "Nouvelle part (TVL future)",
+    "value": f"{new_share*100:.4f} %",
+    "color": "#FFB020"
+})
+
+cards.append({
+    "title": "Dilution",
+    "value": f"{dilution:.4f} %",
+    "color": "#FF6B6B" if dilution > 0 else "#2EF2A2"
+})
+
+cols = st.columns(len(cards))
+for i, card in enumerate(cards):
+    with cols[i]:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">{card['title']}</div>
+            <div class="result-value" style="color:{card['color']};">{card['value']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
 guide_html = """
 <style>
 /* ===== GUIDE TERMINAL THEME ===== */
