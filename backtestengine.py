@@ -2785,6 +2785,9 @@ with col1:
 with col2:
     st.subheader("POSITION")
     capital_lp = st.number_input("Capital LP ($)", value=10_000.0, step=10.0, format="%.2f")
+    
+    # =================== AJOUT RANGE ===================
+    range_width = st.number_input("Largeur de range (%)", value=5.0, step=0.1, format="%.2f")
 
 # =================== CALCULS ===================
 
@@ -2797,8 +2800,18 @@ fee_capture = (fees_24h / volume_24h) * 100 if volume_24h > 0 else 0
 share = capital_lp / tvl if tvl > 0 else 0
 lp_fees = share * fees_24h
 
+# =================== LIQUIDITY EFFICIENCY FACTOR ===================
+
+# Concentration (plus le range est petit, plus c'est concentré)
+concentration_score = 1 / range_width if range_width > 0 else 0
+
+# LEF (efficacité globale)
+lef = volume_tvl_ratio * concentration_score
+
+# Fee yield ajusté par concentration
+adjusted_fee_yield = fee_yield * concentration_score
+
 # =================== SCORE COMPARATIF ===================
-# Score simple pour comparer LP d'une même paire
 score = (
     (fee_yield * 0.5) +
     (fee_capture * 0.3) +
@@ -2846,6 +2859,27 @@ cards.append({
     "color": "#00ff88"
 })
 
+# =================== AJOUT NOUVEAUX KPI RANGE ===================
+
+cards.append({
+    "title": "Concentration Score",
+    "value": f"{concentration_score:.4f}",
+    "color": "#FFB020"
+})
+
+cards.append({
+    "title": "Liquidity Efficiency Factor",
+    "value": f"{lef:.4f}",
+    "color": "#00ff88"
+})
+
+cards.append({
+    "title": "Fee Yield Ajusté (range)",
+    "value": f"{adjusted_fee_yield:.4f} %",
+    "color": "#2EF2A2"
+})
+
+# =================== AFFICHAGE ===================
 cols = st.columns(len(cards))
 for i, card in enumerate(cards):
     with cols[i]:
