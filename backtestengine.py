@@ -2746,9 +2746,8 @@ if valid:
     """, unsafe_allow_html=True)
 
 
-# ======================= FEES / TVL (Terminal Style) =======================
+# ======================= FEES / TVL / VOLUME (Terminal Style) =======================
 
-# --- Header ---
 st.markdown("""
 <br>
 <div style="
@@ -2767,7 +2766,7 @@ st.markdown("""
         font-weight: 700;
         letter-spacing: 1px;
     ">
-        ANALYSE FEES / TVL + DILUTION
+        ANALYSE LP : FEES / TVL / VOLUME 24H
     </span>
 </div>
 """, unsafe_allow_html=True)
@@ -2775,67 +2774,76 @@ st.markdown("""
 # =================== INPUTS ===================
 st.markdown('<div class="section-title">Paramètres de la pool</div>', unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("POOL")
+    st.subheader("POOL METRICS")
     tvl = st.number_input("TVL ($)", value=2_000_000.0, step=1000.0, format="%.2f")
-    fees = st.number_input("Fees générés ($)", value=10_000.0, step=10.0, format="%.2f")
+    fees_24h = st.number_input("Fees 24h ($)", value=10_000.0, step=10.0, format="%.2f")
+    volume_24h = st.number_input("Volume 24h ($)", value=5_000_000.0, step=10000.0, format="%.2f")
 
 with col2:
     st.subheader("POSITION")
-    capital_lp = st.number_input("Capital déposé ($)", value=10_000.0, step=10.0, format="%.2f")
-
-with col3:
-    st.subheader("SIMULATION")
-    future_tvl = st.number_input("TVL future ($)", value=3_000_000.0, step=1000.0, format="%.2f")
+    capital_lp = st.number_input("Capital LP ($)", value=10_000.0, step=10.0, format="%.2f")
 
 # =================== CALCULS ===================
 
-# Ratio fees / TVL
-ratio = (fees / tvl) * 100 if tvl > 0 else 0
+# KPI principaux
+fee_yield = (fees_24h / tvl) * 100 if tvl > 0 else 0
+volume_tvl_ratio = (volume_24h / tvl) * 100 if tvl > 0 else 0
+fee_capture = (fees_24h / volume_24h) * 100 if volume_24h > 0 else 0
 
-# Part dans la pool
+# Position LP
 share = capital_lp / tvl if tvl > 0 else 0
-earnings = share * fees
+lp_fees = share * fees_24h
 
-# Simulation dilution
-new_share = capital_lp / future_tvl if future_tvl > 0 else 0
-dilution = (share - new_share) * 100
+# =================== SCORE COMPARATIF ===================
+# Score simple pour comparer LP d'une même paire
+score = (
+    (fee_yield * 0.5) +
+    (fee_capture * 0.3) +
+    (volume_tvl_ratio * 0.2)
+)
 
 # =================== RESULTATS ===================
-st.markdown('<div class="section-title">Résultats Analyse LP</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Analyse comparative LP</div>', unsafe_allow_html=True)
 
 cards = []
 
 cards.append({
-    "title": "Ratio Fees / TVL",
-    "value": f"{ratio:.4f} %",
+    "title": "Fee Yield (24h)",
+    "value": f"{fee_yield:.4f} %",
     "color": "#00ff88"
 })
 
 cards.append({
-    "title": "Part de la pool",
+    "title": "Volume / TVL",
+    "value": f"{volume_tvl_ratio:.2f} %",
+    "color": "#2EF2A2"
+})
+
+cards.append({
+    "title": "Fee Capture Rate",
+    "value": f"{fee_capture:.4f} %",
+    "color": "#FFB020"
+})
+
+cards.append({
+    "title": "Ta part LP",
     "value": f"{share*100:.4f} %",
     "color": "#00ff88"
 })
 
 cards.append({
-    "title": "Revenus estimés",
-    "value": f"{earnings:.2f} $",
+    "title": "Fees estimés (24h)",
+    "value": f"{lp_fees:.2f} $",
     "color": "#2EF2A2"
 })
 
 cards.append({
-    "title": "Nouvelle part (TVL future)",
-    "value": f"{new_share*100:.4f} %",
-    "color": "#FFB020"
-})
-
-cards.append({
-    "title": "Dilution",
-    "value": f"{dilution:.4f} %",
-    "color": "#FF6B6B" if dilution > 0 else "#2EF2A2"
+    "title": "LP Score (comparatif)",
+    "value": f"{score:.2f}",
+    "color": "#00ff88"
 })
 
 cols = st.columns(len(cards))
