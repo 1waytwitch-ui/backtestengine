@@ -2856,6 +2856,29 @@ for i, card in enumerate(cards):
         </div>
         """, unsafe_allow_html=True)
 
+st.markdown("""
+<br>
+<div style="
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
+">
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
+        GUIDE
+    </span>
+</div>
+""", unsafe_allow_html=True)
+
 guide_html = """
 <style>
 /* ===== GUIDE TERMINAL THEME ===== */
