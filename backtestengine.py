@@ -2806,7 +2806,7 @@ score = (
 )
 
 # =================== RESULTATS ===================
-st.markdown('<div class="section-title">Analyse comparative LP</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Analyse de performance d'une LP</div>', unsafe_allow_html=True)
 
 cards = []
 
@@ -2841,7 +2841,7 @@ cards.append({
 })
 
 cards.append({
-    "title": "LP Score (comparatif)",
+    "title": "LP Score",
     "value": f"{score:.2f}",
     "color": "#00ff88"
 })
