@@ -2947,39 +2947,62 @@ else:
 
 levels = [-2, -1, 0, 1, 2]
 
-grid_prices = []
-grid_values = []
+grid = []
 
 for i, lvl in enumerate(levels):
     price_level = asset_price * (1 + (lvl * step))
     allocated_capital = capital * allocations[i]
-    
     quantity = allocated_capital / price_level
-    
-    grid_prices.append(price_level)
-    grid_values.append({
+
+    grid.append({
         "level": lvl,
         "price": price_level,
         "capital": allocated_capital,
         "qty": quantity
     })
 
-# =================== REVENUE SIMULATION ===================
+# =================== PNL SIMULATION ===================
 
-buy_zone = grid_values[0]["price"]
-sell_zone = grid_values[-1]["price"]
+buy_levels = [g for g in grid if g["level"] < 0]
+sell_levels = [g for g in grid if g["level"] > 0]
 
-cycle_return = ((sell_zone - buy_zone) / buy_zone) * 100
+total_buy_capital = sum([g["capital"] for g in buy_levels])
 
-# =================== DISPLAY ===================
+# coût moyen d’entrée pondéré
+avg_entry_price = sum([g["price"] * g["qty"] for g in buy_levels]) / sum([g["qty"] for g in buy_levels])
+
+# ETH total accumulé
+total_qty = sum([g["qty"] for g in buy_levels])
+
+# PnL par niveau de sortie
+pnl_table = []
+
+for s in sell_levels:
+    sell_value = total_qty * s["price"]
+    pnl = sell_value - total_buy_capital
+    pnl_pct = (pnl / total_buy_capital) * 100 if total_buy_capital > 0 else 0
+
+    pnl_table.append({
+        "level": s["level"],
+        "price": s["price"],
+        "sell_value": sell_value,
+        "pnl": pnl,
+        "pnl_pct": pnl_pct
+    })
+
+# cycle complet (sell max level)
+final_cycle_value = pnl_table[-1]["sell_value"] if pnl_table else total_buy_capital
+cycle_profit = final_cycle_value - total_buy_capital
+cycle_return_pct = (cycle_profit / total_buy_capital) * 100 if total_buy_capital > 0 else 0
+
+# =================== DISPLAY GRID ===================
 
 st.markdown('<div class="section-title">GRID OPTIMISÉE</div>', unsafe_allow_html=True)
 
 cards = []
 
-for g in grid_values:
+for g in grid:
     direction = "BUY" if g["level"] < 0 else ("SELL" if g["level"] > 0 else "NEUTRAL")
-    
     color = "#00ff88" if direction == "BUY" else ("#FFB020" if direction == "SELL" else "#2EF2A2")
 
     cards.append({
@@ -2999,37 +3022,60 @@ for i, card in enumerate(cards):
         </div>
         """, unsafe_allow_html=True)
 
-# =================== STATS ===================
+# =================== CAPITAL SUMMARY ===================
 
-st.markdown('<div class="section-title">PERFORMANCE SIMULATION</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">CAPITAL & PERFORMANCE</div>', unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.markdown(f"""
     <div class="result-card">
-        <div class="result-title">Cycle Return théorique</div>
-        <div class="result-value" style="color:#00ff88;">{cycle_return:.2f} %</div>
+        <div class="result-title">Capital engagé (BUY)</div>
+        <div class="result-value" style="color:#00ff88;">{total_buy_capital:.2f} $</div>
     </div>
     """, unsafe_allow_html=True)
 
 with col2:
-    avg_capital = sum([g["capital"] for g in grid_values])
     st.markdown(f"""
     <div class="result-card">
-        <div class="result-title">Capital engagé</div>
-        <div class="result-value" style="color:#2EF2A2;">{avg_capital:.2f} $</div>
+        <div class="result-title">Valeur cycle complet</div>
+        <div class="result-value" style="color:#2EF2A2;">{final_cycle_value:.2f} $</div>
     </div>
     """, unsafe_allow_html=True)
 
 with col3:
-    efficiency = cycle_return / volatility if volatility > 0 else 0
     st.markdown(f"""
     <div class="result-card">
-        <div class="result-title">Efficiency Score</div>
-        <div class="result-value" style="color:#FFB020;">{efficiency:.2f}</div>
+        <div class="result-title">ROI cycle</div>
+        <div class="result-value" style="color:#FFB020;">{cycle_return_pct:.2f} %</div>
     </div>
     """, unsafe_allow_html=True)
+
+# =================== PNL TABLE ===================
+
+st.markdown('<div class="section-title">PNL PAR NIVEAU DE VENTE</div>', unsafe_allow_html=True)
+
+for p in pnl_table:
+    st.markdown(f"""
+    <div class="result-card">
+        <div class="result-title">SELL L{p['level']} @ {p['price']:.2f}$</div>
+        <div class="result-value" style="color:#00ff88;">
+            Valeur: {p['sell_value']:.2f}$ | PnL: {p['pnl']:.2f}$ ({p['pnl_pct']:.2f}%)
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# =================== EFFICIENCY ===================
+
+efficiency = cycle_return_pct / volatility if volatility > 0 else 0
+
+st.markdown(f"""
+<div class="result-card">
+    <div class="result-title">Efficiency Score</div>
+    <div class="result-value" style="color:#00ff88;">{efficiency:.2f}</div>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("""
 <br>
