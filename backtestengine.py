@@ -2786,32 +2786,26 @@ with col2:
     st.subheader("POSITION")
     capital_lp = st.number_input("Capital LP ($)", value=10_000.0, step=10.0, format="%.2f")
     
-    # =================== AJOUT RANGE ===================
     range_width = st.number_input("Largeur de range (%)", value=5.0, step=0.1, format="%.2f")
 
 # =================== CALCULS ===================
 
-# KPI principaux
 fee_yield = (fees_24h / tvl) * 100 if tvl > 0 else 0
 volume_tvl_ratio = (volume_24h / tvl) * 100 if tvl > 0 else 0
 fee_capture = (fees_24h / volume_24h) * 100 if volume_24h > 0 else 0
 
-# Position LP
 share = capital_lp / tvl if tvl > 0 else 0
-lp_fees = share * fees_24h
 
 # =================== LIQUIDITY EFFICIENCY FACTOR ===================
 
-# Concentration (plus le range est petit, plus c'est concentré)
 concentration_score = 1 / range_width if range_width > 0 else 0
-
-# LEF (efficacité globale)
 lef = volume_tvl_ratio * concentration_score
-
-# Fee yield ajusté par concentration
 adjusted_fee_yield = fee_yield * concentration_score
 
-# =================== SCORE COMPARATIF ===================
+# ✅ FEES AJUSTÉES PAR LE RANGE
+lp_fees = share * fees_24h * concentration_score
+
+# =================== SCORE ===================
 score = (
     (fee_yield * 0.5) +
     (fee_capture * 0.3) +
@@ -2859,8 +2853,6 @@ cards.append({
     "color": "#00ff88"
 })
 
-# =================== AJOUT NOUVEAUX KPI RANGE ===================
-
 cards.append({
     "title": "Concentration Score",
     "value": f"{concentration_score:.4f}",
@@ -2889,6 +2881,7 @@ for i, card in enumerate(cards):
             <div class="result-value" style="color:{card['color']};">{card['value']}</div>
         </div>
         """, unsafe_allow_html=True)
+
 
 # ======================= GRID STRATEGY ENGINE (POST-AMM STYLE) =======================
 
