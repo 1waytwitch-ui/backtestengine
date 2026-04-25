@@ -2910,27 +2910,21 @@ st.markdown("""
 
 # =================== INPUTS ===================
 
-st.markdown('<div class="section-title">Paramètres marché</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">Paramètres marché & Répartition</div>', unsafe_allow_html=True)
 
-col1, col2 = st.columns(2)
-
-with col1:
-    asset_price = st.number_input("Prix actuel de l'actif ($)", value=2300.0, step=1.0)
-    capital = st.number_input("Capital total ($)", value=1000.0, step=100.0)
-
-# =================== ALLOCATIONS MANUELLES ===================
-
-st.markdown('<div class="section-title">Répartition du capital par palier d\'achat</div>', unsafe_allow_html=True)
-
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
-    alloc_L0 = st.number_input("L0 - Prix actuel (%)", value=20, min_value=0, max_value=100, step=1)
+    asset_price = st.number_input("Prix actuel ($)", value=2300.0, step=1.0)
 with col2:
-    alloc_L1 = st.number_input("L1 - (-3%) (%)", value=30, min_value=0, max_value=100, step=1)
+    capital = st.number_input("Capital total ($)", value=1000.0, step=100.0)
 with col3:
-    alloc_L2 = st.number_input("L2 - (-6%) (%)", value=30, min_value=0, max_value=100, step=1)
+    alloc_L0 = st.number_input("L0 - 0% (%)", value=20, min_value=0, max_value=100, step=1)
 with col4:
+    alloc_L1 = st.number_input("L1 - (-3%) (%)", value=30, min_value=0, max_value=100, step=1)
+with col5:
+    alloc_L2 = st.number_input("L2 - (-6%) (%)", value=30, min_value=0, max_value=100, step=1)
+with col6:
     alloc_L3 = st.number_input("L3 - (-9%) (%)", value=20, min_value=0, max_value=100, step=1)
 
 total_alloc = alloc_L0 + alloc_L1 + alloc_L2 + alloc_L3
@@ -3007,7 +3001,8 @@ for s in sell_levels:
         "price": s["price"],
         "sell_value": sell_value,
         "pnl": pnl,
-        "pnl_pct": pnl_pct
+        "pnl_pct": pnl_pct,
+        "qty": total_qty
     })
 
 final_cycle_value = pnl_table[-1]["sell_value"] if pnl_table else total_buy_capital
@@ -3023,15 +3018,22 @@ cols = st.columns(len(buy_grid))
 
 for i, g in enumerate(buy_grid):
     pct_label = f"{g['pct']*100:+.0f}%" if g["pct"] != 0 else "L0"
+    alloc_pct = g["capital"] / capital * 100 if capital > 0 else 0
     with cols[i]:
         st.markdown(f"""
         <div class="result-card">
             <div class="result-title">BUY {pct_label}</div>
             <div class="result-value" style="color:#00ff88;">{g['price']:.2f} $</div>
-            <div class="result-title" style="margin-top:6px;">Capital</div>
-            <div class="result-value" style="color:#2EF2A2; font-size:14px;">{g['capital']:.2f} $</div>
-            <div class="result-title" style="margin-top:6px;">Quantité</div>
-            <div class="result-value" style="color:#2EF2A2; font-size:14px;">{g['qty']:.6f}</div>
+            <div style="display:flex; justify-content:space-between; margin-top:6px;">
+                <div>
+                    <div class="result-title">Capital</div>
+                    <div class="result-value" style="color:#2EF2A2; font-size:13px;">{g['capital']:.2f} $ <span style="color:#888; font-size:11px;">({alloc_pct:.0f}%)</span></div>
+                </div>
+                <div>
+                    <div class="result-title">Quantité</div>
+                    <div class="result-value" style="color:#2EF2A2; font-size:13px;">{g['qty']:.6f}</div>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -3039,8 +3041,7 @@ for i, g in enumerate(buy_grid):
 
 st.markdown('<div class="section-title">PALIERS DE VENTE</div>', unsafe_allow_html=True)
 
-sell_grid = [g for g in grid if g["side"] == "SELL"]
-cols = st.columns(len(sell_grid))
+cols = st.columns(len(pnl_table))
 
 for i, p in enumerate(pnl_table):
     pct_label = f"+{p['pct']*100:.0f}%"
@@ -3049,10 +3050,26 @@ for i, p in enumerate(pnl_table):
         <div class="result-card">
             <div class="result-title">SELL {pct_label}</div>
             <div class="result-value" style="color:#FFB020;">{p['price']:.2f} $</div>
-            <div class="result-title" style="margin-top:6px;">Valeur totale</div>
-            <div class="result-value" style="color:#FFB020; font-size:14px;">{p['sell_value']:.2f} $</div>
-            <div class="result-title" style="margin-top:6px;">PnL</div>
-            <div class="result-value" style="color:#00ff88; font-size:14px;">{p['pnl']:.2f} $ ({p['pnl_pct']:.2f}%)</div>
+            <div style="display:flex; justify-content:space-between; margin-top:6px;">
+                <div>
+                    <div class="result-title">Valeur totale</div>
+                    <div class="result-value" style="color:#FFB020; font-size:13px;">{p['sell_value']:.2f} $</div>
+                </div>
+                <div>
+                    <div class="result-title">Quantité</div>
+                    <div class="result-value" style="color:#FFB020; font-size:13px;">{p['qty']:.6f}</div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-top:6px;">
+                <div>
+                    <div class="result-title">PnL</div>
+                    <div class="result-value" style="color:#00ff88; font-size:13px;">{p['pnl']:.2f} $ ({p['pnl_pct']:.2f}%)</div>
+                </div>
+                <div>
+                    <div class="result-title">% vendu</div>
+                    <div class="result-value" style="color:#00ff88; font-size:13px;">100%</div>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -3060,7 +3077,7 @@ for i, p in enumerate(pnl_table):
 
 st.markdown('<div class="section-title">CAPITAL & PERFORMANCE</div>', unsafe_allow_html=True)
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     st.markdown(f"""
@@ -3073,12 +3090,20 @@ with col1:
 with col2:
     st.markdown(f"""
     <div class="result-card">
+        <div class="result-title">Quantité totale</div>
+        <div class="result-value" style="color:#2EF2A2;">{total_qty:.6f}</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown(f"""
+    <div class="result-card">
         <div class="result-title">Prix moyen d'entrée</div>
         <div class="result-value" style="color:#2EF2A2;">{avg_entry_price:.2f} $</div>
     </div>
     """, unsafe_allow_html=True)
 
-with col3:
+with col4:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">Valeur cycle complet</div>
@@ -3086,7 +3111,7 @@ with col3:
     </div>
     """, unsafe_allow_html=True)
 
-with col4:
+with col5:
     st.markdown(f"""
     <div class="result-card">
         <div class="result-title">ROI cycle</div>
@@ -3105,6 +3130,30 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+
+
+st.markdown("""
+<br>
+<div style="
+    background-color: #0f141b;
+    border: 1px solid #1f2a36;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-family: 'Courier New', monospace;
+    color: #e6edf3;
+">
+    <span style="
+        color: #00ff88;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 1px;
+    ">
+        GUIDE
+    </span>
+</div>
+""", unsafe_allow_html=True)
 st.markdown("""
 <br>
 <div style="
