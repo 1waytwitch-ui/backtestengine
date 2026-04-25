@@ -3014,31 +3014,45 @@ final_cycle_value = pnl_table[-1]["sell_value"] if pnl_table else total_buy_capi
 cycle_profit = final_cycle_value - total_buy_capital
 cycle_return_pct = (cycle_profit / total_buy_capital) * 100 if total_buy_capital > 0 else 0
 
-# =================== DISPLAY GRID ===================
+# =================== DISPLAY GRID BUY ===================
 
-st.markdown('<div class="section-title">GRID OPTIMISÉE</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-title">PALIERS D\'ACHAT</div>', unsafe_allow_html=True)
 
-cards = []
+buy_grid = [g for g in grid if g["side"] == "BUY"]
+cols = st.columns(len(buy_grid))
 
-for g in grid:
-    direction = g["side"]
-    color = "#00ff88" if direction == "BUY" else "#FFB020"
+for i, g in enumerate(buy_grid):
     pct_label = f"{g['pct']*100:+.0f}%" if g["pct"] != 0 else "L0"
-
-    cards.append({
-        "title": f"{direction} {pct_label}",
-        "value": f"{g['price']:.2f} $",
-        "color": color
-    })
-
-cols = st.columns(len(cards))
-
-for i, card in enumerate(cards):
     with cols[i]:
         st.markdown(f"""
         <div class="result-card">
-            <div class="result-title">{card['title']}</div>
-            <div class="result-value" style="color:{card['color']};">{card['value']}</div>
+            <div class="result-title">BUY {pct_label}</div>
+            <div class="result-value" style="color:#00ff88;">{g['price']:.2f} $</div>
+            <div class="result-title" style="margin-top:6px;">Capital</div>
+            <div class="result-value" style="color:#2EF2A2; font-size:14px;">{g['capital']:.2f} $</div>
+            <div class="result-title" style="margin-top:6px;">Quantité</div>
+            <div class="result-value" style="color:#2EF2A2; font-size:14px;">{g['qty']:.6f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# =================== DISPLAY GRID SELL ===================
+
+st.markdown('<div class="section-title">PALIERS DE VENTE</div>', unsafe_allow_html=True)
+
+sell_grid = [g for g in grid if g["side"] == "SELL"]
+cols = st.columns(len(sell_grid))
+
+for i, p in enumerate(pnl_table):
+    pct_label = f"+{p['pct']*100:.0f}%"
+    with cols[i]:
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="result-title">SELL {pct_label}</div>
+            <div class="result-value" style="color:#FFB020;">{p['price']:.2f} $</div>
+            <div class="result-title" style="margin-top:6px;">Valeur totale</div>
+            <div class="result-value" style="color:#FFB020; font-size:14px;">{p['sell_value']:.2f} $</div>
+            <div class="result-title" style="margin-top:6px;">PnL</div>
+            <div class="result-value" style="color:#00ff88; font-size:14px;">{p['pnl']:.2f} $ ({p['pnl_pct']:.2f}%)</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -3080,20 +3094,6 @@ with col4:
     </div>
     """, unsafe_allow_html=True)
 
-# =================== PNL TABLE ===================
-
-st.markdown('<div class="section-title">PNL PAR NIVEAU DE VENTE</div>', unsafe_allow_html=True)
-
-for p in pnl_table:
-    st.markdown(f"""
-    <div class="result-card">
-        <div class="result-title">SELL +{p['pct']*100:.0f}% @ {p['price']:.2f}$</div>
-        <div class="result-value" style="color:#00ff88;">
-            Valeur: {p['sell_value']:.2f}$ | PnL: {p['pnl']:.2f}$ ({p['pnl_pct']:.2f}%)
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
 # =================== EFFICIENCY ===================
 
 efficiency = cycle_return_pct / 9 if cycle_return_pct > 0 else 0
@@ -3127,7 +3127,6 @@ st.markdown("""
     </span>
 </div>
 """, unsafe_allow_html=True)
-
 
 guide_html = """
 <style>
