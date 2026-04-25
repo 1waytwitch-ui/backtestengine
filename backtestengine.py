@@ -2930,7 +2930,25 @@ with col6:
 total_alloc = alloc_L0 + alloc_L1 + alloc_L2 + alloc_L3
 
 if total_alloc != 100:
-    st.warning(f"⚠️ La somme des allocations est de {total_alloc}% — elle doit être égale à 100%")
+    st.warning(f"⚠️ La somme des allocations d'achat est de {total_alloc}% — elle doit être égale à 100%")
+
+# =================== ALLOCATIONS VENTE ===================
+
+st.markdown('<div class="section-title">Répartition de la vente par palier</div>', unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    sell_alloc_S1 = st.number_input("S1 - (+3%) (%)", value=20, min_value=0, max_value=100, step=1)
+with col2:
+    sell_alloc_S2 = st.number_input("S2 - (+6%) (%)", value=30, min_value=0, max_value=100, step=1)
+with col3:
+    sell_alloc_S3 = st.number_input("S3 - (+9%) (%)", value=50, min_value=0, max_value=100, step=1)
+
+total_sell_alloc = sell_alloc_S1 + sell_alloc_S2 + sell_alloc_S3
+
+if total_sell_alloc != 100:
+    st.warning(f"⚠️ La somme des allocations de vente est de {total_sell_alloc}% — elle doit être égale à 100%")
 
 # =================== GRID GENERATION ===================
 
@@ -2942,9 +2960,9 @@ buy_levels_def = [
 ]
 
 sell_levels_def = [
-    {"level": 1, "pct": 0.03},
-    {"level": 2, "pct": 0.06},
-    {"level": 3, "pct": 0.09},
+    {"level": 1, "pct": 0.03, "alloc": sell_alloc_S1 / 100},
+    {"level": 2, "pct": 0.06, "alloc": sell_alloc_S2 / 100},
+    {"level": 3, "pct": 0.09, "alloc": sell_alloc_S3 / 100},
 ]
 
 grid = []
@@ -2972,6 +2990,7 @@ for s in sell_levels_def:
         "price": price_level,
         "capital": 0,
         "qty": 0,
+        "alloc": s["alloc"],
         "side": "SELL"
     })
 
@@ -2989,23 +3008,32 @@ avg_entry_price = (
 )
 
 pnl_table = []
+remaining_qty = total_qty
+cumulative_sell_value = 0
+cumulative_buy_cost = 0
 
 for s in sell_levels:
-    sell_value = total_qty * s["price"]
-    pnl = sell_value - total_buy_capital
-    pnl_pct = (pnl / total_buy_capital) * 100 if total_buy_capital > 0 else 0
+    qty_sold = total_qty * s["alloc"]
+    cost_basis = qty_sold * avg_entry_price
+    sell_value = qty_sold * s["price"]
+    pnl = sell_value - cost_basis
+    pnl_pct = (pnl / cost_basis) * 100 if cost_basis > 0 else 0
+    cumulative_sell_value += sell_value
+    cumulative_buy_cost += cost_basis
 
     pnl_table.append({
         "level": s["level"],
         "pct": s["pct"],
         "price": s["price"],
+        "alloc": s["alloc"],
+        "qty_sold": qty_sold,
         "sell_value": sell_value,
         "pnl": pnl,
         "pnl_pct": pnl_pct,
-        "qty": total_qty
+        "cumulative_sell_value": cumulative_sell_value
     })
 
-final_cycle_value = pnl_table[-1]["sell_value"] if pnl_table else total_buy_capital
+final_cycle_value = cumulative_sell_value
 cycle_profit = final_cycle_value - total_buy_capital
 cycle_return_pct = (cycle_profit / total_buy_capital) * 100 if total_buy_capital > 0 else 0
 
@@ -3045,6 +3073,7 @@ cols = st.columns(len(pnl_table))
 
 for i, p in enumerate(pnl_table):
     pct_label = f"+{p['pct']*100:.0f}%"
+    sell_pct = p["alloc"] * 100
     with cols[i]:
         st.markdown(f"""
         <div class="result-card">
@@ -3052,22 +3081,22 @@ for i, p in enumerate(pnl_table):
             <div class="result-value" style="color:#FFB020;">{p['price']:.2f} $</div>
             <div style="display:flex; justify-content:space-between; margin-top:6px;">
                 <div>
-                    <div class="result-title">Valeur totale</div>
-                    <div class="result-value" style="color:#FFB020; font-size:13px;">{p['sell_value']:.2f} $</div>
+                    <div class="result-title">% vendu</div>
+                    <div class="result-value" style="color:#FFB020; font-size:13px;">{sell_pct:.0f}%</div>
                 </div>
                 <div>
                     <div class="result-title">Quantité</div>
-                    <div class="result-value" style="color:#FFB020; font-size:13px;">{p['qty']:.6f}</div>
+                    <div class="result-value" style="color:#FFB020; font-size:13px;">{p['qty_sold']:.6f}</div>
                 </div>
             </div>
             <div style="display:flex; justify-content:space-between; margin-top:6px;">
                 <div>
-                    <div class="result-title">PnL</div>
-                    <div class="result-value" style="color:#00ff88; font-size:13px;">{p['pnl']:.2f} $ ({p['pnl_pct']:.2f}%)</div>
+                    <div class="result-title">Valeur</div>
+                    <div class="result-value" style="color:#FFB020; font-size:13px;">{p['sell_value']:.2f} $</div>
                 </div>
                 <div>
-                    <div class="result-title">% vendu</div>
-                    <div class="result-value" style="color:#00ff88; font-size:13px;">100%</div>
+                    <div class="result-title">PnL</div>
+                    <div class="result-value" style="color:#00ff88; font-size:13px;">{p['pnl']:.2f} $ ({p['pnl_pct']:.2f}%)</div>
                 </div>
             </div>
         </div>
@@ -3130,30 +3159,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-
-
-st.markdown("""
-<br>
-<div style="
-    background-color: #0f141b;
-    border: 1px solid #1f2a36;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    font-family: 'Courier New', monospace;
-    color: #e6edf3;
-">
-    <span style="
-        color: #00ff88;
-        font-size: 20px;
-        font-weight: 700;
-        letter-spacing: 1px;
-    ">
-        GUIDE
-    </span>
-</div>
-""", unsafe_allow_html=True)
 st.markdown("""
 <br>
 <div style="
