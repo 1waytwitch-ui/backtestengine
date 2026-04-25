@@ -2956,12 +2956,12 @@ for i, lvl in enumerate(levels):
 
 # =================== PNL SIMULATION ===================
 
-buy_levels = [g for g in grid if g["level"] < 0]
+buy_levels = [g for g in grid if g["level"] <= 0]  # ✅ L0 inclus
 sell_levels = [g for g in grid if g["level"] > 0]
 
 total_buy_capital = sum([g["capital"] for g in buy_levels])
 
-# coût moyen d’entrée pondéré
+# coût moyen d'entrée pondéré
 avg_entry_price = sum([g["price"] * g["qty"] for g in buy_levels]) / sum([g["qty"] for g in buy_levels])
 
 # ETH total accumulé
@@ -3092,6 +3092,8 @@ st.markdown("""
     </span>
 </div>
 """, unsafe_allow_html=True)
+
+
 
 guide_html = """
 <style>
