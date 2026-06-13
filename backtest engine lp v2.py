@@ -9,6 +9,77 @@ import time
 import random
 import streamlit.components.v1 as components
 
+st.markdown("""
+<style>
+
+/* =========================
+   MASQUER L'UI STREAMLIT
+   ========================= */
+
+#MainMenu {
+    visibility: hidden;
+}
+
+header[data-testid="stHeader"] {
+    display: none;
+}
+
+[data-testid="stToolbar"] {
+    display: none;
+}
+
+footer {
+    display: none;
+}
+
+/* =========================
+   DARK MODE FORCÉ
+   ========================= */
+
+:root {
+    color-scheme: dark;
+}
+
+html, body {
+    background: #0b0f19 !important;
+}
+
+.stApp {
+    background: #0b0f19 !important;
+}
+
+/* Containers Streamlit */
+[data-testid="stAppViewContainer"] {
+    background: #0b0f19 !important;
+}
+
+[data-testid="stMain"] {
+    background: transparent !important;
+}
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: #111827 !important;
+}
+
+/* Texte par défaut */
+body,
+p,
+span,
+label,
+div {
+    color: #f8fafc;
+}
+
+/* Espace pour ton header fixe */
+.block-container {
+    padding-top: 90px !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
 # ===================== PAGE CONFIG =====================
 st.set_page_config(
     page_title="LP BACKTEST ENGINE v2",
