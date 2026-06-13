@@ -910,61 +910,54 @@ if st.button("🚀 Générer la météo", use_container_width=True):
     ) * 1.5
 
     # ==========================================
-    # CONSTRUCTION METEO (HTML THEME)
+    # STOCKAGE STRUCTURÉ
     # ==========================================
 
-    METEO_HTML = f"""
-    <div class="meteo-box">
+    METEO = {
+        "title": "☀️ METEO DeFi RANGE LP",
+        "market": f"Volatilité moyenne : {weth_cbbtc_pct_v2:.1f}% → marché en range.",
+        "strategies": [
+            f"WETH/USDC → {weth_usdc_pct_v2:.1f}% RANGE | {eth_range_low_v2:,.0f}$ → {eth_range_high_v2:,.0f}$",
+            f"USDC/cbBTC → {usdc_cbbtc_pct_v2:.1f}% RANGE | {btc_range_low_v2:,.0f}$ → {btc_range_high_v2:,.0f}$",
+            f"WETH/cbBTC → {weth_cbbtc_pct_v2:.1f}% RANGE | ETH {eth_price_v2:,.0f}$ | BTC {btc_price_v2:,.0f}$"
+        ],
+        "conclusion": "On capte la vol, pas la direction. Les ranges sont calculés automatiquement à partir des ATR."
+    }
 
-        <div style="font-size:14px; font-weight:600;">
-            ☀️ { 'METEO DeFi☀️ RANGE LP' }
-        </div>
-
-        <br>
-
-        <div>
-            <b>Volatilité moyenne :</b> {weth_cbbtc_pct_v2:.1f}% → marché en range.
-        </div>
-
-        <br>
-
-        <div>
-            • WETH/USDC → {weth_usdc_pct_v2:.1f}% RANGE<br>
-              ⌛ {eth_range_low_v2:,.0f}$ → {eth_range_high_v2:,.0f}$
-        </div>
-
-        <br>
-
-        <div>
-            • USDC/cbBTC → {usdc_cbbtc_pct_v2:.1f}% RANGE<br>
-              ⌛ {btc_range_low_v2:,.0f}$ → {btc_range_high_v2:,.0f}$
-        </div>
-
-        <br>
-
-        <div>
-            • WETH/cbBTC → {weth_cbbtc_pct_v2:.1f}% RANGE<br>
-              🔜 ETH {eth_price_v2:,.0f}$ | BTC {btc_price_v2:,.0f}$
-        </div>
-
-        <br>
-
-        <div>
-            On capte la vol, pas la direction. Les ranges sont calculés automatiquement à partir des ATR.
-        </div>
-
-    </div>
-    """
-
-    st.session_state["meteo_html"] = METEO_HTML
+    st.session_state["meteo"] = METEO
 
 
 # ==========================================
-# AFFICHAGE METEO (THEME INTEGRÉ)
+# SHOW METEO
 # ==========================================
 
-if "meteo_html" in st.session_state:
-    st.markdown(st.session_state["meteo_html"], unsafe_allow_html=True)
+if "meteo" in st.session_state:
+
+    METEO = st.session_state["meteo"]
+
+    # bloc principal stylé via TON CSS .meteo-box
+    st.markdown(
+        f"""
+        <div class="meteo-box">
+
+        <b>{METEO["title"]}</b>
+        <br><br>
+
+        {METEO["market"]}
+        <br><br>
+
+        • {METEO["strategies"][0]}<br>
+        • {METEO["strategies"][1]}<br>
+        • {METEO["strategies"][2]}
+
+        <br><br>
+
+        {METEO["conclusion"]}
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # ==================================================================================
 # ========== POOL SETUP ==========
