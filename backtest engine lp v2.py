@@ -921,7 +921,7 @@ if st.button("🚀 Générer la météo", use_container_width=True):
             f"USDC/cbBTC → {usdc_cbbtc_pct_v2:.1f}% RANGE | {btc_range_low_v2:,.0f}$ → {btc_range_high_v2:,.0f}$",
             f"WETH/cbBTC → {weth_cbbtc_pct_v2:.1f}% RANGE | ETH {eth_price_v2:,.0f}$ | BTC {btc_price_v2:,.0f}$"
         ],
-        "conclusion": "On capte la volatilité, pas la direction. Les ranges sont calculés automatiquement à partir des ATR et des prix. Les volumes doivent être intégré dans la prise de décision du range final !"
+        "conclusion": "On capte la volatilité, pas la direction. Les ranges sont calculés automatiquement à partir des ATR et des prix. Les volumes doivent être intégrés dans la prise de décision du range final !"
     }
 
     st.session_state["meteo"] = METEO
