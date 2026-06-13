@@ -1,6 +1,4 @@
-from pathlib import Path
 
-code = r'''
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -244,7 +242,3 @@ if st.button("Run Simulation"):
     st.subheader("Detailed Data")
     st.dataframe(res,use_container_width=True)
 
-'''
-path="/mnt/data/lp_strategy_lab_v2.py"
-Path(path).write_text(code, encoding="utf-8")
-print(path)
