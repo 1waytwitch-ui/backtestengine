@@ -551,7 +551,7 @@ st.markdown("""
         <div class="nav-glyph">◈</div>
         <div>
             <div class="nav-title">LP STRATÉGIES BACKTEST ENGINE</div>
-            <div class="nav-subtitle"><span class="status-dot"></span>LIVE · BASE · UNISWAP V3</div>
+            <div class="nav-subtitle"><span class="status-dot"></span>LIVE · LIQUIDITY PROVIDERS · TOOLS</div>
         </div>
     </div>
     <div class="nav-links">
