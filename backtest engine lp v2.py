@@ -582,16 +582,118 @@ COINGECKO_IDS = {
 
 PAIRS = [("WETH", "USDC"), ("CBBTC", "USDC"), ("WETH", "CBBTC"), ("VIRTUAL", "WETH"), ("AERO", "WETH")]
 
-METEO = {
-    "title": "METEO DeFi☀️ RANGE LP hebdo 30 mars 2026",
-    "market": "Volatilité BTC/ETH ↑ → marché en range.",
-    "strategies": [
-        "WETH/USDC → 16% ATR ⌛124$ ⤴️",
-        "USDC/cbBTC → 14% ATR ⌛2992$ ⤴️",
-        "WETH/cbBTC → 8% ATR 🔜 124$ → 2992$"
-    ],
-    "conclusion": "On capte la vol, pas la direction. Vous pouvez demander la météo à Dule ou apprendre à calculer vos ranges avec l'outil ATR !"
-}
+import streamlit as st
+from datetime import datetime
+
+# ==========================================
+# GENERATEUR METEO LP
+# ==========================================
+
+st.subheader("☀️ Générateur Météo LP")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    eth_price = st.number_input(
+        "Prix ETH ($)",
+        min_value=1.0,
+        value=3200.0,
+        step=10.0
+    )
+
+    eth_atr = st.number_input(
+        "ATR ETH (%)",
+        min_value=0.1,
+        value=16.0,
+        step=0.1
+    )
+
+with col2:
+    btc_price = st.number_input(
+        "Prix BTC ($)",
+        min_value=1.0,
+        value=110000.0,
+        step=100.0
+    )
+
+    btc_atr = st.number_input(
+        "ATR BTC (%)",
+        min_value=0.1,
+        value=14.0,
+        step=0.1
+    )
+
+if st.button("🚀 Générer la météo", use_container_width=True):
+
+    # Conversion ATR en décimal
+    eth_atr_pct = eth_atr / 100
+    btc_atr_pct = btc_atr / 100
+
+    # ==========================================
+    # CALCUL DES RANGES
+    # ==========================================
+
+    eth_low = eth_price * (1 - eth_atr_pct)
+    eth_high = eth_price * (1 + eth_atr_pct)
+
+    btc_low = btc_price * (1 - btc_atr_pct)
+    btc_high = btc_price * (1 + btc_atr_pct)
+
+    avg_atr = (eth_atr + btc_atr) / 2
+
+    # ==========================================
+    # CONSTRUCTION DE LA METEO
+    # ==========================================
+
+    METEO = {
+        "title": f"METEO DeFi☀️ RANGE LP {datetime.now():%d %B %Y}",
+        "market": (
+            "Volatilité BTC/ETH ↑ → marché en range."
+            if avg_atr >= 10
+            else "Volatilité faible → marché calme."
+        ),
+        "strategies": [
+            (
+                f"WETH/USDC → {eth_atr:.1f}% ATR "
+                f"⌛ {eth_low:,.0f}$ → {eth_high:,.0f}$"
+            ),
+
+            (
+                f"USDC/cbBTC → {btc_atr:.1f}% ATR "
+                f"⌛ {btc_low:,.0f}$ → {btc_high:,.0f}$"
+            ),
+
+            (
+                f"WETH/cbBTC → {avg_atr:.1f}% ATR "
+                f"🔜 ETH {eth_price:,.0f}$ → BTC {btc_price:,.0f}$"
+            )
+        ],
+        "conclusion":
+        (
+            "On capte la vol, pas la direction. "
+            "Vous pouvez demander la météo à Dule "
+            "ou apprendre à calculer vos ranges avec l'outil ATR !"
+        )
+    }
+
+    st.session_state["meteo"] = METEO
+
+# ==========================================
+# AFFICHAGE METEO
+# ==========================================
+
+if "meteo" in st.session_state:
+
+    METEO = st.session_state["meteo"]
+
+    st.markdown(f"## {METEO['title']}")
+
+    st.info(METEO["market"])
+
+    for strategy in METEO["strategies"]:
+        st.markdown(f"• {strategy}")
+
+    st.success(METEO["conclusion"])
 
 SECRET_CODE = st.secrets["Secret_Code"]
 
