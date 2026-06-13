@@ -910,62 +910,61 @@ if st.button("🚀 Générer la météo", use_container_width=True):
     ) * 1.5
 
     # ==========================================
-    # CONSTRUCTION DE LA METEO
+    # CONSTRUCTION METEO (HTML THEME)
     # ==========================================
 
-    METEO = {
+    METEO_HTML = f"""
+    <div class="meteo-box">
 
-        "title":
-            f"METEO DeFi☀️ RANGE LP",
+        <div style="font-size:14px; font-weight:600;">
+            ☀️ { 'METEO DeFi☀️ RANGE LP' }
+        </div>
 
-        "market":
-            f"Volatilité moyenne : {weth_cbbtc_pct_v2:.1f}% → marché en range.",
+        <br>
 
-        "strategies": [
+        <div>
+            <b>Volatilité moyenne :</b> {weth_cbbtc_pct_v2:.1f}% → marché en range.
+        </div>
 
-            (
-                f"WETH/USDC → {weth_usdc_pct_v2:.1f}% RANGE "
-                f"⌛ {eth_range_low_v2:,.0f}$ → {eth_range_high_v2:,.0f}$"
-            ),
+        <br>
 
-            (
-                f"USDC/cbBTC → {usdc_cbbtc_pct_v2:.1f}% RANGE "
-                f"⌛ {btc_range_low_v2:,.0f}$ → {btc_range_high_v2:,.0f}$"
-            ),
+        <div>
+            • WETH/USDC → {weth_usdc_pct_v2:.1f}% RANGE<br>
+              ⌛ {eth_range_low_v2:,.0f}$ → {eth_range_high_v2:,.0f}$
+        </div>
 
-            (
-                f"WETH/cbBTC → {weth_cbbtc_pct_v2:.1f}% RANGE "
-                f"🔜 ETH {eth_price_v2:,.0f}$ | BTC {btc_price_v2:,.0f}$"
-            )
+        <br>
 
-        ],
+        <div>
+            • USDC/cbBTC → {usdc_cbbtc_pct_v2:.1f}% RANGE<br>
+              ⌛ {btc_range_low_v2:,.0f}$ → {btc_range_high_v2:,.0f}$
+        </div>
 
-        "conclusion": (
-            "On capte la vol, pas la direction. "
-            "Les ranges suggérés sont calculés automatiquement "
-            "à partir des ATR renseignés."
-        )
+        <br>
 
-    }
+        <div>
+            • WETH/cbBTC → {weth_cbbtc_pct_v2:.1f}% RANGE<br>
+              🔜 ETH {eth_price_v2:,.0f}$ | BTC {btc_price_v2:,.0f}$
+        </div>
 
-    st.session_state["meteo"] = METEO
+        <br>
+
+        <div>
+            On capte la vol, pas la direction. Les ranges sont calculés automatiquement à partir des ATR.
+        </div>
+
+    </div>
+    """
+
+    st.session_state["meteo_html"] = METEO_HTML
+
 
 # ==========================================
-# AFFICHAGE METEO
+# AFFICHAGE METEO (THEME INTEGRÉ)
 # ==========================================
 
-if "meteo" in st.session_state:
-
-    METEO = st.session_state["meteo"]
-
-    st.markdown(f"## {METEO['title']}")
-
-    st.info(METEO["market"])
-
-    for strategy in METEO["strategies"]:
-        st.markdown(f"• {strategy}")
-
-    st.success(METEO["conclusion"])
+if "meteo_html" in st.session_state:
+    st.markdown(st.session_state["meteo_html"], unsafe_allow_html=True)
 
 # ==================================================================================
 # ========== POOL SETUP ==========
