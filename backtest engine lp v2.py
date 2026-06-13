@@ -594,52 +594,46 @@ st.subheader("☀️ Générateur Météo LP")
 col1, col2 = st.columns(2)
 
 with col1:
-    eth_price = st.number_input(
+    eth_price_v2 = st.number_input(
         "Prix ETH ($)",
         min_value=1.0,
-        value=3200.0,
+        value=2992.0,
         step=10.0
     )
 
-    eth_atr = st.number_input(
-        "ATR ETH (%)",
-        min_value=0.1,
-        value=16.0,
-        step=0.1
+    eth_atr_v2 = st.number_input(
+        "ATR ETH ($)",
+        min_value=1.0,
+        value=124.0,
+        step=1.0
     )
 
 with col2:
-    btc_price = st.number_input(
+    btc_price_v2 = st.number_input(
         "Prix BTC ($)",
         min_value=1.0,
-        value=110000.0,
+        value=124000.0,
         step=100.0
     )
 
-    btc_atr = st.number_input(
-        "ATR BTC (%)",
-        min_value=0.1,
-        value=14.0,
-        step=0.1
+    btc_atr_v2 = st.number_input(
+        "ATR BTC ($)",
+        min_value=1.0,
+        value=2992.0,
+        step=10.0
     )
 
 if st.button("🚀 Générer la météo", use_container_width=True):
-
-    # Conversion ATR en décimal
-    eth_atr_pct = eth_atr / 100
-    btc_atr_pct = btc_atr / 100
 
     # ==========================================
     # CALCUL DES RANGES
     # ==========================================
 
-    eth_low = eth_price * (1 - eth_atr_pct)
-    eth_high = eth_price * (1 + eth_atr_pct)
+    eth_range_low_v2 = eth_price_v2 - eth_atr_v2
+    eth_range_high_v2 = eth_price_v2 + eth_atr_v2
 
-    btc_low = btc_price * (1 - btc_atr_pct)
-    btc_high = btc_price * (1 + btc_atr_pct)
-
-    avg_atr = (eth_atr + btc_atr) / 2
+    btc_range_low_v2 = btc_price_v2 - btc_atr_v2
+    btc_range_high_v2 = btc_price_v2 + btc_atr_v2
 
     # ==========================================
     # CONSTRUCTION DE LA METEO
@@ -647,32 +641,32 @@ if st.button("🚀 Générer la météo", use_container_width=True):
 
     METEO = {
         "title": f"METEO DeFi☀️ RANGE LP {datetime.now():%d %B %Y}",
-        "market": (
-            "Volatilité BTC/ETH ↑ → marché en range."
-            if avg_atr >= 10
-            else "Volatilité faible → marché calme."
-        ),
+
+        "market": "Volatilité BTC/ETH ↑ → marché en range.",
+
         "strategies": [
+
             (
-                f"WETH/USDC → {eth_atr:.1f}% ATR "
-                f"⌛ {eth_low:,.0f}$ → {eth_high:,.0f}$"
+                f"WETH/USDC → ATR {eth_atr_v2:,.0f}$ "
+                f"⌛ {eth_range_low_v2:,.0f}$ → {eth_range_high_v2:,.0f}$"
             ),
 
             (
-                f"USDC/cbBTC → {btc_atr:.1f}% ATR "
-                f"⌛ {btc_low:,.0f}$ → {btc_high:,.0f}$"
+                f"USDC/cbBTC → ATR {btc_atr_v2:,.0f}$ "
+                f"⌛ {btc_range_low_v2:,.0f}$ → {btc_range_high_v2:,.0f}$"
             ),
 
             (
-                f"WETH/cbBTC → {avg_atr:.1f}% ATR "
-                f"🔜 ETH {eth_price:,.0f}$ → BTC {btc_price:,.0f}$"
+                f"WETH/cbBTC → ATR ETH {eth_atr_v2:,.0f}$ "
+                f"| ATR BTC {btc_atr_v2:,.0f}$"
             )
+
         ],
-        "conclusion":
-        (
+
+        "conclusion": (
             "On capte la vol, pas la direction. "
-            "Vous pouvez demander la météo à Dule "
-            "ou apprendre à calculer vos ranges avec l'outil ATR !"
+            "Vous pouvez demander la météo à Dule ou apprendre "
+            "à calculer vos ranges avec l'outil ATR !"
         )
     }
 
@@ -694,6 +688,7 @@ if "meteo" in st.session_state:
         st.markdown(f"• {strategy}")
 
     st.success(METEO["conclusion"])
+
 
 SECRET_CODE = st.secrets["Secret_Code"]
 
