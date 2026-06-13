@@ -916,7 +916,7 @@ if st.button("🚀 Générer la météo", use_container_width=True):
     METEO = {
 
         "title":
-            f"METEO DeFi☀️ RANGE LP {datetime.now():%d %B %Y}",
+            f"METEO DeFi☀️ RANGE LP",
 
         "market":
             f"Volatilité moyenne : {weth_cbbtc_pct_v2:.1f}% → marché en range.",
