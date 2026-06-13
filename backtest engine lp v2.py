@@ -1934,7 +1934,7 @@ components.iframe(src="https://www.desmos.com/calculator/i7mnoyyqdb?lang=fr", wi
 st.markdown("""
 <div style="height:40px;"></div>
 <div style="text-align:center; font-family:var(--font-mono); font-size:11px; color:var(--text-lo); letter-spacing:1px;">
-    ◈ LP BACKTEST ENGINE v2.0 · KBOUR CRYPTO · DYOR · NOT FINANCIAL ADVICE
+    ◈ LP BACKTEST ENGINE v2.0 · PIGEONSFOREVER · DYOR · NOT FINANCIAL ADVICE
 </div>
 <div style="height:20px;"></div>
 """, unsafe_allow_html=True)
