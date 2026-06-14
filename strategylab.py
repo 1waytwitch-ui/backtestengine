@@ -9,7 +9,7 @@ import random
 
 # ===================== PAGE CONFIG =====================
 st.set_page_config(
-    page_title="LP Strategy Lab V2",
+    page_title="LP Strategy Lab",
     page_icon="⚙️",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -451,7 +451,7 @@ with c3:
     tip_label(f"Prix initial {token_b_name} ($)", f"Prix du Token B ({token_b_name}). Pour un stablecoin : 1.00$. Pour un actif volatile : son prix en USD.")
     price_b0 = st.number_input("price_b0_input", value=1.0, min_value=0.001, max_value=100000.0, step=0.01, label_visibility="collapsed")
 with c4:
-    tip_label("STEPS de simulation", "Nombre d'itérations. 500 = rapide. 2000+ = détaillé. Chaque pas représente une bougie (ex: 1H, 4H selon votre timeframe réel).")
+    tip_label("Steps de simulation", "Nombre d'itérations. 500 = rapide. 2000+ = détaillé. Chaque step représente une bougie (ex: 1H, 4H selon votre timeframe réel).")
     steps = st.number_input("steps_input", value=500, min_value=50, max_value=5000, step=50, label_visibility="collapsed")
 
 st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
