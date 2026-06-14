@@ -720,7 +720,7 @@ if run:
         "LP Dynamique": res.portfolio,
         f"HODL {token_a_name}": hodl_a.values,
         f"HODL {token_b_name}": hodl_b,
-        "50/50 Balancé": balanced.values
+        "50/50 ratio": balanced.values
     })
     color_map = {
         "LP Dynamique":       "#00d4aa",
