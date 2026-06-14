@@ -850,101 +850,101 @@ if run:
     st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
     # ══════════════════════════════════════════════════════
-# ── SUGGESTION DE RATIO ──
-# ══════════════════════════════════════════════════════
-sec("◉", "Suggestion de ratio — Recommandation stratégique post-simulation")
+    # ── SUGGESTION DE RATIO ──
+    # ══════════════════════════════════════════════════════
+    sec("◉", "Suggestion de ratio — Recommandation stratégique post-simulation")
 
-last_price  = res.price.iloc[-1]
-last_ma50   = res.ma50.iloc[-1]
-last_ma200  = res.ma200.iloc[-1]
-last_adx    = res.adx.iloc[-1]
-last_dist   = res.dist_ma50_pct.iloc[-1]
+    last_price  = res.price.iloc[-1]
+    last_ma50   = res.ma50.iloc[-1]
+    last_ma200  = res.ma200.iloc[-1]
+    last_adx    = res.adx.iloc[-1]
+    last_dist   = res.dist_ma50_pct.iloc[-1]
 
-if last_adx < 20:
-    regime = "range"
-    regime_label = "📊 Marché en range (ADX < 20)"
-    regime_bg = "rgba(14,165,233,.12)"
-    regime_border = "rgba(14,165,233,.3)"
-    regime_color = "#0ea5e9"
-elif last_price > last_ma50 and last_ma50 > last_ma200:
-    regime = "bull"
-    regime_label = "🔺 Tendance haussière (Golden Cross)"
-    regime_bg = "rgba(34,197,94,.12)"
-    regime_border = "rgba(34,197,94,.3)"
-    regime_color = "#22c55e"
-elif last_price < last_ma50 and last_ma50 < last_ma200:
-    regime = "bear"
-    regime_label = "🔻 Tendance baissière (Death Cross)"
-    regime_bg = "rgba(239,68,68,.12)"
-    regime_border = "rgba(239,68,68,.3)"
-    regime_color = "#ef4444"
-else:
-    regime = "neutral"
-    regime_label = "↔ Zone de transition / neutre"
-    regime_bg = "rgba(245,158,11,.12)"
-    regime_border = "rgba(245,158,11,.3)"
-    regime_color = "#f59e0b"
-
-if abs(last_dist) < 5:
-    strength_label = "Faible (0–5%)"
-    a_bull, b_bull = 40, 60
-    a_bear, b_bear = 60, 40
-elif abs(last_dist) < 15:
-    strength_label = "Modérée (5–15%)"
-    a_bull, b_bull = 30, 70
-    a_bear, b_bear = 70, 30
-else:
-    strength_label = "Forte (> 15%)"
-    a_bull, b_bull = 15, 85
-    a_bear, b_bear = 85, 15
-
-if regime in ("bull", "range"):
-    if last_dist >= 0:
-        a_sugg, b_sugg = a_bull, b_bull
-        dir_sugg = "haussière"
+    if last_adx < 20:
+        regime = "range"
+        regime_label = "📊 Marché en range (ADX < 20)"
+        regime_bg = "rgba(14,165,233,.12)"
+        regime_border = "rgba(14,165,233,.3)"
+        regime_color = "#0ea5e9"
+    elif last_price > last_ma50 and last_ma50 > last_ma200:
+        regime = "bull"
+        regime_label = "🔺 Tendance haussière (Golden Cross)"
+        regime_bg = "rgba(34,197,94,.12)"
+        regime_border = "rgba(34,197,94,.3)"
+        regime_color = "#22c55e"
+    elif last_price < last_ma50 and last_ma50 < last_ma200:
+        regime = "bear"
+        regime_label = "🔻 Tendance baissière (Death Cross)"
+        regime_bg = "rgba(239,68,68,.12)"
+        regime_border = "rgba(239,68,68,.3)"
+        regime_color = "#ef4444"
     else:
-        a_sugg, b_sugg = a_bear, b_bear
-        dir_sugg = "baissière"
-else:
-    if last_dist < 0:
-        a_sugg, b_sugg = a_bear, b_bear
-        dir_sugg = "baissière"
+        regime = "neutral"
+        regime_label = "↔ Zone de transition / neutre"
+        regime_bg = "rgba(245,158,11,.12)"
+        regime_border = "rgba(245,158,11,.3)"
+        regime_color = "#f59e0b"
+
+    if abs(last_dist) < 5:
+        strength_label = "Faible (0–5%)"
+        a_bull, b_bull = 40, 60
+        a_bear, b_bear = 60, 40
+    elif abs(last_dist) < 15:
+        strength_label = "Modérée (5–15%)"
+        a_bull, b_bull = 30, 70
+        a_bear, b_bear = 70, 30
     else:
-        a_sugg, b_sugg = a_bull, b_bull
-        dir_sugg = "haussière"
+        strength_label = "Forte (> 15%)"
+        a_bull, b_bull = 15, 85
+        a_bear, b_bear = 85, 15
 
-if last_adx < 20:
-    range_sugg = "5–8%"
-    range_reason = "marché en range : range serré pour maximiser les fees"
-elif last_adx < 30:
-    range_sugg = "8–12%"
-    range_reason = "tendance modérée : range intermédiaire pour équilibrer fees et durée"
-else:
-    range_sugg = "12–20%+"
-    range_reason = "forte tendance : range large pour réduire les rebalances"
+    if regime in ("bull", "range"):
+        if last_dist >= 0:
+            a_sugg, b_sugg = a_bull, b_bull
+            dir_sugg = "haussière"
+        else:
+            a_sugg, b_sugg = a_bear, b_bear
+            dir_sugg = "baissière"
+    else:
+        if last_dist < 0:
+            a_sugg, b_sugg = a_bear, b_bear
+            dir_sugg = "baissière"
+        else:
+            a_sugg, b_sugg = a_bull, b_bull
+            dir_sugg = "haussière"
 
-whipsaw_ratio = (whipsaws / rebalances * 100) if rebalances > 0 else 0
-fees_cost_ratio = (fees_total / avg_reb_cost) if avg_reb_cost > 0 else float("inf")
+    if last_adx < 20:
+        range_sugg = "5–8%"
+        range_reason = "marché en range : range serré pour maximiser les fees"
+    elif last_adx < 30:
+        range_sugg = "8–12%"
+        range_reason = "tendance modérée : range intermédiaire pour équilibrer fees et durée"
+    else:
+        range_sugg = "12–20%+"
+        range_reason = "forte tendance : range large pour réduire les rebalances"
 
-whipsaw_color = "#ef4444" if whipsaw_ratio > 40 else "#f59e0b" if whipsaw_ratio > 20 else "#22c55e"
-whipsaw_msg = (
-    "⚠ Augmentez le time buffer !"
-    if whipsaw_ratio > 40
-    else "✓ Acceptable"
-    if whipsaw_ratio > 20
-    else "✓ Optimal"
-)
+    whipsaw_ratio = (whipsaws / rebalances * 100) if rebalances > 0 else 0
+    fees_cost_ratio = (fees_total / avg_reb_cost) if avg_reb_cost > 0 else float("inf")
 
-fees_color2 = "#22c55e" if fees_total > avg_reb_cost else "#ef4444"
-fees_msg = (
-    "✓ Fees supérieurs aux coûts"
-    if fees_total > avg_reb_cost
-    else "⚠ Coûts supérieurs aux fees — réduire les rebalances"
-)
+    whipsaw_color = "#ef4444" if whipsaw_ratio > 40 else "#f59e0b" if whipsaw_ratio > 20 else "#22c55e"
+    whipsaw_msg = (
+        "⚠ Augmentez le time buffer !"
+        if whipsaw_ratio > 40
+        else "✓ Acceptable"
+        if whipsaw_ratio > 20
+        else "✓ Optimal"
+    )
 
-dist_color = "#22c55e" if last_dist >= 0 else "#ef4444"
+    fees_color2 = "#22c55e" if fees_total > avg_reb_cost else "#ef4444"
+    fees_msg = (
+        "✓ Fees supérieurs aux coûts"
+        if fees_total > avg_reb_cost
+        else "⚠ Coûts supérieurs aux fees — réduire les rebalances"
+    )
 
-html_suggestion = f"""
+    dist_color = "#22c55e" if last_dist >= 0 else "#ef4444"
+
+    html_suggestion = f"""
 <div class="sugg-box">
     <div class="sugg-title">◈ Analyse du régime de marché simulé</div>
 
@@ -1016,7 +1016,7 @@ html_suggestion = f"""
 </div>
 """
 
-st.markdown(html_suggestion, unsafe_allow_html=True)
+    st.markdown(html_suggestion, unsafe_allow_html=True)
 
     # ── TABLEAU DE RÉFÉRENCE ──
     st.markdown(f"""
@@ -1092,7 +1092,7 @@ st.markdown(html_suggestion, unsafe_allow_html=True)
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
     # ── DATA DÉTAILLÉE ──
