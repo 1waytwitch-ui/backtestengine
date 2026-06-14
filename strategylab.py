@@ -1019,30 +1019,81 @@ if run:
     st.markdown(html_suggestion, unsafe_allow_html=True)
 
     # ── TABLEAU DE RÉFÉRENCE ──
-html_suggestion = (
-    f'<div class="sugg-box">'
-    f'<div class="sugg-title">◈ Analyse du régime de marché simulé</div>'
-    f'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">'
-    f'<span style="background:{regime_bg};border:1px solid {regime_border};border-radius:6px;padding:5px 12px;font-family:JetBrains Mono,monospace;font-size:11px;color:{regime_color};">{regime_label}</span>'
-    f'<span style="background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);border-radius:6px;padding:5px 12px;font-family:JetBrains Mono,monospace;font-size:11px;color:#f59e0b;">Force tendance : {strength_label}</span>'
-    f'<span style="background:rgba(0,212,170,.10);border:1px solid rgba(0,212,170,.2);border-radius:6px;padding:5px 12px;font-family:JetBrains Mono,monospace;font-size:11px;color:{dist_color};">Distance MA50 : {last_dist:+.1f}%</span>'
-    f'</div>'
-    f'<div style="font-family:JetBrains Mono,monospace;font-size:12px;color:#b0bec5;line-height:2.2;">'
-    f'<b style="color:#f0f4f8;">Ratio suggéré pour le prochain range :</b><br>'
-    f'→ <span style="color:#f59e0b;">{token_a_name} : {a_sugg}%</span>&nbsp;/&nbsp;'
-    f'<span style="color:#0ea5e9;">{token_b_name} : {b_sugg}%</span>&nbsp;(tendance {dir_sugg}, force {strength_label.lower()})<br><br>'
-    f'<b style="color:#f0f4f8;">Largeur de range suggérée :</b> {range_sugg}<br>'
-    f'<span style="color:#8899aa;font-size:11px;">↳ {range_reason}</span><br><br>'
-    f'<b style="color:#f0f4f8;">Taux de whipsaw :</b>'
-    f'<span style="color:{whipsaw_color};">{whipsaw_ratio:.0f}% ({whipsaws}/{rebalances})</span>&nbsp;{whipsaw_msg}<br><br>'
-    f'<b style="color:#f0f4f8;">Ratio fees/coûts :</b>'
-    f'<span style="color:{fees_color2};">x{fees_cost_ratio:.1f}</span>&nbsp;{fees_msg}'
-    f'</div>'
-    f'</div>'
-)
+    st.markdown(f"""
+    <div class="m-card-wide" style="margin-top:10px;">
+        <div class="m-label">Tableau de référence — Ratios {token_a_name}/{token_b_name} par régime & force de tendance</div>
+        <div style="margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:2; color:#b0bec5;">
+        <table style="width:100%; border-collapse:collapse;">
+            <tr style="color:#8899aa; border-bottom:1px solid rgba(255,255,255,0.06);">
+                <th style="text-align:left; padding:5px 10px; font-size:10px; letter-spacing:1px;">RÉGIME</th>
+                <th style="text-align:left; padding:5px 10px; font-size:10px; letter-spacing:1px;">FORCE</th>
+                <th style="text-align:left; padding:5px 10px; font-size:10px; letter-spacing:1px;">DIST MA50</th>
+                <th style="text-align:left; padding:5px 10px; font-size:10px; letter-spacing:1px;">RATIO {token_a_name}/{token_b_name}</th>
+                <th style="text-align:left; padding:5px 10px; font-size:10px; letter-spacing:1px;">RANGE SUGGÉRÉ</th>
+            </tr>
 
-st.markdown(html_suggestion, unsafe_allow_html=True)
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                <td style="padding:5px 10px; color:#22c55e;">🔺 Haussier</td>
+                <td style="padding:5px 10px; color:#b0bec5;">Faible</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">0–5%</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">40 / 60</td>
+                <td style="padding:5px 10px; color:#b0bec5;">8–12%</td>
+            </tr>
 
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                <td style="padding:5px 10px; color:#22c55e;">🔺 Haussier</td>
+                <td style="padding:5px 10px; color:#b0bec5;">Modérée</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">5–15%</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">30 / 70</td>
+                <td style="padding:5px 10px; color:#b0bec5;">10–16%</td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                <td style="padding:5px 10px; color:#22c55e;">🔺 Haussier</td>
+                <td style="padding:5px 10px; color:#b0bec5;">Forte</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">&gt; 15%</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">15 / 85</td>
+                <td style="padding:5px 10px; color:#b0bec5;">14–20%+</td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03); background:rgba(14,165,233,0.04);">
+                <td style="padding:5px 10px; color:#0ea5e9;">↔ Range</td>
+                <td style="padding:5px 10px; color:#b0bec5;">—</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">&lt; 5%</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">50 / 50</td>
+                <td style="padding:5px 10px; color:#b0bec5;">5–8%</td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                <td style="padding:5px 10px; color:#ef4444;">🔻 Baissier</td>
+                <td style="padding:5px 10px; color:#b0bec5;">Faible</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">0–5%</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">60 / 40</td>
+                <td style="padding:5px 10px; color:#b0bec5;">8–12%</td>
+            </tr>
+
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
+                <td style="padding:5px 10px; color:#ef4444;">🔻 Baissier</td>
+                <td style="padding:5px 10px; color:#b0bec5;">Modérée</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">5–15%</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">70 / 30</td>
+                <td style="padding:5px 10px; color:#b0bec5;">10–16%</td>
+            </tr>
+
+            <tr>
+                <td style="padding:5px 10px; color:#ef4444;">🔻 Baissier</td>
+                <td style="padding:5px 10px; color:#b0bec5;">Forte</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">&gt; 15%</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">85 / 15</td>
+                <td style="padding:5px 10px; color:#b0bec5;">14–20%+</td>
+            </tr>
+
+        </table>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
     # ── DATA DÉTAILLÉE ──
     with st.expander("◈ Données détaillées de simulation"):
