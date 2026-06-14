@@ -862,7 +862,7 @@ if run:
 
     if last_adx < 20:
         regime = "range"
-        regime_label = "📊 Marché en range (ADX < 20)"
+        regime_label = "Marché en range (ADX < 20)"
         regime_bg = "rgba(14,165,233,.12)"
         regime_border = "rgba(14,165,233,.3)"
         regime_color = "#0ea5e9"
