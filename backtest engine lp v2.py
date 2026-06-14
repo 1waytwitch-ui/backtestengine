@@ -558,7 +558,7 @@ st.markdown("""
     <div class="nav-links">
         <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank">Krystal</a>
         <a href="https://plusvalueimposable.streamlit.app/" target="_blank">Plus-value</a>
-        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank">Wallet</a>
+        <a href="https://strategylab.streamlit.app/">Strategy Lab</a>
         <a href="https://t.me/Pigeonchanceux" target="_blank">Telegram</a>
         <a href="https://shorturl.at/X3sYt" target="_blank">Formation</a>
     </div>
