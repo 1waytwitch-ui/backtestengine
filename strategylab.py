@@ -720,13 +720,13 @@ if run:
         "LP Dynamique": res.portfolio,
         f"HODL {token_a_name}": hodl_a.values,
         f"HODL {token_b_name}": hodl_b,
-        "50/50 Balancé": balanced.values
+        "50/50 Ratio": balanced.values
     })
     color_map = {
         "LP Dynamique":       "#00d4aa",
         f"HODL {token_a_name}": "#f59e0b",
         f"HODL {token_b_name}": "#8899aa",
-        "50/50 Balancé":      "#0ea5e9"
+        "50/50 Ratio":      "#0ea5e9"
     }
     fig_eq = px.line(eq, x="Step", y=list(color_map.keys()), color_discrete_map=color_map)
     fig_eq.update_layout(
