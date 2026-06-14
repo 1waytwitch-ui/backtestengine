@@ -10,7 +10,7 @@ import random
 # ===================== PAGE CONFIG =====================
 st.set_page_config(
     page_title="LP Strategy Lab V2",
-    page_icon="◈",
+    page_icon="⚙️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -183,14 +183,14 @@ st.markdown("""
     <div class="nav-brand">
         <div class="nav-glyph">◈</div>
         <div>
-            <div class="nav-title">LP STRATEGY LAB V2</div>
-            <div class="nav-subtitle"><span class="status-dot"></span>SIMULATION · BACKTEST · DYNAMIC REBALANCING</div>
+            <div class="nav-title">LP STRATEGY LAB</div>
+            <div class="nav-subtitle"><span class="status-dot"></span>SIMULATION · DYNAMIC REBALANCING · LAB</div>
         </div>
     </div>
     <div class="nav-links">
         <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank">Krystal</a>
         <a href="https://plusvalueimposable.streamlit.app/" target="_blank">Plus-value</a>
-        <a href="https://defiwalletbacktest.streamlit.app/" target="_blank">Wallet</a>
+        <a href="https://backtestenginelpv2.streamlit.app/" target="_blank">Backtest Engine LP V2</a>
         <a href="https://t.me/Pigeonchanceux" target="_blank">Telegram</a>
         <a href="https://shorturl.at/X3sYt" target="_blank">Formation</a>
     </div>
@@ -290,9 +290,9 @@ if not st.session_state.boot_done:
         "  [✓] Auto-compound des fees & slippage réaliste",
         "  [✓] Optimiseur Range × Buffer",
         "  [✓] Analyse régime de marché & suggestion de ratio",
-        "  [✓] Distance MA50 manuelle & graphe d'analyse",
+        "  [✓] Distance MA50 manuelle & graph d'analyse",
         "─────────────────────────────────────────────",
-        "▸ Nouveautés v2 :",
+        "▸ Nouveautés :",
         "  [✓] Tooltips explicatifs sur chaque paramètre",
         "  [✓] Suggestion de ratio dynamique post-simulation",
         "  [✓] Tableau de référence ratio × régime × force",
@@ -443,15 +443,15 @@ sec("⊞", "Paramètres Marché")
 c1, c2, c3, c4 = st.columns(4)
 with c1:
     tip_label(f"Capital total ($)", "Montant total en USD déployé dans la stratégie LP. Sert de base pour tous les calculs de performance et de ratio.")
-    capital = st.number_input("capital_input", value=100000.0, min_value=1000.0, max_value=1e8, step=1000.0, label_visibility="collapsed")
+    capital = st.number_input("capital_input", value=1000.0, min_value=1000.0, max_value=1e8, step=1000.0, label_visibility="collapsed")
 with c2:
     tip_label(f"Prix initial {token_a_name} ($)", f"Prix d'entrée du Token A ({token_a_name}) au moment du dépôt. Ce prix sert de centre pour définir le range initial.")
-    price_a0 = st.number_input("price_a0_input", value=3000.0, min_value=0.01, max_value=10000000.0, step=10.0, label_visibility="collapsed")
+    price_a0 = st.number_input("price_a0_input", value=2000.0, min_value=0.01, max_value=10000000.0, step=10.0, label_visibility="collapsed")
 with c3:
     tip_label(f"Prix initial {token_b_name} ($)", f"Prix du Token B ({token_b_name}). Pour un stablecoin : 1.00$. Pour un actif volatile : son prix en USD.")
     price_b0 = st.number_input("price_b0_input", value=1.0, min_value=0.001, max_value=100000.0, step=0.01, label_visibility="collapsed")
 with c4:
-    tip_label("Nombre de pas de simulation", "Nombre d'itérations. 500 = rapide. 2000+ = détaillé. Chaque pas représente une bougie (ex: 1H, 4H selon votre timeframe réel).")
+    tip_label("STEPS de simulation", "Nombre d'itérations. 500 = rapide. 2000+ = détaillé. Chaque pas représente une bougie (ex: 1H, 4H selon votre timeframe réel).")
     steps = st.number_input("steps_input", value=500, min_value=50, max_value=5000, step=50, label_visibility="collapsed")
 
 st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
@@ -465,10 +465,10 @@ lp1, lp2, lp3 = st.columns(3)
 with lp1:
     tip_label("Largeur de range (%)", f"Écart en % de chaque côté du prix actuel. Range 8% → Lower = prix × 0.92, Upper = prix × 1.08. Serré = plus de fees, mais sortie fréquente du range.")
     range_width = st.slider("range_w", 1, 30, 8, label_visibility="collapsed")
-    tip_label("Time buffer (nb de bougies)", "Nombre de bougies consécutives hors range avant rebalance. Évite les faux breakouts. Recommandé : 3–6 selon la volatilité.")
+    tip_label("Time buffer (nb de bougies)", "Nombre de bougies consécutives hors range avant rebalance. Évite les faux breakouts. Recommandé : 3–6 selon la volatilité. 1 = 5 minutes")
     buffer = st.slider("buffer_sl", 1, 20, 3, label_visibility="collapsed")
 with lp2:
-    tip_label("Fee par bougie (%)", "Taux de frais collectés par bougie quand le prix est in-range. 0.02%/bougie ≈ 7.3%/an si actif en permanence. Dépend du protocole (0.05%, 0.3%, 1%).")
+    tip_label("Trading fees (%)", "Taux de frais collectés quand le prix est in-range. 0.02%/bougie ≈ 7.3%/an si actif en permanence. Dépend du protocole (0.05%, 0.3%, 1%).")
     fee_rate = st.slider("fee_r", 0.0, 0.20, 0.02, step=0.005, label_visibility="collapsed")
     tip_label("Slippage (%)", "Perte lors de chaque swap de rebalance due à l'impact de marché. 0.10% est réaliste sur paires liquides. Augmente sur paires peu liquides.")
     slippage = st.slider("slip_sl", 0.0, 2.0, 0.10, step=0.05, label_visibility="collapsed")
@@ -655,7 +655,7 @@ if run:
     # ══════════════════════════════════════════════════════
     # ── KPIs ──
     # ══════════════════════════════════════════════════════
-    sec("◉", "KPIs — Résultats de simulation")
+    sec("◉", "Key Performance Indicators — Résultats de simulation")
 
     st.markdown(f"""
     <div class="m-card-wide" style="margin-bottom:14px;">
@@ -760,7 +760,7 @@ if run:
     st.plotly_chart(fig_ma, use_container_width=True)
 
     # ── DISTANCE MA50 ──
-    sec("△", "Distance au MA50 (%)")
+    sec("△", "Distance au MA50 (%) - Moving Average")
 
     fig_dist = go.Figure()
     fig_dist.add_trace(go.Scatter(
@@ -788,7 +788,7 @@ if run:
     st.plotly_chart(fig_dist, use_container_width=True)
 
     # ── ADX ──
-    sec("◈", "ADX Proxy — Force de tendance")
+    sec("◈", "Average Directionnal Index Proxy — Force de tendance")
 
     fig_adx = go.Figure()
     fig_adx.add_trace(go.Scatter(
@@ -850,126 +850,173 @@ if run:
     st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
     # ══════════════════════════════════════════════════════
-    # ── SUGGESTION DE RATIO ──
-    # ══════════════════════════════════════════════════════
-    sec("◉", "Suggestion de ratio — Recommandation stratégique post-simulation")
+# ── SUGGESTION DE RATIO ──
+# ══════════════════════════════════════════════════════
+sec("◉", "Suggestion de ratio — Recommandation stratégique post-simulation")
 
-    last_price  = res.price.iloc[-1]
-    last_ma50   = res.ma50.iloc[-1]
-    last_ma200  = res.ma200.iloc[-1]
-    last_adx    = res.adx.iloc[-1]
-    last_dist   = res.dist_ma50_pct.iloc[-1]
+last_price  = res.price.iloc[-1]
+last_ma50   = res.ma50.iloc[-1]
+last_ma200  = res.ma200.iloc[-1]
+last_adx    = res.adx.iloc[-1]
+last_dist   = res.dist_ma50_pct.iloc[-1]
 
-    if last_adx < 20:
-        regime = "range"
-        regime_label = "📊 Marché en range (ADX < 20)"
-        regime_bg    = "rgba(14,165,233,.12)"
-        regime_border= "rgba(14,165,233,.3)"
-        regime_color = "#0ea5e9"
-    elif last_price > last_ma50 and last_ma50 > last_ma200:
-        regime = "bull"
-        regime_label = "🔺 Tendance haussière (Golden Cross)"
-        regime_bg    = "rgba(34,197,94,.12)"
-        regime_border= "rgba(34,197,94,.3)"
-        regime_color = "#22c55e"
-    elif last_price < last_ma50 and last_ma50 < last_ma200:
-        regime = "bear"
-        regime_label = "🔻 Tendance baissière (Death Cross)"
-        regime_bg    = "rgba(239,68,68,.12)"
-        regime_border= "rgba(239,68,68,.3)"
-        regime_color = "#ef4444"
+if last_adx < 20:
+    regime = "range"
+    regime_label = "📊 Marché en range (ADX < 20)"
+    regime_bg = "rgba(14,165,233,.12)"
+    regime_border = "rgba(14,165,233,.3)"
+    regime_color = "#0ea5e9"
+elif last_price > last_ma50 and last_ma50 > last_ma200:
+    regime = "bull"
+    regime_label = "🔺 Tendance haussière (Golden Cross)"
+    regime_bg = "rgba(34,197,94,.12)"
+    regime_border = "rgba(34,197,94,.3)"
+    regime_color = "#22c55e"
+elif last_price < last_ma50 and last_ma50 < last_ma200:
+    regime = "bear"
+    regime_label = "🔻 Tendance baissière (Death Cross)"
+    regime_bg = "rgba(239,68,68,.12)"
+    regime_border = "rgba(239,68,68,.3)"
+    regime_color = "#ef4444"
+else:
+    regime = "neutral"
+    regime_label = "↔ Zone de transition / neutre"
+    regime_bg = "rgba(245,158,11,.12)"
+    regime_border = "rgba(245,158,11,.3)"
+    regime_color = "#f59e0b"
+
+if abs(last_dist) < 5:
+    strength_label = "Faible (0–5%)"
+    a_bull, b_bull = 40, 60
+    a_bear, b_bear = 60, 40
+elif abs(last_dist) < 15:
+    strength_label = "Modérée (5–15%)"
+    a_bull, b_bull = 30, 70
+    a_bear, b_bear = 70, 30
+else:
+    strength_label = "Forte (> 15%)"
+    a_bull, b_bull = 15, 85
+    a_bear, b_bear = 85, 15
+
+if regime in ("bull", "range"):
+    if last_dist >= 0:
+        a_sugg, b_sugg = a_bull, b_bull
+        dir_sugg = "haussière"
     else:
-        regime = "neutral"
-        regime_label = "↔ Zone de transition / neutre"
-        regime_bg    = "rgba(245,158,11,.12)"
-        regime_border= "rgba(245,158,11,.3)"
-        regime_color = "#f59e0b"
-
-    if abs(last_dist) < 5:
-        strength_label = "Faible (0–5%)"
-        a_bull, b_bull = 40, 60
-        a_bear, b_bear = 60, 40
-    elif abs(last_dist) < 15:
-        strength_label = "Modérée (5–15%)"
-        a_bull, b_bull = 30, 70
-        a_bear, b_bear = 70, 30
+        a_sugg, b_sugg = a_bear, b_bear
+        dir_sugg = "baissière"
+else:
+    if last_dist < 0:
+        a_sugg, b_sugg = a_bear, b_bear
+        dir_sugg = "baissière"
     else:
-        strength_label = "Forte (> 15%)"
-        a_bull, b_bull = 15, 85
-        a_bear, b_bear = 85, 15
+        a_sugg, b_sugg = a_bull, b_bull
+        dir_sugg = "haussière"
 
-    if regime in ("bull", "range"):
-        if last_dist >= 0:
-            a_sugg, b_sugg = a_bull, b_bull
-            dir_sugg = "haussière"
-        else:
-            a_sugg, b_sugg = a_bear, b_bear
-            dir_sugg = "baissière"
-    else:
-        if last_dist < 0:
-            a_sugg, b_sugg = a_bear, b_bear
-            dir_sugg = "baissière"
-        else:
-            a_sugg, b_sugg = a_bull, b_bull
-            dir_sugg = "haussière"
+if last_adx < 20:
+    range_sugg = "5–8%"
+    range_reason = "marché en range : range serré pour maximiser les fees"
+elif last_adx < 30:
+    range_sugg = "8–12%"
+    range_reason = "tendance modérée : range intermédiaire pour équilibrer fees et durée"
+else:
+    range_sugg = "12–20%+"
+    range_reason = "forte tendance : range large pour réduire les rebalances"
 
-    if last_adx < 20:
-        range_sugg   = "5–8%"
-        range_reason = "marché en range : range serré pour maximiser les fees"
-    elif last_adx < 30:
-        range_sugg   = "8–12%"
-        range_reason = "tendance modérée : range intermédiaire pour équilibrer fees et durée"
-    else:
-        range_sugg   = "12–20%+"
-        range_reason = "forte tendance : range large pour réduire les rebalances"
+whipsaw_ratio = (whipsaws / rebalances * 100) if rebalances > 0 else 0
+fees_cost_ratio = (fees_total / avg_reb_cost) if avg_reb_cost > 0 else float("inf")
 
-    whipsaw_ratio = (whipsaws / rebalances * 100) if rebalances > 0 else 0
-    fees_cost_ratio = (fees_total / avg_reb_cost) if avg_reb_cost > 0 else float("inf")
+whipsaw_color = "#ef4444" if whipsaw_ratio > 40 else "#f59e0b" if whipsaw_ratio > 20 else "#22c55e"
+whipsaw_msg = (
+    "⚠ Augmentez le time buffer !"
+    if whipsaw_ratio > 40
+    else "✓ Acceptable"
+    if whipsaw_ratio > 20
+    else "✓ Optimal"
+)
 
-    whipsaw_color = "#ef4444" if whipsaw_ratio > 40 else "#f59e0b" if whipsaw_ratio > 20 else "#22c55e"
-    whipsaw_msg   = "⚠ Augmentez le time buffer !" if whipsaw_ratio > 40 else "✓ Acceptable" if whipsaw_ratio > 20 else "✓ Optimal"
-    fees_color2   = "#22c55e" if fees_total > avg_reb_cost else "#ef4444"
-    fees_msg      = "✓ Fees supérieurs aux coûts" if fees_total > avg_reb_cost else "⚠ Coûts supérieurs aux fees — réduire les rebalances"
+fees_color2 = "#22c55e" if fees_total > avg_reb_cost else "#ef4444"
+fees_msg = (
+    "✓ Fees supérieurs aux coûts"
+    if fees_total > avg_reb_cost
+    else "⚠ Coûts supérieurs aux fees — réduire les rebalances"
+)
 
-    dist_color = "#22c55e" if last_dist >= 0 else "#ef4444"
+dist_color = "#22c55e" if last_dist >= 0 else "#ef4444"
 
-    st.markdown(f"""
-    <div class="sugg-box">
-        <div class="sugg-title">◈ Analyse du régime de marché simulé</div>
+html_suggestion = f"""
+<div class="sugg-box">
+    <div class="sugg-title">◈ Analyse du régime de marché simulé</div>
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
-            <span style="background:{regime_bg}; border:1px solid {regime_border};
-                border-radius:6px; padding:5px 12px; font-family:'JetBrains Mono',monospace;
-                font-size:11px; color:{regime_color};">{regime_label}</span>
-            <span style="background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.3);
-                border-radius:6px; padding:5px 12px; font-family:'JetBrains Mono',monospace;
-                font-size:11px; color:#f59e0b;">Force tendance : {strength_label}</span>
-            <span style="background:rgba(0,212,170,.10); border:1px solid rgba(0,212,170,.2);
-                border-radius:6px; padding:5px 12px; font-family:'JetBrains Mono',monospace;
-                font-size:11px; color:{dist_color};">Distance MA50 : {last_dist:+.1f}%</span>
-        </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+        <span style="background:{regime_bg}; border:1px solid {regime_border};
+            border-radius:6px; padding:5px 12px;
+            font-family:'JetBrains Mono',monospace;
+            font-size:11px; color:{regime_color};">
+            {regime_label}
+        </span>
 
-        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#b0bec5; line-height:2.2;">
+        <span style="background:rgba(245,158,11,.12);
+            border:1px solid rgba(245,158,11,.3);
+            border-radius:6px; padding:5px 12px;
+            font-family:'JetBrains Mono',monospace;
+            font-size:11px; color:#f59e0b;">
+            Force tendance : {strength_label}
+        </span>
 
-            <b style="color:#f0f4f8;">Ratio suggéré pour le prochain range :</b><br>
-            → <span style="color:#f59e0b;">{token_a_name} : {a_sugg}%</span>
-            &nbsp;/&nbsp;
-            <span style="color:#0ea5e9;">{token_b_name} : {b_sugg}%</span>
-            &nbsp;(tendance {dir_sugg}, force {strength_label.lower()})<br><br>
+        <span style="background:rgba(0,212,170,.10);
+            border:1px solid rgba(0,212,170,.2);
+            border-radius:6px; padding:5px 12px;
+            font-family:'JetBrains Mono',monospace;
+            font-size:11px; color:{dist_color};">
+            Distance MA50 : {last_dist:+.1f}%
+        </span>
+    </div>
 
-            <b style="color:#f0f4f8;">Largeur de range suggérée :</b> {range_sugg}<br>
-            <span style="color:#8899aa; font-size:11px;">↳ {range_reason}</span><br><br>
+    <div style="font-family:'JetBrains Mono',monospace;
+        font-size:12px; color:#b0bec5; line-height:2.2;">
 
-            <b style="color:#f0f4f8;">Taux de whipsaw :</b>
-            <span style="color:{whipsaw_color};">{whipsaw_ratio:.0f}% ({whipsaws}/{rebalances})</span>
-            &nbsp; {whipsaw_msg}<br><br>
+        <b style="color:#f0f4f8;">Ratio suggéré pour le prochain range :</b><br>
 
-            <b style="color:#f0f4f8;">Ratio fees/coûts :</b>
-            <span style="color:{fees_color2};">x{fees_cost_ratio:.1f}</span>
-            &nbsp; {fees_msg}<br>
+        → <span style="color:#f59e0b;">{token_a_name} : {a_sugg}%</span>
+        &nbsp;/&nbsp;
+        <span style="color:#0ea5e9;">{token_b_name} : {b_sugg}%</span>
+        &nbsp;(tendance {dir_sugg}, force {strength_label.lower()})
 
-        </div>
-    </div>""", unsafe_allow_html=True)
+        <br><br>
+
+        <b style="color:#f0f4f8;">Largeur de range suggérée :</b>
+        {range_sugg}<br>
+
+        <span style="color:#8899aa; font-size:11px;">
+            ↳ {range_reason}
+        </span>
+
+        <br><br>
+
+        <b style="color:#f0f4f8;">Taux de whipsaw :</b>
+
+        <span style="color:{whipsaw_color};">
+            {whipsaw_ratio:.0f}% ({whipsaws}/{rebalances})
+        </span>
+
+        &nbsp; {whipsaw_msg}
+
+        <br><br>
+
+        <b style="color:#f0f4f8;">Ratio fees/coûts :</b>
+
+        <span style="color:{fees_color2};">
+            x{fees_cost_ratio:.1f}
+        </span>
+
+        &nbsp; {fees_msg}
+
+    </div>
+</div>
+"""
+
+st.markdown(html_suggestion, unsafe_allow_html=True)
 
     # ── TABLEAU DE RÉFÉRENCE ──
     st.markdown(f"""
