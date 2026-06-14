@@ -1013,7 +1013,6 @@ if run:
                 <th style="text-align:left; padding:5px 10px; font-size:10px; letter-spacing:1px;">RATIO {token_a_name}/{token_b_name}</th>
                 <th style="text-align:left; padding:5px 10px; font-size:10px; letter-spacing:1px;">RANGE SUGGÉRÉ</th>
             </tr>
-
             <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
                 <td style="padding:5px 10px; color:#22c55e;">🔺 Haussier</td>
                 <td style="padding:5px 10px; color:#b0bec5;">Faible</td>
@@ -1021,7 +1020,6 @@ if run:
                 <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">40 / 60</td>
                 <td style="padding:5px 10px; color:#b0bec5;">8–12%</td>
             </tr>
-
             <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
                 <td style="padding:5px 10px; color:#22c55e;">🔺 Haussier</td>
                 <td style="padding:5px 10px; color:#b0bec5;">Modérée</td>
@@ -1029,7 +1027,6 @@ if run:
                 <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">30 / 70</td>
                 <td style="padding:5px 10px; color:#b0bec5;">10–16%</td>
             </tr>
-
             <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
                 <td style="padding:5px 10px; color:#22c55e;">🔺 Haussier</td>
                 <td style="padding:5px 10px; color:#b0bec5;">Forte</td>
@@ -1037,7 +1034,6 @@ if run:
                 <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">15 / 85</td>
                 <td style="padding:5px 10px; color:#b0bec5;">14–20%+</td>
             </tr>
-
             <tr style="border-bottom:1px solid rgba(255,255,255,0.03); background:rgba(14,165,233,0.04);">
                 <td style="padding:5px 10px; color:#0ea5e9;">↔ Range</td>
                 <td style="padding:5px 10px; color:#b0bec5;">—</td>
@@ -1045,7 +1041,6 @@ if run:
                 <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">50 / 50</td>
                 <td style="padding:5px 10px; color:#b0bec5;">5–8%</td>
             </tr>
-
             <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
                 <td style="padding:5px 10px; color:#ef4444;">🔻 Baissier</td>
                 <td style="padding:5px 10px; color:#b0bec5;">Faible</td>
@@ -1053,7 +1048,6 @@ if run:
                 <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">60 / 40</td>
                 <td style="padding:5px 10px; color:#b0bec5;">8–12%</td>
             </tr>
-
             <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
                 <td style="padding:5px 10px; color:#ef4444;">🔻 Baissier</td>
                 <td style="padding:5px 10px; color:#b0bec5;">Modérée</td>
@@ -1061,7 +1055,6 @@ if run:
                 <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">70 / 30</td>
                 <td style="padding:5px 10px; color:#b0bec5;">10–16%</td>
             </tr>
-
             <tr>
                 <td style="padding:5px 10px; color:#ef4444;">🔻 Baissier</td>
                 <td style="padding:5px 10px; color:#b0bec5;">Forte</td>
@@ -1069,7 +1062,6 @@ if run:
                 <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">85 / 15</td>
                 <td style="padding:5px 10px; color:#b0bec5;">14–20%+</td>
             </tr>
-
         </table>
         </div>
     </div>
