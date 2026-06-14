@@ -944,14 +944,33 @@ if run:
 
     dist_color = "#22c55e" if last_dist >= 0 else "#ef4444"
 
-    html_suggestion = f"""
+import streamlit.components.v1 as components
+
+html_suggestion = f"""
+<style>
+.sugg-box {{
+    background: #0f172a;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    font-family: 'JetBrains Mono', monospace;
+}}
+
+.sugg-title {{
+    font-size: 13px;
+    color: #f0f4f8;
+    margin-bottom: 12px;
+    font-weight: 600;
+}}
+</style>
+
 <div class="sugg-box">
+
     <div class="sugg-title">◈ Analyse du régime de marché simulé</div>
 
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
         <span style="background:{regime_bg}; border:1px solid {regime_border};
             border-radius:6px; padding:5px 12px;
-            font-family:'JetBrains Mono',monospace;
             font-size:11px; color:{regime_color};">
             {regime_label}
         </span>
@@ -959,7 +978,6 @@ if run:
         <span style="background:rgba(245,158,11,.12);
             border:1px solid rgba(245,158,11,.3);
             border-radius:6px; padding:5px 12px;
-            font-family:'JetBrains Mono',monospace;
             font-size:11px; color:#f59e0b;">
             Force tendance : {strength_label}
         </span>
@@ -967,14 +985,12 @@ if run:
         <span style="background:rgba(0,212,170,.10);
             border:1px solid rgba(0,212,170,.2);
             border-radius:6px; padding:5px 12px;
-            font-family:'JetBrains Mono',monospace;
             font-size:11px; color:{dist_color};">
             Distance MA50 : {last_dist:+.1f}%
         </span>
     </div>
 
-    <div style="font-family:'JetBrains Mono',monospace;
-        font-size:12px; color:#b0bec5; line-height:2.2;">
+    <div style="font-size:12px; color:#b0bec5; line-height:2.2;">
 
         <b style="color:#f0f4f8;">Ratio suggéré pour le prochain range :</b><br>
 
@@ -995,28 +1011,24 @@ if run:
         <br><br>
 
         <b style="color:#f0f4f8;">Taux de whipsaw :</b>
-
         <span style="color:{whipsaw_color};">
             {whipsaw_ratio:.0f}% ({whipsaws}/{rebalances})
         </span>
-
         &nbsp; {whipsaw_msg}
 
         <br><br>
 
         <b style="color:#f0f4f8;">Ratio fees/coûts :</b>
-
         <span style="color:{fees_color2};">
             x{fees_cost_ratio:.1f}
         </span>
-
         &nbsp; {fees_msg}
 
     </div>
 </div>
 """
 
-    st.markdown(html_suggestion, unsafe_allow_html=True)
+components.html(html_suggestion, height=450, scrolling=True)
 
     # ── TABLEAU DE RÉFÉRENCE ──
     st.markdown(f"""
