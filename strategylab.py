@@ -945,78 +945,81 @@ if run:
     dist_color = "#22c55e" if last_dist >= 0 else "#ef4444"
 
     html_suggestion = f"""
-<style>
-.sugg-box {{
-    all: unset;
-    display: block;
-    background: #0f172a;
-    padding: 16px;
-    border-radius: 12px;
-    font-family: 'JetBrains Mono', monospace;
-}}
-
-.sugg-title {{
-    font-size: 14px;
-    font-weight: 600;
-    color: #e2e8f0;
-    margin-bottom: 12px;
-}}
-
-.sugg-row {{
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 18px;
-}}
-
-.sugg-badge {{
-    border-radius: 6px;
-    padding: 5px 12px;
-    font-size: 11px;
-    white-space: nowrap;
-}}
-
-</style>
-
 <div class="sugg-box">
-
     <div class="sugg-title">◈ Analyse du régime de marché simulé</div>
 
-    <div class="sugg-row">
-
-        <span class="sugg-badge"
-            style="background:{regime_bg}; border:1px solid {regime_border}; color:{regime_color};">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
+        <span style="background:{regime_bg}; border:1px solid {regime_border};
+            border-radius:6px; padding:5px 12px;
+            font-family:'JetBrains Mono',monospace;
+            font-size:11px; color:{regime_color};">
             {regime_label}
         </span>
 
-        <span class="sugg-badge"
-            style="background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.3); color:#f59e0b;">
+        <span style="background:rgba(245,158,11,.12);
+            border:1px solid rgba(245,158,11,.3);
+            border-radius:6px; padding:5px 12px;
+            font-family:'JetBrains Mono',monospace;
+            font-size:11px; color:#f59e0b;">
             Force tendance : {strength_label}
         </span>
 
-        <span class="sugg-badge"
-            style="background:rgba(0,212,170,.10); border:1px solid rgba(0,212,170,.2); color:{dist_color};">
+        <span style="background:rgba(0,212,170,.10);
+            border:1px solid rgba(0,212,170,.2);
+            border-radius:6px; padding:5px 12px;
+            font-family:'JetBrains Mono',monospace;
+            font-size:11px; color:{dist_color};">
             Distance MA50 : {last_dist:+.1f}%
         </span>
-
     </div>
 
-    <div style="font-size:12px; color:#b0bec5; line-height:1.8;">
+    <div style="font-family:'JetBrains Mono',monospace;
+        font-size:12px; color:#b0bec5; line-height:2.2;">
 
-        <b style="color:#f0f4f8;">Ratio suggéré :</b><br>
+        <b style="color:#f0f4f8;">Ratio suggéré pour le prochain range :</b><br>
+
         → <span style="color:#f59e0b;">{token_a_name} : {a_sugg}%</span>
-        /
+        &nbsp;/&nbsp;
         <span style="color:#0ea5e9;">{token_b_name} : {b_sugg}%</span>
+        &nbsp;(tendance {dir_sugg}, force {strength_label.lower()})
+
+        <br><br>
+
+        <b style="color:#f0f4f8;">Largeur de range suggérée :</b>
+        {range_sugg}<br>
+
+        <span style="color:#8899aa; font-size:11px;">
+            ↳ {range_reason}
+        </span>
+
+        <br><br>
+
+        <b style="color:#f0f4f8;">Taux de whipsaw :</b>
+
+        <span style="color:{whipsaw_color};">
+            {whipsaw_ratio:.0f}% ({whipsaws}/{rebalances})
+        </span>
+
+        &nbsp; {whipsaw_msg}
+
+        <br><br>
+
+        <b style="color:#f0f4f8;">Ratio fees/coûts :</b>
+
+        <span style="color:{fees_color2};">
+            x{fees_cost_ratio:.1f}
+        </span>
+
+        &nbsp; {fees_msg}
 
     </div>
-
 </div>
 """
 
-st.markdown(html_suggestion, unsafe_allow_html=True)
+    st.markdown(html_suggestion, unsafe_allow_html=True)
 
     # ── TABLEAU DE RÉFÉRENCE ──
-st.markdown(f"""
+    st.markdown(f"""
     <div class="m-card-wide" style="margin-top:10px;">
         <div class="m-label">Tableau de référence — Ratios {token_a_name}/{token_b_name} par régime & force de tendance</div>
         <div style="margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:2; color:#b0bec5;">
