@@ -281,7 +281,7 @@ boot_ph = st.empty()
 
 if not st.session_state.boot_done:
     lines_boot = [
-        "◈ LP STRATEGY LAB V2 — INITIALIZING",
+        "◈ LP STRATEGY LAB — LIVE — INITIALIZING",
         "─────────────────────────────────────────────",
         "▸ Chargement des modules...",
         "  [✓] Générateur de scénarios de marché (Bull/Bear/Sideways/Volatile/Flash Crash)",
