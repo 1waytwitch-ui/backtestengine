@@ -1016,7 +1016,7 @@ html_suggestion = f"""
 </div>
 """
 
-    st.markdown(html_suggestion, unsafe_allow_html=True)
+        st.markdown(html_suggestion, unsafe_allow_html=True)
 
     # ── TABLEAU DE RÉFÉRENCE ──
     st.markdown(f"""
