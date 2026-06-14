@@ -947,7 +947,6 @@ if run:
     html_suggestion = f"""
 <div class="sugg-box">
     <div class="sugg-title">◈ Analyse du régime de marché simulé</div>
-
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:18px;">
         <span style="background:{regime_bg}; border:1px solid {regime_border};
             border-radius:6px; padding:5px 12px;
@@ -955,7 +954,6 @@ if run:
             font-size:11px; color:{regime_color};">
             {regime_label}
         </span>
-
         <span style="background:rgba(245,158,11,.12);
             border:1px solid rgba(245,158,11,.3);
             border-radius:6px; padding:5px 12px;
@@ -963,7 +961,6 @@ if run:
             font-size:11px; color:#f59e0b;">
             Force tendance : {strength_label}
         </span>
-
         <span style="background:rgba(0,212,170,.10);
             border:1px solid rgba(0,212,170,.2);
             border-radius:6px; padding:5px 12px;
@@ -972,46 +969,31 @@ if run:
             Distance MA50 : {last_dist:+.1f}%
         </span>
     </div>
-
     <div style="font-family:'JetBrains Mono',monospace;
         font-size:12px; color:#b0bec5; line-height:2.2;">
-
         <b style="color:#f0f4f8;">Ratio suggéré pour le prochain range :</b><br>
-
         → <span style="color:#f59e0b;">{token_a_name} : {a_sugg}%</span>
         &nbsp;/&nbsp;
         <span style="color:#0ea5e9;">{token_b_name} : {b_sugg}%</span>
         &nbsp;(tendance {dir_sugg}, force {strength_label.lower()})
-
         <br><br>
-
         <b style="color:#f0f4f8;">Largeur de range suggérée :</b>
         {range_sugg}<br>
-
         <span style="color:#8899aa; font-size:11px;">
             ↳ {range_reason}
         </span>
-
         <br><br>
-
         <b style="color:#f0f4f8;">Taux de whipsaw :</b>
-
         <span style="color:{whipsaw_color};">
             {whipsaw_ratio:.0f}% ({whipsaws}/{rebalances})
         </span>
-
         &nbsp; {whipsaw_msg}
-
         <br><br>
-
         <b style="color:#f0f4f8;">Ratio fees/coûts :</b>
-
         <span style="color:{fees_color2};">
             x{fees_cost_ratio:.1f}
         </span>
-
         &nbsp; {fees_msg}
-
     </div>
 </div>
 """
