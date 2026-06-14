@@ -1016,7 +1016,7 @@ if run:
 st.markdown(html_suggestion, unsafe_allow_html=True)
 
     # ── TABLEAU DE RÉFÉRENCE ──
-        st.markdown(f"""
+st.markdown(f"""
     <div class="m-card-wide" style="margin-top:10px;">
         <div class="m-label">Tableau de référence — Ratios {token_a_name}/{token_b_name} par régime & force de tendance</div>
         <div style="margin-top:12px; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:2; color:#b0bec5;">
