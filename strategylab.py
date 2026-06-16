@@ -482,7 +482,7 @@ sec("⊞", "Paramètres Marché")
 c1, c2, c3, c4 = st.columns(4)
 with c1:
     tip_label(f"Capital total ($)", "Montant total en USD déployé dans la stratégie LP. Sert de base pour tous les calculs de performance et de ratio.")
-    capital = st.number_input("capital_input", value=1000.0, min_value=1000.0, max_value=1e8, step=1000.0, label_visibility="collapsed")
+    capital = st.number_input("capital_input", value=1000.0, min_value=10.0, max_value=1e8, step=1000.0, label_visibility="collapsed")
 with c2:
     tip_label(f"Prix initial {token_a_name} ($)", f"Prix d'entrée du Token A ({token_a_name}) au moment du dépôt. Ce prix sert de centre pour définir le range initial.")
     price_a0 = st.number_input("price_a0_input", value=2000.0, min_value=0.01, max_value=10000000.0, step=10.0, label_visibility="collapsed")
