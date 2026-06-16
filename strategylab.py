@@ -589,27 +589,109 @@ with sc1:
     """, unsafe_allow_html=True)
 
 with sc2:
-    tip_label("Modèle de tendance", "Algorithme de calcul du ratio lors d'un rebalance. Fixed = simple. MA50/MA200 = moyennes mobiles. ADX = force de tendance. Manuel = vous saisissez la distance au MA50. Coup de Pouce = 80/20 sur retournement.")
+    tip_label("Modèle de tendance", "Algorithme de calcul du ratio lors d'un rebalance. Chaque modèle a une logique différente — une carte explicative s'affiche à la sélection.")
     trend_mode = st.selectbox("trend_sel",
-        ["Fixed 75/25","Fixed 70/30","MA50","MA50+MA200","ADX","Manuel Distance MA50","Coup de Pouce"],
+        ["Neutre 50/50", "Fixed 75/25", "Fixed 70/30", "MA50", "MA50+MA200",
+         "ADX", "Manuel Distance MA50", "Ratio Manuel", "Coup de Pouce"],
         label_visibility="collapsed")
 
-    if trend_mode == "Coup de Pouce":
+    # ── Initialisation des variables optionnelles ──
+    manual_ma50_dist = 0.0
+    manual_ratio_a   = 50
+
+    # ── Carte explicative selon le modèle sélectionné ──
+    if trend_mode == "Neutre 50/50":
         st.markdown(f"""
-        <div class="m-card" style="margin-top:6px; border-color:rgba(245,158,11,0.35);">
-            <div class="m-label" style="color:#f59e0b;">◈ Stratégie Coup de Pouce</div>
+        <div class="m-card" style="margin-top:6px; border-color:rgba(14,165,233,0.35);">
+            <div class="m-label" style="color:#0ea5e9;">◈ Modèle Neutre 50/50</div>
             <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
-                · Trigger <span style="color:#ef4444;">BAS</span> : position full {token_a_name} (100%) → rachat 20% {token_b_name}<br>
-                &nbsp;&nbsp;→ Nouveau ratio : <span style="color:#f59e0b;">{token_a_name} 80% / {token_b_name} 20%</span><br>
-                · Trigger <span style="color:#22c55e;">HAUT</span> : position full {token_b_name} (100%) → rachat 20% {token_a_name}<br>
-                &nbsp;&nbsp;→ Nouveau ratio : <span style="color:#0ea5e9;">{token_a_name} 20% / {token_b_name} 80%</span><br>
-                · Logique : on attend d'être quasiment sorti d'un côté pour ne racheter<br>
-                &nbsp;&nbsp;qu'une petite dose de l'actif opposé pour ré-entrer dans un nouveau range.
+                · Peu importe la direction du trigger, le portefeuille est toujours rééquilibré<br>
+                &nbsp;&nbsp;à égalité stricte : <span style="color:#f0f4f8;">50% {token_a_name} / 50% {token_b_name}</span><br>
+                · Stratégie symétrique, sans opinion directionnelle sur le marché<br>
+                · Idéale sur les marchés <span style="color:#0ea5e9;">latéraux (Sideways)</span> où le prix revient au centre<br>
+                · Minimise l'exposition directionnelle, mais réduit les gains en tendance forte<br>
+                · Cas d'usage : paires stables, marchés peu directionnels, débutants
             </div>
         </div>""", unsafe_allow_html=True)
-        manual_ma50_dist = 0.0
+
+    elif trend_mode == "Fixed 75/25":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(0,212,170,0.35);">
+            <div class="m-label" style="color:var(--accent);">◈ Modèle Fixed 75/25</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · Trigger <span style="color:#22c55e;">HAUT</span> : <span style="color:#f0f4f8;">75% {token_a_name} / 25% {token_b_name}</span> — biais haussier modéré<br>
+                · Trigger <span style="color:#ef4444;">BAS</span> : <span style="color:#f0f4f8;">25% {token_a_name} / 75% {token_b_name}</span> — biais baissier modéré<br>
+                · Ratio fixe, simple à comprendre, sans calcul dynamique<br>
+                · Bonne option pour suivre une tendance <span style="color:#f59e0b;">modérée</span> sans sur-exposer<br>
+                · Cas d'usage : première stratégie, marchés avec tendance légère
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+    elif trend_mode == "Fixed 70/30":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(0,212,170,0.35);">
+            <div class="m-label" style="color:var(--accent);">◈ Modèle Fixed 70/30</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · Trigger <span style="color:#22c55e;">HAUT</span> : <span style="color:#f0f4f8;">70% {token_a_name} / 30% {token_b_name}</span> — biais haussier léger<br>
+                · Trigger <span style="color:#ef4444;">BAS</span> : <span style="color:#f0f4f8;">30% {token_a_name} / 70% {token_b_name}</span> — biais baissier léger<br>
+                · Version plus conservative que le 75/25<br>
+                · Garde plus de {token_b_name} en hausse → moins d'exposition au retournement<br>
+                · Cas d'usage : marchés incertains, capital à protéger, tendance peu claire
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+    elif trend_mode == "MA50":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(245,158,11,0.35);">
+            <div class="m-label" style="color:#f59e0b;">◈ Modèle MA50 — Moyenne Mobile 50</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · Si prix <span style="color:#22c55e;">&gt; MA50</span> : <span style="color:#f0f4f8;">85% {token_a_name} / 15% {token_b_name}</span> — forte conviction haussière<br>
+                · Si prix <span style="color:#ef4444;">&lt; MA50</span> : <span style="color:#f0f4f8;">15% {token_a_name} / 85% {token_b_name}</span> — forte conviction baissière<br>
+                · Le ratio s'adapte dynamiquement à chaque rebalance selon la MA50 simulée<br>
+                · Plus agressif que les Fixed — amplifie les gains en tendance, mais aussi les pertes<br>
+                · Cas d'usage : tendances claires, opérateurs expérimentés, bull/bear confirmé
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+    elif trend_mode == "MA50+MA200":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(245,158,11,0.35);">
+            <div class="m-label" style="color:#f59e0b;">◈ Modèle MA50+MA200 — Golden / Death Cross</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · <span style="color:#22c55e;">Golden Cross</span> (prix &gt; MA50 ET MA50 &gt; MA200) : <span style="color:#f0f4f8;">85% {token_a_name} / 15% {token_b_name}</span><br>
+                · <span style="color:#ef4444;">Death Cross</span> (prix &lt; MA50 ET MA50 &lt; MA200) : <span style="color:#f0f4f8;">15% {token_a_name} / 85% {token_b_name}</span><br>
+                · <span style="color:#f59e0b;">Zone neutre</span> (signaux contradictoires) : <span style="color:#f0f4f8;">60% {token_a_name} / 40% {token_b_name}</span><br>
+                · Double confirmation → signaux plus fiables mais plus lents à réagir<br>
+                · Cas d'usage : positions longues, cycles macro, tendances de fond
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+    elif trend_mode == "ADX":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(139,92,246,0.35);">
+            <div class="m-label" style="color:#8b5cf6;">◈ Modèle ADX — Force de Tendance</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · <span style="color:#0ea5e9;">ADX &lt; 20</span> (range) : biais neutre <span style="color:#f0f4f8;">60/40</span><br>
+                · <span style="color:#f59e0b;">ADX 20–30</span> (tendance modérée) : biais <span style="color:#f0f4f8;">70/30</span><br>
+                · <span style="color:#22c55e;">ADX &gt; 30</span> (tendance forte) : biais <span style="color:#f0f4f8;">85/15</span><br>
+                · Direction déterminée par le trigger (haut ou bas), force déterminée par l'ADX<br>
+                · Adaptatif : conservateur en range, agressif en tendance forte<br>
+                · Cas d'usage : tous marchés, stratégie polyvalente auto-adaptative
+            </div>
+        </div>""", unsafe_allow_html=True)
 
     elif trend_mode == "Manuel Distance MA50":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(14,165,233,0.35);">
+            <div class="m-label" style="color:#0ea5e9;">◈ Modèle Manuel Distance MA50</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · Vous renseignez manuellement la distance (%) entre le prix spot et la MA50<br>
+                · Lisez cette valeur sur <span style="color:#f0f4f8;">TradingView</span> pour votre actif réel<br>
+                · 0–5% → biais 60/40 · 5–15% → biais 70/30 · &gt;15% → biais 85/15<br>
+                · Positif = au-dessus MA50 (haussier) · Négatif = en-dessous (baissier)<br>
+                · Permet d'utiliser les données réelles de marché dans la simulation
+            </div>
+        </div>""", unsafe_allow_html=True)
         tip_label("Distance au MA50 (%)", f"Écart actuel entre le prix spot de {token_a_name} et la MA50, en %. Positif = au-dessus de la MA50 (biais haussier). Négatif = en-dessous (biais baissier). Lisez cette valeur sur TradingView.")
         manual_ma50_dist = st.number_input("manual_ma50", value=5.0, min_value=-50.0, max_value=50.0, step=0.5, label_visibility="collapsed")
         if manual_ma50_dist > 15:
@@ -630,16 +712,53 @@ with sc2:
         else:
             interp_txt = "🔻 Tendance baissière forte"
             interp_col = "#ef4444"
-
         st.markdown(f"""
-        <div class="m-card" style="margin-top:6px;">
-            <div class="m-label">Interprétation Distance MA50</div>
-            <div class="m-value-sm" style="color:{interp_col};">
-                {interp_txt} — {abs(manual_ma50_dist):.1f}% {'au-dessus' if manual_ma50_dist >= 0 else 'en-dessous'} MA50
+        <div style="background:rgba(14,165,233,0.06); border:1px solid rgba(14,165,233,0.2); border-radius:7px; padding:7px 12px; margin-top:4px; font-family:'JetBrains Mono',monospace; font-size:11px; color:{interp_col};">
+            {interp_txt} — {abs(manual_ma50_dist):.1f}% {'au-dessus' if manual_ma50_dist >= 0 else 'en-dessous'} MA50
+        </div>""", unsafe_allow_html=True)
+
+    elif trend_mode == "Ratio Manuel":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(0,212,170,0.50);">
+            <div class="m-label" style="color:var(--accent);">◈ Ratio Manuel — Ratio fixe personnalisé</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · Vous définissez librement le pourcentage de <span style="color:#f59e0b;">{token_a_name}</span> après chaque rebalance<br>
+                · Ce ratio s'applique dans les <span style="color:#22c55e;">deux directions</span> (trigger haut ET bas)<br>
+                · Pas de décimales : valeur entière entre 1 et 99<br>
+                · Exemple : 65 → <span style="color:#f0f4f8;">65% {token_a_name} / 35% {token_b_name}</span> à chaque rebalance<br>
+                · Cas d'usage : conviction personnelle forte sur un ratio précis
             </div>
         </div>""", unsafe_allow_html=True)
-    else:
-        manual_ma50_dist = 0.0
+        tip_label(f"% {token_a_name} après rebalance (1–99)", f"Pourcentage entier alloué à {token_a_name} après chaque rebalance, dans les deux directions. Le reste va à {token_b_name}. Ex: 65 → 65% {token_a_name} / 35% {token_b_name}.")
+        manual_ratio_a = st.number_input(
+            "manual_ratio_a",
+            value=65, min_value=1, max_value=99, step=1,
+            label_visibility="collapsed"
+        )
+        ratio_b_display = 100 - manual_ratio_a
+        col_ratio = "#22c55e" if manual_ratio_a >= 50 else "#0ea5e9"
+        st.markdown(f"""
+        <div style="background:rgba(0,212,170,0.05); border:1px solid var(--border-soft); border-radius:7px; padding:7px 12px; margin-top:4px; font-family:'JetBrains Mono',monospace; font-size:12px;">
+            <span style="color:#f59e0b;">{token_a_name} : {manual_ratio_a}%</span>
+            &nbsp;/&nbsp;
+            <span style="color:#0ea5e9;">{token_b_name} : {ratio_b_display}%</span>
+            &nbsp;&nbsp;<span style="color:{col_ratio};">{'→ biais Token A' if manual_ratio_a >= 50 else '→ biais Token B'}</span>
+        </div>""", unsafe_allow_html=True)
+
+    elif trend_mode == "Coup de Pouce":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(245,158,11,0.35);">
+            <div class="m-label" style="color:#f59e0b;">◈ Stratégie Coup de Pouce</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · Trigger <span style="color:#ef4444;">BAS</span> : position quasi-full {token_a_name} → rachat minimal 20% {token_b_name}<br>
+                &nbsp;&nbsp;→ Nouveau ratio : <span style="color:#f59e0b;">{token_a_name} 80% / {token_b_name} 20%</span><br>
+                · Trigger <span style="color:#22c55e;">HAUT</span> : position quasi-full {token_b_name} → rachat minimal 20% {token_a_name}<br>
+                &nbsp;&nbsp;→ Nouveau ratio : <span style="color:#0ea5e9;">{token_a_name} 20% / {token_b_name} 80%</span><br>
+                · On attend d'être naturellement sorti d'un côté, puis on donne un "coup de<br>
+                &nbsp;&nbsp;pouce" minimal pour ré-entrer dans le range suivant — frais réduits<br>
+                · Cas d'usage : tendances fortes et continues, marchés très directionnels
+            </div>
+        </div>""", unsafe_allow_html=True)
 
 st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
