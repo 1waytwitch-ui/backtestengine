@@ -109,6 +109,8 @@ html, body, [data-testid="stAppViewContainer"] {
 .m-card-highlight { background:var(--accent-dim); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin:8px 0; }
 .m-card-alert { background:rgba(239,68,68,.06); border:1px solid rgba(239,68,68,.3); border-radius:10px; padding:16px 18px; margin:8px 0; }
 .m-card-future { background:linear-gradient(135deg,rgba(139,92,246,0.10),rgba(0,212,170,0.06)); border:1px solid rgba(139,92,246,0.30); border-radius:10px; padding:18px 20px; margin:8px 0; }
+.m-card-future-high { background:linear-gradient(135deg,rgba(34,197,94,0.08),rgba(0,212,170,0.04)); border:1px solid rgba(34,197,94,0.28); border-radius:10px; padding:18px 20px; margin:8px 0; }
+.m-card-future-low  { background:linear-gradient(135deg,rgba(239,68,68,0.08),rgba(245,158,11,0.04)); border:1px solid rgba(239,68,68,0.28); border-radius:10px; padding:18px 20px; margin:8px 0; }
 .m-label { font-family:var(--font-mono); font-size:10px; color:var(--text-mid); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px; }
 .m-value { font-family:var(--font-mono); font-size:20px; font-weight:600; color:var(--accent); line-height:1.1; }
 .m-value-sm { font-family:var(--font-mono); font-size:14px; font-weight:500; color:var(--accent); line-height:1.3; }
@@ -212,20 +214,53 @@ def card(label, value, color="var(--accent)", wide=False):
     cls = "m-card-wide" if wide else "m-card"
     st.markdown(f"""<div class="{cls}"><div class="m-label">{label}</div><div class="m-value" style="color:{color};">{value}</div></div>""", unsafe_allow_html=True)
 
-def generate_scenario(kind, start_price, steps, strength):
+def generate_scenario(kind, start_price, end_price, steps, strength):
+    """
+    Le scénario converge TOUJOURS vers end_price (prix futur cible).
+    La forme du chemin dépend du scénario, mais le dernier point = end_price.
+    """
     x = np.arange(steps)
-    if kind == "Bull":      return start_price * (1 + strength * x / steps)
-    if kind == "Bear":      return start_price * (1 - strength * x / steps)
-    if kind == "Sideways":  return start_price * (1 + 0.05 * np.sin(x / 5))
-    if kind == "Volatile":
+    ratio = end_price / start_price  # rapport final cible
+
+    if kind == "Bull":
+        # Hausse progressive vers end_price
+        raw = start_price * (1 + (ratio - 1) * x / (steps - 1))
+    elif kind == "Bear":
+        # Baisse progressive vers end_price
+        raw = start_price * (1 + (ratio - 1) * x / (steps - 1))
+    elif kind == "Sideways":
+        # Oscillation autour d'une droite qui va vers end_price
+        trend = start_price * (1 + (ratio - 1) * x / (steps - 1))
+        oscillation = start_price * 0.05 * np.sin(x / 5)
+        raw = trend + oscillation
+        # Normaliser pour que le dernier point soit end_price
+        if raw[-1] != 0:
+            raw = raw * (end_price / raw[-1])
+    elif kind == "Volatile":
         rng = np.random.default_rng(42)
-        return start_price * np.cumprod(1 + rng.normal(0, 0.02 * strength, steps))
-    if kind == "Flash Crash":
-        p = np.full(steps, float(start_price))
+        noise = np.cumprod(1 + rng.normal(0, 0.02 * strength, steps))
+        # Chemin bruité + tendance vers end_price
+        trend = np.linspace(1.0, ratio, steps)
+        blended = noise * 0.4 + trend * 0.6
+        raw = start_price * blended / blended[0]
+        # Forcer le dernier point
+        raw = raw * (end_price / raw[-1])
+    elif kind == "Flash Crash":
+        # Crash puis remontée vers end_price
         crash = steps // 3
-        p[crash:] = np.linspace(start_price*(1-strength), start_price*1.1, steps-crash)
-        return p
-    return np.full(steps, float(start_price))
+        crash_low = start_price * max(0.2, 1 - strength * 0.6)
+        p1 = np.linspace(start_price, crash_low, crash)
+        p2 = np.linspace(crash_low, end_price, steps - crash)
+        raw = np.concatenate([p1, p2])
+    else:
+        raw = np.linspace(start_price, end_price, steps)
+
+    # Garantie absolue : dernier point = end_price
+    raw = np.array(raw, dtype=float)
+    raw[-1] = end_price
+    # Éviter les prix négatifs
+    raw = np.maximum(raw, 0.001)
+    return raw
 
 def ma_series(series, n):
     return pd.Series(series).rolling(n, min_periods=1).mean()
@@ -233,7 +268,10 @@ def ma_series(series, n):
 def adx_proxy(prices, period=14):
     s = pd.Series(prices)
     vol = s.pct_change().abs().rolling(period, min_periods=1).mean()
-    return (vol / vol.max() * 50).fillna(10)
+    mx = vol.max()
+    if mx == 0:
+        return pd.Series(np.full(len(prices), 10.0))
+    return (vol / mx * 50).fillna(10)
 
 # ── TERMINAL RENDER ──
 def render_term(placeholder, content, div_id="term-main"):
@@ -285,21 +323,19 @@ if not st.session_state.boot_done:
         "◈ LP STRATEGY LAB — LIVE — INITIALIZING",
         "─────────────────────────────────────────────",
         "▸ Chargement des modules...",
-        "  [✓] Générateur de scénarios de marché (Bull/Bear/Sideways/Volatile/Flash Crash)",
+        "  [✓] Générateur de scénarios (convergence vers prix futur cible)",
         "  [✓] Modèles de tendance : Fixed / MA50 / MA50+MA200 / ADX / Manuel",
         "  [✓] Simulateur de rebalancing dynamique avec time buffer",
+        "  [✓] Stratégie Coup de Pouce (80/20 asymétrique)",
         "  [✓] Auto-compound des fees & slippage réaliste",
         "  [✓] Optimiseur Range × Buffer",
         "  [✓] Analyse régime de marché & suggestion de ratio",
-        "  [✓] Distance MA50 manuelle & graph d'analyse",
-        "  [✓] Projection valeur aux prix futurs simulés",
+        "  [✓] Projection scénario haut & bas",
         "─────────────────────────────────────────────",
         "▸ Nouveautés :",
-        "  [✓] Tooltips explicatifs sur chaque paramètre",
-        "  [✓] Suggestion de ratio dynamique post-simulation",
-        "  [✓] Tableau de référence ratio × régime × force",
-        "  [✓] Mode manuel Distance MA50",
-        "  [✓] Prix futurs Token A & Token B — projection quantités",
+        "  [✓] Prix futur cible = prix final de la simulation",
+        "  [✓] Prix cible HAUT et BAS — double projection",
+        "  [✓] Stratégie Coup de Pouce — 80/20 sur renversement",
         "─────────────────────────────────────────────",
         "▸ Système prêt. Configurez vos paramètres et lancez la simulation.",
         "  STRATEGY LAB READY ◈"
@@ -457,15 +493,48 @@ with c4:
     tip_label("Steps de simulation", "Nombre d'itérations. 500 = rapide. 2000+ = détaillé. Chaque step représente une bougie (ex: 1H, 4H selon votre timeframe réel).")
     steps = st.number_input("steps_input", value=500, min_value=50, max_value=5000, step=50, label_visibility="collapsed")
 
-# ── PRIX FUTURS ──
+# ── PRIX FUTURS CIBLES (HAUT & BAS) ──
 st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
-pf1, pf2 = st.columns(2)
+
+st.markdown(f"""
+<div style="background:rgba(0,212,170,0.04); border:1px solid var(--border-soft); border-radius:8px; padding:10px 16px; margin-bottom:10px;">
+  <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase;">
+    ◈ Prix futurs cibles — Le scénario simulé convergera vers le prix cible sélectionné
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+pf1, pf2, pf3, pf4 = st.columns(4)
 with pf1:
-    tip_label(f"Prix futur cible {token_a_name} ($)", f"Prix cible que vous anticipez pour {token_a_name} à horizon de la simulation. Permet de calculer la valeur projetée de vos quantités finales à ce prix futur, indépendamment du scénario simulé.")
-    price_a_future = st.number_input("price_a_future", value=price_a0 * 1.5, min_value=0.01, max_value=10000000.0, step=10.0, label_visibility="collapsed")
+    tip_label(f"🔺 Prix cible HAUT {token_a_name} ($)", f"Objectif haussier pour {token_a_name}. La simulation Bull convergera vers ce prix. Permet de projeter la valeur finale dans le meilleur cas.")
+    price_a_high = st.number_input("price_a_high", value=round(price_a0 * 2.0, 2), min_value=0.01, max_value=10000000.0, step=10.0, label_visibility="collapsed")
 with pf2:
-    tip_label(f"Prix futur cible {token_b_name} ($)", f"Prix cible que vous anticipez pour {token_b_name}. Pour un stablecoin laissez 1.00$. Pour un actif volatile, saisissez votre objectif de prix.")
-    price_b_future = st.number_input("price_b_future", value=price_b0, min_value=0.001, max_value=100000.0, step=0.01, label_visibility="collapsed")
+    tip_label(f"🔻 Prix cible BAS {token_a_name} ($)", f"Objectif baissier pour {token_a_name}. La simulation Bear/Flash Crash convergera vers ce prix. Projette la valeur dans le pire cas.")
+    price_a_low = st.number_input("price_a_low", value=round(price_a0 * 0.5, 2), min_value=0.01, max_value=10000000.0, step=10.0, label_visibility="collapsed")
+with pf3:
+    tip_label(f"Prix futur {token_b_name} — scénario HAUT ($)", f"Prix de {token_b_name} dans le scénario haussier. Laissez 1.00$ pour un stablecoin.")
+    price_b_high = st.number_input("price_b_high", value=price_b0, min_value=0.001, max_value=100000.0, step=0.01, label_visibility="collapsed")
+with pf4:
+    tip_label(f"Prix futur {token_b_name} — scénario BAS ($)", f"Prix de {token_b_name} dans le scénario baissier. Laissez 1.00$ pour un stablecoin.")
+    price_b_low = st.number_input("price_b_low", value=price_b0, min_value=0.001, max_value=100000.0, step=0.01, label_visibility="collapsed")
+
+# Résumé visuel des scénarios
+diff_high = (price_a_high / price_a0 - 1) * 100
+diff_low  = (price_a_low  / price_a0 - 1) * 100
+st.markdown(f"""
+<div style="display:flex; gap:12px; margin-top:6px; flex-wrap:wrap;">
+  <div style="background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.25); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+    <span style="color:#22c55e;">🔺 Scénario HAUT</span> &nbsp;
+    <span style="color:#f0f4f8;">{token_a_name} : ${price_a_high:,.2f}</span> &nbsp;
+    <span style="color:#22c55e;">({diff_high:+.1f}%)</span>
+  </div>
+  <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+    <span style="color:#ef4444;">🔻 Scénario BAS</span> &nbsp;
+    <span style="color:#f0f4f8;">{token_a_name} : ${price_a_low:,.2f}</span> &nbsp;
+    <span style="color:#ef4444;">({diff_low:+.1f}%)</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
@@ -500,18 +569,47 @@ sec("△", "Scénario de marché & Modèle de tendance")
 
 sc1, sc2 = st.columns(2)
 with sc1:
-    tip_label("Scénario de marché", "Bull = hausse continue. Bear = baisse continue. Sideways = oscillation. Volatile = aléatoire amplifié. Flash Crash = chute brutale puis reprise.")
+    tip_label("Scénario de marché", "Bull/Bear/Sideways/Volatile/Flash Crash. Le prix FINAL de la simulation correspondra au prix cible HAUT (Bull/Sideways/Volatile) ou BAS (Bear/Flash Crash) renseigné ci-dessus.")
     scenario = st.selectbox("scen_sel", ["Bull","Bear","Sideways","Volatile","Flash Crash"], label_visibility="collapsed")
-    tip_label("Force du scénario", "Intensité du mouvement. 1.0 = standard. 2.0 = double amplitude. Sur Bull/Bear : 1.0 = ±100% sur toute la simulation.")
+    tip_label("Force du scénario", "Intensité des oscillations sur le chemin. N'affecte plus le prix final (fixé par les cibles). Influence l'amplitude des mouvements intermédiaires.")
     strength = st.slider("strength_sl", 0.1, 5.0, 1.0, step=0.1, label_visibility="collapsed")
 
+    # Afficher quel prix cible sera utilisé
+    uses_high = scenario in ("Bull", "Sideways", "Volatile")
+    uses_low  = scenario in ("Bear", "Flash Crash")
+    price_end_used = price_a_high if uses_high else price_a_low
+    price_b_end_used = price_b_high if uses_high else price_b_low
+    label_used = "🔺 HAUT" if uses_high else "🔻 BAS"
+    color_used = "#22c55e" if uses_high else "#ef4444"
+    st.markdown(f"""
+    <div style="background:rgba(0,212,170,0.04); border:1px solid var(--border-soft); border-radius:7px; padding:8px 14px; margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+        Prix final simulé : <span style="color:{color_used};">{label_used}</span>
+        &nbsp;→&nbsp; <span style="color:#f0f4f8;">{token_a_name} = ${price_end_used:,.2f}</span>
+    </div>
+    """, unsafe_allow_html=True)
+
 with sc2:
-    tip_label("Modèle de tendance", "Algorithme de calcul du ratio lors d'un rebalance. Fixed = simple. MA50/MA200 = moyennes mobiles. ADX = force de tendance. Manuel = vous saisissez la distance au MA50.")
+    tip_label("Modèle de tendance", "Algorithme de calcul du ratio lors d'un rebalance. Fixed = simple. MA50/MA200 = moyennes mobiles. ADX = force de tendance. Manuel = vous saisissez la distance au MA50. Coup de Pouce = 80/20 sur retournement.")
     trend_mode = st.selectbox("trend_sel",
-        ["Fixed 75/25","Fixed 70/30","MA50","MA50+MA200","ADX","Manuel Distance MA50"],
+        ["Fixed 75/25","Fixed 70/30","MA50","MA50+MA200","ADX","Manuel Distance MA50","Coup de Pouce"],
         label_visibility="collapsed")
 
-    if trend_mode == "Manuel Distance MA50":
+    if trend_mode == "Coup de Pouce":
+        st.markdown(f"""
+        <div class="m-card" style="margin-top:6px; border-color:rgba(245,158,11,0.35);">
+            <div class="m-label" style="color:#f59e0b;">◈ Stratégie Coup de Pouce</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+                · Trigger <span style="color:#ef4444;">BAS</span> : position full {token_a_name} (100%) → rachat 20% {token_b_name}<br>
+                &nbsp;&nbsp;→ Nouveau ratio : <span style="color:#f59e0b;">{token_a_name} 80% / {token_b_name} 20%</span><br>
+                · Trigger <span style="color:#22c55e;">HAUT</span> : position full {token_b_name} (100%) → rachat 20% {token_a_name}<br>
+                &nbsp;&nbsp;→ Nouveau ratio : <span style="color:#0ea5e9;">{token_a_name} 20% / {token_b_name} 80%</span><br>
+                · Logique : on attend d'être quasiment sorti d'un côté pour ne racheter<br>
+                &nbsp;&nbsp;qu'une petite dose de l'actif opposé pour ré-entrer dans un nouveau range.
+            </div>
+        </div>""", unsafe_allow_html=True)
+        manual_ma50_dist = 0.0
+
+    elif trend_mode == "Manuel Distance MA50":
         tip_label("Distance au MA50 (%)", f"Écart actuel entre le prix spot de {token_a_name} et la MA50, en %. Positif = au-dessus de la MA50 (biais haussier). Négatif = en-dessous (biais baissier). Lisez cette valeur sur TradingView.")
         manual_ma50_dist = st.number_input("manual_ma50", value=5.0, min_value=-50.0, max_value=50.0, step=0.5, label_visibility="collapsed")
         if manual_ma50_dist > 15:
@@ -552,15 +650,23 @@ run_col, _ = st.columns([1, 3])
 with run_col:
     run = st.button("◈ LANCER LA SIMULATION", use_container_width=True)
 
-if run:
-    prices = generate_scenario(scenario, price_a0, int(steps), strength)
+# ══════════════════════════════════════════════════════════
+# ── FONCTION DE SIMULATION ──
+# ══════════════════════════════════════════════════════════
+def run_simulation(prices, price_b_end, price_a_proj_high, price_b_proj_high,
+                   price_a_proj_low, price_b_proj_low):
+    """
+    Lance la simulation LP et retourne le DataFrame de résultats + métriques.
+    price_b_end     : prix de Token B à la fin de la simulation (pour calcul valeur)
+    price_a_proj_*  : prix de projection pour les cartes haut/bas
+    price_b_proj_*  : prix Token B pour projection haut/bas
+    """
     df = pd.DataFrame({"price": prices})
     df["ma50"]  = ma_series(df.price, 50)
     df["ma200"] = ma_series(df.price, 200)
     df["adx"]   = adx_proxy(df.price)
     df["dist_ma50_pct"] = (df["price"] - df["ma50"]) / df["ma50"] * 100
 
-    # ── INIT ──
     qty_a  = (capital * 0.5) / price_a0
     qty_b  = (capital * 0.5) / price_b0
     center = prices[0]
@@ -579,12 +685,16 @@ if run:
         price    = row.price
         in_range = lower <= price <= upper
 
+        # Prix effectif de Token B à ce step (interpolation linéaire vers price_b_end)
+        t = i / max(len(df) - 1, 1)
+        price_b_now = price_b0 + t * (price_b_end - price_b0)
+
         if in_range:
-            value_now = qty_a * price + qty_b * price_b0
+            value_now = qty_a * price + qty_b * price_b_now
             fees = value_now * (fee_rate / 100)
             fees_total += fees
             if compound:
-                qty_b += fees / price_b0
+                qty_b += fees / max(price_b_now, 0.0001)
             pending = None
             pending_count = 0
         else:
@@ -601,6 +711,7 @@ if run:
                     whipsaws += 1
                 last_dir = direction
 
+                # ── Calcul du target ratio selon le modèle ──
                 if trend_mode == "Fixed 75/25":
                     target = 0.75 if direction == "upper" else 0.25
                 elif trend_mode == "Fixed 70/30":
@@ -619,7 +730,16 @@ if run:
                     elif row.adx < 30: bias = 0.70
                     else:              bias = 0.85
                     target = bias if direction == "upper" else 1 - bias
-                else:  # Manuel
+                elif trend_mode == "Coup de Pouce":
+                    # Trigger BAS : on est full Token A (prix a baissé), on rachète 20% Token B
+                    # → ratio Token A 80% / Token B 20%
+                    # Trigger HAUT : on est full Token B (prix a monté), on rachète 20% Token A
+                    # → ratio Token A 20% / Token B 80%
+                    if direction == "lower":
+                        target = 0.80   # 80% Token A, 20% Token B
+                    else:
+                        target = 0.20   # 20% Token A, 80% Token B
+                else:  # Manuel Distance MA50
                     dist = manual_ma50_dist
                     if   abs(dist) < 5:  base = 0.60
                     elif abs(dist) < 15: base = 0.70
@@ -629,11 +749,11 @@ if run:
                     else:
                         target = 1 - base if direction == "upper" else base
 
-                total_usd = qty_a * price + qty_b * price_b0
+                total_usd = qty_a * price + qty_b * price_b_now
                 total_usd -= rebalance_cost
                 total_usd *= (1 - slippage / 100)
-                qty_a = (total_usd * target) / price
-                qty_b = (total_usd * (1 - target)) / price_b0
+                qty_a = (total_usd * target) / max(price, 0.0001)
+                qty_b = (total_usd * (1 - target)) / max(price_b_now, 0.0001)
 
                 center = price
                 lower  = center * (1 - range_width / 100)
@@ -641,42 +761,73 @@ if run:
                 pending = None
                 pending_count = 0
 
-        value_now = qty_a * price + qty_b * price_b0
-        # Valeur projetée aux prix futurs à chaque step
-        value_future = qty_a * price_a_future + qty_b * price_b_future
+        value_now = qty_a * price + qty_b * price_b_now
+        # Projections aux deux prix cibles
+        val_proj_high = qty_a * price_a_proj_high + qty_b * price_b_proj_high
+        val_proj_low  = qty_a * price_a_proj_low  + qty_b * price_b_proj_low
+
         hist.append({
             "step": i, "price": price,
             "portfolio": value_now,
-            "portfolio_future": value_future,
+            "val_proj_high": val_proj_high,
+            "val_proj_low":  val_proj_low,
             f"qty_{token_a_name}": qty_a,
             f"qty_{token_b_name}": qty_b,
             "ma50": row.ma50, "ma200": row.ma200,
-            "adx": row.adx, "dist_ma50_pct": row.dist_ma50_pct
+            "adx": row.adx, "dist_ma50_pct": row.dist_ma50_pct,
+            "price_b": price_b_now,
         })
 
     res = pd.DataFrame(hist)
-    hodl_a   = (capital / price_a0) * res.price
-    hodl_b   = np.full(len(res), capital)
-    balanced = capital * (0.5 * (res.price / price_a0) + 0.5)
+    return res, fees_total, rebalances, whipsaws
 
+if run:
+    # ── Déterminer le prix final selon le scénario ──
+    uses_high = scenario in ("Bull", "Sideways", "Volatile")
+    price_end = price_a_high if uses_high else price_a_low
+    price_b_end = price_b_high if uses_high else price_b_low
+
+    prices = generate_scenario(scenario, price_a0, price_end, int(steps), strength)
+
+    res, fees_total, rebalances, whipsaws = run_simulation(
+        prices,
+        price_b_end      = price_b_end,
+        price_a_proj_high = price_a_high,
+        price_b_proj_high = price_b_high,
+        price_a_proj_low  = price_a_low,
+        price_b_proj_low  = price_b_low,
+    )
+
+    # ── Calculs globaux ──
     final_val   = res.portfolio.iloc[-1]
     ret_pct     = (final_val / capital - 1) * 100
     max_dd      = ((res.portfolio.cummax() - res.portfolio) / res.portfolio.cummax()).max() * 100
     avg_reb_cost = rebalances * rebalance_cost
     final_qty_a  = res[f"qty_{token_a_name}"].iloc[-1]
     final_qty_b  = res[f"qty_{token_b_name}"].iloc[-1]
-    final_val_a  = final_qty_a * res.price.iloc[-1]
-    final_val_b  = final_qty_b * price_b0
+    final_price_b = res["price_b"].iloc[-1]
+    final_val_a   = final_qty_a * res.price.iloc[-1]
+    final_val_b   = final_qty_b * final_price_b
 
-    # ── Calculs projection prix futurs ──
-    final_val_future      = final_qty_a * price_a_future + final_qty_b * price_b_future
-    final_val_a_future    = final_qty_a * price_a_future
-    final_val_b_future    = final_qty_b * price_b_future
-    ret_future_pct        = (final_val_future / capital - 1) * 100
-    hodl_a_future         = (capital / price_a0) * price_a_future
-    vs_hodl_a_future_pct  = (final_val_future / hodl_a_future - 1) * 100 if hodl_a_future > 0 else 0
-    ret_future_color      = "#22c55e" if ret_future_pct >= 0 else "#ef4444"
-    vs_hodl_color         = "#22c55e" if vs_hodl_a_future_pct >= 0 else "#ef4444"
+    hodl_a   = (capital / price_a0) * res.price
+    hodl_b   = np.full(len(res), capital)
+    balanced = capital * (0.5 * (res.price / price_a0) + 0.5)
+
+    # ── Projections finales scénario HAUT ──
+    fvh = final_qty_a * price_a_high + final_qty_b * price_b_high
+    fvh_a = final_qty_a * price_a_high
+    fvh_b = final_qty_b * price_b_high
+    ret_high = (fvh / capital - 1) * 100
+    hodl_high = (capital / price_a0) * price_a_high
+    vs_hodl_high = (fvh / hodl_high - 1) * 100 if hodl_high > 0 else 0
+
+    # ── Projections finales scénario BAS ──
+    fvl = final_qty_a * price_a_low + final_qty_b * price_b_low
+    fvl_a = final_qty_a * price_a_low
+    fvl_b = final_qty_b * price_b_low
+    ret_low  = (fvl / capital - 1) * 100
+    hodl_low = (capital / price_a0) * price_a_low
+    vs_hodl_low  = (fvl / hodl_low - 1) * 100 if hodl_low > 0 else 0
 
     # ══════════════════════════════════════════════════════
     # ── KPIs ──
@@ -685,7 +836,7 @@ if run:
 
     st.markdown(f"""
     <div class="m-card-wide" style="margin-bottom:14px;">
-        <div class="m-label">◈ Composition finale du portefeuille</div>
+        <div class="m-label">◈ Composition finale du portefeuille — Prix final simulé : {token_a_name} = ${res.price.iloc[-1]:,.2f}</div>
         <div style="display:flex; gap:30px; margin-top:10px; flex-wrap:wrap;">
             <div>
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); letter-spacing:1px; text-transform:uppercase;">{token_a_name} (Token A)</div>
@@ -735,45 +886,72 @@ if run:
             <div style="font-size:10px;color:var(--text-mid);font-family:'JetBrains Mono',monospace;margin-top:4px;">Pic → Creux</div></div>""", unsafe_allow_html=True)
 
     # ══════════════════════════════════════════════════════
-    # ── PROJECTION PRIX FUTURS ──
+    # ── DOUBLE PROJECTION HAUT / BAS ──
     # ══════════════════════════════════════════════════════
     st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-    sec("◈", f"Projection aux Prix Futurs Cibles — {token_a_name} @ ${price_a_future:,.2f} · {token_b_name} @ ${price_b_future:,.4f}")
+    sec("◈", f"Double Projection — Scénario Haut & Bas sur les quantités finales détenues")
 
-    st.markdown(f"""
-    <div class="m-card-future">
-        <div class="m-label">◈ Valeur projetée si {token_a_name} atteint ${price_a_future:,.2f} et {token_b_name} atteint ${price_b_future:,.4f}</div>
-        <div style="display:flex; gap:30px; margin-top:14px; flex-wrap:wrap; align-items:flex-start;">
-            <div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px;">{token_a_name} aux prix futurs</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:#f59e0b;">{final_qty_a:.4f} {token_a_name}</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#f59e0b; opacity:.85; margin-top:2px;">≈ ${final_val_a_future:,.2f}</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); margin-top:2px;">@ ${price_a_future:,.2f} / {token_a_name}</div>
-            </div>
-            <div style="width:1px; background:rgba(139,92,246,0.25); align-self:stretch;"></div>
-            <div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px;">{token_b_name} aux prix futurs</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:#0ea5e9;">{final_qty_b:.4f} {token_b_name}</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#0ea5e9; opacity:.85; margin-top:2px;">≈ ${final_val_b_future:,.2f}</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); margin-top:2px;">@ ${price_b_future:,.4f} / {token_b_name}</div>
-            </div>
-            <div style="width:1px; background:rgba(139,92,246,0.25); align-self:stretch;"></div>
-            <div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px;">Valeur totale projetée</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:28px; font-weight:700; color:#8b5cf6;">${final_val_future:,.2f}</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:{ret_future_color}; margin-top:4px;">Return : {ret_future_pct:+.2f}% vs capital initial</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:{vs_hodl_color}; margin-top:2px;">Vs HODL {token_a_name} à prix futur : {vs_hodl_a_future_pct:+.1f}%</div>
-            </div>
-            <div style="width:1px; background:rgba(139,92,246,0.25); align-self:stretch;"></div>
-            <div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); letter-spacing:1px; text-transform:uppercase; margin-bottom:4px;">Comparaison HODL pur {token_a_name}</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:18px; font-weight:600; color:var(--text-mid);">${hodl_a_future:,.2f}</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); margin-top:2px;">{capital/price_a0:.4f} {token_a_name} × ${price_a_future:,.2f}</div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:{vs_hodl_color}; margin-top:4px;">LP {'surperforme' if vs_hodl_a_future_pct >= 0 else 'sous-performe'} de {abs(vs_hodl_a_future_pct):.1f}%</div>
+    proj_col_h, proj_col_l = st.columns(2)
+
+    with proj_col_h:
+        rh_col = "#22c55e" if ret_high >= 0 else "#ef4444"
+        vsh_col = "#22c55e" if vs_hodl_high >= 0 else "#ef4444"
+        st.markdown(f"""
+        <div class="m-card-future-high">
+            <div class="m-label" style="color:#22c55e;">🔺 Scénario HAUT — {token_a_name} @ ${price_a_high:,.2f}</div>
+            <div style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; align-items:flex-start;">
+                <div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); text-transform:uppercase; margin-bottom:3px;">{token_a_name}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:#f59e0b;">{final_qty_a:.4f}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#f59e0b; opacity:.85;">≈ ${fvh_a:,.2f}</div>
+                </div>
+                <div style="width:1px; background:rgba(34,197,94,0.2); align-self:stretch;"></div>
+                <div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); text-transform:uppercase; margin-bottom:3px;">{token_b_name}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:#0ea5e9;">{final_qty_b:.4f}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#0ea5e9; opacity:.85;">≈ ${fvh_b:,.2f}</div>
+                </div>
+                <div style="width:1px; background:rgba(34,197,94,0.2); align-self:stretch;"></div>
+                <div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); text-transform:uppercase; margin-bottom:3px;">Valeur totale</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:#22c55e;">${fvh:,.2f}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:{rh_col}; margin-top:3px;">Return : {ret_high:+.2f}%</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:{vsh_col};">Vs HODL : {vs_hodl_high:+.1f}%</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); margin-top:2px;">HODL pur : ${hodl_high:,.2f}</div>
+                </div>
             </div>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
+    with proj_col_l:
+        rl_col = "#22c55e" if ret_low >= 0 else "#ef4444"
+        vsl_col = "#22c55e" if vs_hodl_low >= 0 else "#ef4444"
+        st.markdown(f"""
+        <div class="m-card-future-low">
+            <div class="m-label" style="color:#ef4444;">🔻 Scénario BAS — {token_a_name} @ ${price_a_low:,.2f}</div>
+            <div style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; align-items:flex-start;">
+                <div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); text-transform:uppercase; margin-bottom:3px;">{token_a_name}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:#f59e0b;">{final_qty_a:.4f}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#f59e0b; opacity:.85;">≈ ${fvl_a:,.2f}</div>
+                </div>
+                <div style="width:1px; background:rgba(239,68,68,0.2); align-self:stretch;"></div>
+                <div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); text-transform:uppercase; margin-bottom:3px;">{token_b_name}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:16px; font-weight:700; color:#0ea5e9;">{final_qty_b:.4f}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#0ea5e9; opacity:.85;">≈ ${fvl_b:,.2f}</div>
+                </div>
+                <div style="width:1px; background:rgba(239,68,68,0.2); align-self:stretch;"></div>
+                <div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); text-transform:uppercase; margin-bottom:3px;">Valeur totale</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:#ef4444;">${fvl:,.2f}</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:{rl_col}; margin-top:3px;">Return : {ret_low:+.2f}%</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:{vsl_col};">Vs HODL : {vs_hodl_low:+.1f}%</div>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-mid); margin-top:2px;">HODL pur : ${hodl_low:,.2f}</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
@@ -785,33 +963,34 @@ if run:
     eq = pd.DataFrame({
         "Step": res.step,
         "LP Dynamique": res.portfolio,
-        f"LP (valeur @ prix futurs)": res.portfolio_future,
+        f"LP → scénario HAUT (${price_a_high:,.0f})": res.val_proj_high,
+        f"LP → scénario BAS (${price_a_low:,.0f})":  res.val_proj_low,
         f"HODL {token_a_name}": hodl_a.values,
         f"HODL {token_b_name}": hodl_b,
         "50/50 Ratio": balanced.values
     })
     color_map = {
-        "LP Dynamique":                    "#00d4aa",
-        f"LP (valeur @ prix futurs)":      "#8b5cf6",
-        f"HODL {token_a_name}":            "#f59e0b",
-        f"HODL {token_b_name}":            "#8899aa",
-        "50/50 Ratio":                     "#0ea5e9"
+        "LP Dynamique":                                      "#00d4aa",
+        f"LP → scénario HAUT (${price_a_high:,.0f})":       "#22c55e",
+        f"LP → scénario BAS (${price_a_low:,.0f})":         "#ef4444",
+        f"HODL {token_a_name}":                             "#f59e0b",
+        f"HODL {token_b_name}":                             "#8899aa",
+        "50/50 Ratio":                                       "#0ea5e9"
     }
     fig_eq = px.line(eq, x="Step", y=list(color_map.keys()), color_discrete_map=color_map)
-    # Rendre la ligne "prix futurs" en tirets pour la distinguer visuellement
     for trace in fig_eq.data:
-        if "prix futurs" in trace.name:
+        if "HAUT" in trace.name or "BAS" in trace.name:
             trace.line.dash = "dot"
-            trace.line.width = 2
+            trace.line.width = 1.5
         else:
             trace.line.width = 2
     fig_eq.update_layout(
         plot_bgcolor="#0d1318", paper_bgcolor="#0d1318",
         font=dict(color="#8899aa", family="JetBrains Mono"),
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(color="#f0f4f8", size=11)),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(color="#f0f4f8", size=10)),
         xaxis=dict(gridcolor="rgba(255,255,255,0.04)"),
         yaxis=dict(gridcolor="rgba(255,255,255,0.04)"),
-        margin=dict(l=20,r=20,t=30,b=20), height=380
+        margin=dict(l=20,r=20,t=40,b=20), height=400
     )
     st.plotly_chart(fig_eq, use_container_width=True)
 
@@ -1111,7 +1290,6 @@ if run:
     </div>
 </div>
 """
-
     st.markdown(html_suggestion, unsafe_allow_html=True)
 
     # ── TABLEAU DE RÉFÉRENCE ──
@@ -1154,6 +1332,20 @@ if run:
                 <td style="padding:5px 10px; color:#0ea5e9;">&lt; 5%</td>
                 <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">50 / 50</td>
                 <td style="padding:5px 10px; color:#b0bec5;">5–8%</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03); background:rgba(245,158,11,0.04);">
+                <td style="padding:5px 10px; color:#f59e0b;">💥 Coup de Pouce</td>
+                <td style="padding:5px 10px; color:#b0bec5;">Bear</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">—</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">80 / 20</td>
+                <td style="padding:5px 10px; color:#b0bec5;">range descendant</td>
+            </tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.03); background:rgba(245,158,11,0.04);">
+                <td style="padding:5px 10px; color:#f59e0b;">💥 Coup de Pouce</td>
+                <td style="padding:5px 10px; color:#b0bec5;">Bull</td>
+                <td style="padding:5px 10px; color:#0ea5e9;">—</td>
+                <td style="padding:5px 10px; color:#f0f4f8; font-weight:600;">20 / 80</td>
+                <td style="padding:5px 10px; color:#b0bec5;">range ascendant</td>
             </tr>
             <tr style="border-bottom:1px solid rgba(255,255,255,0.03);">
                 <td style="padding:5px 10px; color:#ef4444;">🔻 Baissier</td>
@@ -1249,53 +1441,39 @@ guide_sections = [
     · <b>4B — Après trigger haut :</b> Vendre du Token B, conserver davantage de Token A (biais vers l'actif volatile). Profiter de la tendance haussière.</p>
     <p>Chaque rebalance implique un <b>coût réel</b> : swap fees + gas + slippage. Ces coûts doivent être inférieurs aux fees générés sur la période.</p>
     """),
-    ("5. DÉTERMINATION DU RATIO DYNAMIQUE", """
+    ("5. STRATÉGIE COUP DE POUCE", """
+    <p>La stratégie <b>Coup de Pouce</b> est une approche conservatrice de préservation du capital :</p>
+    <p>· <b>Trigger BAS (marché baissier) :</b> La position est quasi-full Token A (le prix a baissé, tout s'est converti en Token A). Au lieu de rééquilibrer 50/50 ou 75/25, on ne rachète que 20% de Token B pour créer un nouveau range descendant serré.<br>
+    &nbsp;&nbsp;→ Ratio final : <b>Token A 80% / Token B 20%</b><br>
+    · <b>Trigger HAUT (marché haussier) :</b> La position est quasi-full Token B (le prix a monté, Token A s'est vendu). On ne rachète que 20% de Token A pour ré-entrer dans un range ascendant.<br>
+    &nbsp;&nbsp;→ Ratio final : <b>Token A 20% / Token B 80%</b></p>
+    <p><b>Logique :</b> On attend d'être naturellement presque sorti d'un côté, puis on donne un "coup de pouce" minimal pour ré-entrer dans le range suivant. Cela minimise les frais de swap et le slippage à chaque rebalance, tout en restant actif dans la pool.</p>
+    <p><b>Cas d'usage :</b> Idéal sur des marchés avec une tendance claire et continue. Moins adapté aux marchés latéraux où le range revient souvent au centre.</p>
+    """),
+    ("6. DÉTERMINATION DU RATIO DYNAMIQUE", """
     <p>Le ratio d'allocation après rebalance est déterminé selon le modèle de tendance choisi :</p>
     <p>· <b>Fixed 75/25 ou 70/30 :</b> Simple et prédictible, bon pour débuter<br>
     · <b>MA50 :</b> Ratio selon la position par rapport à la moyenne mobile sur 50 bougies. Prix &gt; MA50 → ratio agressif vers Token A. Prix &lt; MA50 → biais Token B.<br>
     · <b>MA50+MA200 (Golden/Death Cross) :</b> Confirmation de tendance à long terme. Double signal = ratio plus extrême (85/15). Zone de transition = neutre (60/40).<br>
     · <b>ADX :</b> Force de la tendance. ADX &lt; 20 = marché en range, biais neutre (60/40). ADX 20–30 = tendance naissante (70/30). ADX &gt; 30 = forte tendance (85/15).<br>
-    · <b>Manuel Distance MA50 :</b> Vous saisissez directement l'écart au MA50 depuis votre outil de trading. Permet d'utiliser la donnée réelle de votre actif.</p>
-    <p><b>Tableau de référence (Après Trigger Haut → biais vers Token A) :</b></p>
-    <p>· Faible (0–5%) : Token A 40% / Token B 60%<br>
-    · Modérée (5–15%) : Token A 30% / Token B 70%<br>
-    · Forte (&gt; 15%) : Token A 15% / Token B 85%</p>
-    <p><b>Tableau de référence (Après Trigger Bas → biais vers Token B) :</b></p>
-    <p>· Faible (0–5%) : Token B 40% / Token A 60%<br>
-    · Modérée (5–15%) : Token B 30% / Token A 70%<br>
-    · Forte (&gt; 15%) : Token B 15% / Token A 85%</p>
+    · <b>Manuel Distance MA50 :</b> Vous saisissez directement l'écart au MA50 depuis votre outil de trading.<br>
+    · <b>Coup de Pouce :</b> 80/20 asymétrique selon la direction du trigger.</p>
     """),
-    ("6. INITIALISATION DU NOUVEAU RANGE", """
-    <p>Après le rebalance, un nouveau range est défini <b>centré autour du prix actuel</b> :</p>
-    <p>· Lower = Prix actuel × (1 – range%)<br>
-    · Upper = Prix actuel × (1 + range%)<br>
-    · L'Auto-Compound reprend immédiatement<br>
-    · L'accumulation des fees redémarre dès la prochaine bougie in-range</p>
-    <p><b>Attention :</b> Si le prix continue de sortir immédiatement du nouveau range, un second rebalance sera déclenché après le time buffer. C'est typiquement ce qui arrive lors d'une forte tendance → le range doit être élargi.</p>
-    """),
-    ("7. BOUCLE CONTINUE", """
-    <p>Le cycle se répète en boucle :</p>
-    <p>In range → Accumulation fees → Sortie range → Time buffer → Rebalance → Nouveau range → In range → ...</p>
-    <p><b>Performance globale = Fees accumulés − Coûts de rebalance − Slippage − Gas</b></p>
-    <p>La stratégie est rentable si : <b>Fees &gt; Coûts</b>. L'optimiseur de range permet de trouver le meilleur compromis entre fees générés et fréquence des rebalances.</p>
+    ("7. PRIX FUTURS & SCÉNARIOS", """
+    <p>Le simulateur utilise maintenant les <b>prix futurs cibles comme prix final de simulation</b> :</p>
+    <p>· <b>Scénario HAUT :</b> utilisé par Bull, Sideways, Volatile → le prix final = prix cible HAUT<br>
+    · <b>Scénario BAS :</b> utilisé par Bear, Flash Crash → le prix final = prix cible BAS<br>
+    · La <b>forme du chemin</b> (oscillations, trend) est définie par le scénario et la force, mais le <b>point d'arrivée</b> est toujours votre objectif de prix.<br>
+    · Les deux <b>projections</b> (haut et bas) sont calculées en appliquant les deux prix cibles aux quantités finales détenues.</p>
+    <p><b>Conseil :</b> Renseignez vos objectifs réels (ex: cible bull = ATH précédent × 1.5, cible bear = support majeur) pour obtenir des projections pertinentes.</p>
     """),
     ("PARAMÈTRES CLÉS — RÉSUMÉ", """
     <p>· <b>Time buffer :</b> 3–6 bougies recommandé. Augmenter si whipsaws &gt; 40%.<br>
     · <b>Mesure de tendance :</b> Distance vs MA50 (0–5% faible, 5–15% modérée, &gt; 15% forte)<br>
-    · <b>Paliers d'allocation :</b> Faible 60/40 · Modérée 70/30 · Forte 85/15<br>
+    · <b>Paliers d'allocation :</b> Faible 60/40 · Modérée 70/30 · Forte 85/15 · Coup de Pouce 80/20<br>
     · <b>Auto-compound :</b> Toujours ON sur positions longues (&gt; 7 jours)<br>
-    · <b>Largeur de range :</b> Calibrez avec l'ATR14 × multiplicateur (voir Backtest Engine)<br>
-    · <b>Prix futurs :</b> Saisissez vos cibles de prix pour projeter la valeur finale aux objectifs</p>
-    """),
-    ("LOGIQUE DE FORCE DE TENDANCE", """
-    <p><b>Distance vs MA50 (%) :</b><br>
-    · Faible : 0% – 5%<br>
-    · Modérée : 5% – 15%<br>
-    · Forte : &gt; 15%</p>
-    <p><b>Indicateurs optionnels :</b><br>
-    · ATR (Average True Range) — calibrage du range<br>
-    · Régime de volatilité — marché en range vs tendance<br>
-    · ADX / Indicateurs de tendance — confirmation de la force</p>
+    · <b>Largeur de range :</b> Calibrez avec l'ATR14 × multiplicateur<br>
+    · <b>Prix futurs :</b> Définissent le prix final de simulation + les projections de valeur</p>
     """),
     ("OBJECTIFS DE LA STRATÉGIE", """
     <p>· ✓ Maximiser la capture des fees<br>
@@ -1304,7 +1482,7 @@ guide_sections = [
     · ✓ S'adapter à la force de tendance<br>
     · ✓ Limiter les whipsaws<br>
     · ✓ Compound efficacement<br>
-    · ✓ Projeter la valeur finale aux prix cibles futurs</p>
+    · ✓ Projeter la valeur finale aux prix cibles haut & bas</p>
     """),
     ("NOTES IMPORTANTES", """
     <p>· Chaque rebalance implique des coûts réels (swap + fees)<br>
