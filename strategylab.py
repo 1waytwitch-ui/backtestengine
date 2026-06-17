@@ -408,7 +408,7 @@ if not st.session_state.authenticated:
 
 st.markdown("""
 <div class="disc-bar" style="border-color:var(--accent); color:var(--accent);">
-  <span>◈</span> ACCÈS AUTORISÉ — Bienvenue dans le LP Strategy Lab V2 !
+  <span>◈</span> ACCÈS AUTORISÉ — Bienvenue dans le LP Strategy Lab !
 </div>
 """, unsafe_allow_html=True)
 
