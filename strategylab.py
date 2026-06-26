@@ -2144,7 +2144,6 @@ if k_run:
 
         # Détail dans un expander
         with st.expander(f"◈ Voir paramètres complets — CAS {cas_id}", expanded=is_detected):
-
             if cas.get("emergency"):
                 st.markdown("""
                 <div style="background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.50);
