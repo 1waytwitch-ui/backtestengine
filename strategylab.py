@@ -1629,26 +1629,24 @@ st.markdown("""
 # ── SECTION : LP AUTOMATION KRYSTAL — 8 CAS DE REBALANCE ──
 # ══════════════════════════════════════════════════════════════════
 #
-# Colle ce bloc à la toute fin de ton fichier app.py, après le guide complet.
-# Il utilise les mêmes helpers (sec, card, tip_label) et le même style HTML
-# que le reste du Strategy Lab.
 #
 # ══════════════════════════════════════════════════════════════════
 
 st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 sec("⬡", "LP Automation Krystal — 8 Cas de Rebalance Dynamique")
 
-st.markdown("""
-<div style="background:var(--accent-dim); border:1px solid var(--border); border-radius:10px; padding:16px 22px; margin-bottom:16px;">
-    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;">
-        ◈ PARAMÈTRES KRYSTAL LP — CONFIGURATIONS PRÊTES À RENSEIGNER
-    </div>
-    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-mid);">
-        Renseignez votre position actuelle. L'outil détecte automatiquement le(s) cas adapté(s) et génère
-        les paramètres exacts à copier dans l'automation Krystal, avec visualisation des ranges.
-    </div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    "<div style=\"background:var(--accent-dim); border:1px solid var(--border); border-radius:10px; padding:16px 22px; margin-bottom:16px;\">"
+    "<div style=\"font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;\">"
+    "◈ PARAMÈTRES KRYSTAL LP — CONFIGURATIONS PRÊTES À RENSEIGNER"
+    "</div>"
+    "<div style=\"font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-mid);\">"
+    "Renseignez votre position actuelle. L'outil détecte automatiquement le(s) cas adapté(s) et génère "
+    "les paramètres exacts à copier dans l'automation Krystal, avec visualisation des ranges."
+    "</div>"
+    "</div>",
+    unsafe_allow_html=True
+)
 
 # ── INPUTS TOKENS ──
 st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
@@ -1680,24 +1678,26 @@ with kb4:
 k_ratio_b = 100 - k_ratio_a
 ratio_imbalance = abs(k_ratio_a - 50)
 ratio_color = "#ef4444" if ratio_imbalance > 25 else "#f59e0b" if ratio_imbalance > 10 else "var(--accent)"
-st.markdown(f"""
-<div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); margin-top:-6px; margin-bottom:10px;">
-    Composition LP : <span style="color:#f59e0b;">{k_token_a} : {k_ratio_a}%</span>
-    &nbsp;/&nbsp; <span style="color:#0ea5e9;">{k_token_b} : {k_ratio_b}%</span>
-    {"&nbsp;&nbsp;<span style='color:#ef4444;'>⚠ Déséquilibre fort</span>" if ratio_imbalance > 25 else ""}
-</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    "<div style=\"font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); margin-top:-6px; margin-bottom:10px;\">"
+    "Composition LP : <span style=\"color:#f59e0b;\">" + k_token_a + " : " + str(k_ratio_a) + "%</span>"
+    "&nbsp;/&nbsp; <span style=\"color:#0ea5e9;\">" + k_token_b + " : " + str(k_ratio_b) + "%</span>"
+    + ("&nbsp;&nbsp;<span style='color:#ef4444;'>⚠ Déséquilibre fort</span>" if ratio_imbalance > 25 else "")
+    + "</div>",
+    unsafe_allow_html=True
+)
 
 # ── RANGES ──
 st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 sec("△", "Ranges — Actuel & Futurs (bornes en $)")
 
-st.markdown("""
-<div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); margin-bottom:12px; line-height:1.8;">
-    Renseignez la largeur du range actuel (%) et les bornes manuelles souhaitées pour les ranges futurs bas et haut.
-    Si vous laissez les bornes futures à 0, elles sont calculées automatiquement selon les offsets standards Krystal.
-</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    "<div style=\"font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); margin-bottom:12px; line-height:1.8;\">"
+    "Renseignez la largeur du range actuel (%) et les bornes manuelles souhaitées pour les ranges futurs bas et haut. "
+    "Si vous laissez les bornes futures à 0, elles sont calculées automatiquement selon les offsets standards Krystal."
+    "</div>",
+    unsafe_allow_html=True
+)
 
 kr1, kr2, kr3 = st.columns(3)
 with kr1:
@@ -1745,22 +1745,23 @@ k_next_high_min = k_high_min if k_high_min > 0 else _spot_after_high * (1 + (-3)
 k_next_high_max = k_high_max if k_high_max > 0 else _spot_after_high * (1 + 9      / 100)
 
 # Résumé visuel des ranges
-st.markdown(f"""
-<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; margin-bottom:4px;">
-    <div style="background:var(--accent-dim); border:1px solid var(--border); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
-        <span style="color:var(--accent);">◈ Range actuel</span> &nbsp;
-        <span style="color:#f0f4f8;">${k_current_lower:,.0f} – ${k_current_upper:,.0f}</span>
-    </div>
-    <div style="background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.25); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
-        <span style="color:#ef4444;">🔻 Range futur BAS</span> &nbsp;
-        <span style="color:#f0f4f8;">${k_next_low_min:,.0f} – ${k_next_low_max:,.0f}</span>
-    </div>
-    <div style="background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.25); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
-        <span style="color:#22c55e;">🔺 Range futur HAUT</span> &nbsp;
-        <span style="color:#f0f4f8;">${k_next_high_min:,.0f} – ${k_next_high_max:,.0f}</span>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+st.markdown(
+    "<div style=\"display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; margin-bottom:4px;\">"
+    "<div style=\"background:var(--accent-dim); border:1px solid var(--border); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;\">"
+    "<span style=\"color:var(--accent);\">◈ Range actuel</span> &nbsp;"
+    "<span style=\"color:#f0f4f8;\">$" + f"{k_current_lower:,.0f}" + " – $" + f"{k_current_upper:,.0f}" + "</span>"
+    "</div>"
+    "<div style=\"background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.25); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;\">"
+    "<span style=\"color:#ef4444;\">🔻 Range futur BAS</span> &nbsp;"
+    "<span style=\"color:#f0f4f8;\">$" + f"{k_next_low_min:,.0f}" + " – $" + f"{k_next_low_max:,.0f}" + "</span>"
+    "</div>"
+    "<div style=\"background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.25); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;\">"
+    "<span style=\"color:#22c55e;\">🔺 Range futur HAUT</span> &nbsp;"
+    "<span style=\"color:#f0f4f8;\">$" + f"{k_next_high_min:,.0f}" + " – $" + f"{k_next_high_max:,.0f}" + "</span>"
+    "</div>"
+    "</div>",
+    unsafe_allow_html=True
+)
 
 # ── BOUTON ──
 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
@@ -1783,17 +1784,29 @@ if k_run:
     ratio_diag_color = "#ef4444" if ratio_imbalance > 25 else "#f59e0b" if ratio_imbalance > 10 else "var(--accent)"
 
     with kd1:
-        st.markdown(f"""<div class="m-card"><div class="m-label">Prix actuel {k_token_a}</div>
-            <div class="m-value">${k_price_a:,.2f}</div></div>""", unsafe_allow_html=True)
+        st.markdown(
+            "<div class=\"m-card\"><div class=\"m-label\">Prix actuel " + k_token_a + "</div>"
+            "<div class=\"m-value\">$" + f"{k_price_a:,.2f}" + "</div></div>",
+            unsafe_allow_html=True
+        )
     with kd2:
-        st.markdown(f"""<div class="m-card"><div class="m-label">Prix d'entrée LP</div>
-            <div class="m-value" style="color:var(--text-mid);">${k_price_entry:,.2f}</div></div>""", unsafe_allow_html=True)
+        st.markdown(
+            "<div class=\"m-card\"><div class=\"m-label\">Prix d'entrée LP</div>"
+            "<div class=\"m-value\" style=\"color:var(--text-mid);\">$" + f"{k_price_entry:,.2f}" + "</div></div>",
+            unsafe_allow_html=True
+        )
     with kd3:
-        st.markdown(f"""<div class="m-card"><div class="m-label">Variation depuis entrée</div>
-            <div class="m-value" style="color:{pc_color};">{k_price_change:+.1f}%</div></div>""", unsafe_allow_html=True)
+        st.markdown(
+            "<div class=\"m-card\"><div class=\"m-label\">Variation depuis entrée</div>"
+            "<div class=\"m-value\" style=\"color:" + pc_color + ";\">" + f"{k_price_change:+.1f}" + "%</div></div>",
+            unsafe_allow_html=True
+        )
     with kd4:
-        st.markdown(f"""<div class="m-card"><div class="m-label">Ratio {k_token_a} / {k_token_b}</div>
-            <div class="m-value" style="color:{ratio_diag_color};">{k_ratio_a}% / {k_ratio_b}%</div></div>""", unsafe_allow_html=True)
+        st.markdown(
+            "<div class=\"m-card\"><div class=\"m-label\">Ratio " + k_token_a + " / " + k_token_b + "</div>"
+            "<div class=\"m-value\" style=\"color:" + ratio_diag_color + ";\">" + str(k_ratio_a) + "% / " + str(k_ratio_b) + "%</div></div>",
+            unsafe_allow_html=True
+        )
 
     # ── DÉTECTION AUTOMATIQUE DU CAS ──
     def detect_case(pc, ra, rb):
@@ -1827,26 +1840,32 @@ if k_run:
         "NORMALE":  ("var(--accent-dim)", "var(--border)", "var(--accent)"),
     }
 
-    st.markdown("""
-    <div style="background:#050809; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin:10px 0 20px 0;">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px;">
-            ◈ Détection automatique — Cas recommandé(s)
-        </div>
-    """ + "".join([
-        f"""<div style="background:{priority_styles[p][0]}; border:1px solid {priority_styles[p][1]};
-            border-radius:8px; padding:10px 14px; margin-bottom:8px; display:flex; gap:14px; align-items:flex-start;">
-            <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:{priority_styles[p][2]}; line-height:1; min-width:60px;">
-                CAS {cid}
-            </div>
-            <div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:{priority_styles[p][2]}; letter-spacing:1px; margin-bottom:3px;">
-                    PRIORITÉ {p}
-                </div>
-                <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); line-height:1.7;">{reason}</div>
-            </div>
-        </div>"""
-        for cid, p, reason in detected
-    ]) + "</div>", unsafe_allow_html=True)
+    detected_blocks = ""
+    for cid, p, reason in detected:
+        detected_blocks += (
+            "<div style=\"background:" + priority_styles[p][0] + "; border:1px solid " + priority_styles[p][1] + ";"
+            "border-radius:8px; padding:10px 14px; margin-bottom:8px; display:flex; gap:14px; align-items:flex-start;\">"
+            "<div style=\"font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:" + priority_styles[p][2] + "; line-height:1; min-width:60px;\">"
+            "CAS " + str(cid) +
+            "</div>"
+            "<div>"
+            "<div style=\"font-family:'JetBrains Mono',monospace; font-size:10px; color:" + priority_styles[p][2] + "; letter-spacing:1px; margin-bottom:3px;\">"
+            "PRIORITÉ " + p +
+            "</div>"
+            "<div style=\"font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); line-height:1.7;\">" + reason + "</div>"
+            "</div>"
+            "</div>"
+        )
+
+    st.markdown(
+        "<div style=\"background:#050809; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin:10px 0 20px 0;\">"
+        "<div style=\"font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px;\">"
+        "◈ Détection automatique — Cas recommandé(s)"
+        "</div>"
+        + detected_blocks +
+        "</div>",
+        unsafe_allow_html=True
+    )
 
     # ── DÉFINITION DES 8 CAS ──
     KRYSTAL_CASES = [
@@ -2114,32 +2133,37 @@ if k_run:
 
         is_detected = any(d[0] == cas_id for d in detected)
         card_border = cas["card_border"] if is_detected else "rgba(255,255,255,0.06)"
-        card_bg     = f"linear-gradient(135deg,{cas['tag_bg']},rgba(0,0,0,0))" if is_detected else "var(--bg-card)"
+        card_bg     = "linear-gradient(135deg," + cas["tag_bg"] + ",rgba(0,0,0,0))" if is_detected else "var(--bg-card)"
 
-        # Header de la carte (toujours visible)
-        header_html = f"""
-        <div style="background:{card_bg}; border:1px solid {card_border}; border-radius:10px; padding:16px 18px; margin-bottom:2px;">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                <div style="width:32px; height:32px; border-radius:7px; background:{cas['tag_bg']};
-                    border:1px solid {cas['tag_border']}; display:flex; align-items:center;
-                    justify-content:center; font-size:16px; flex-shrink:0;">{cas['emoji']}</div>
-                <div style="flex:1;">
-                    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#f0f4f8;">
-                        CAS {cas_id} — {cas['label']}
-                        {"&nbsp;&nbsp;<span style='font-size:10px; background:var(--accent-dim); border:1px solid var(--border); border-radius:4px; padding:2px 7px; color:var(--accent); vertical-align:middle;'>◈ RECOMMANDÉ</span>" if is_detected else ""}
-                    </div>
-                    <div style="margin-top:3px;">
-                        <span style="background:{cas['tag_bg']}; border:1px solid {cas['tag_border']};
-                            border-radius:5px; padding:2px 8px; font-family:'JetBrains Mono',monospace;
-                            font-size:10px; color:{cas['tag_color']}; letter-spacing:1px;">
-                            MARCHÉ : {cas['market']}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); line-height:1.7;">{cas['desc']}</div>
-        </div>
-        """
+        recommended_badge = (
+            "&nbsp;&nbsp;<span style='font-size:10px; background:var(--accent-dim); border:1px solid var(--border); border-radius:4px; padding:2px 7px; color:var(--accent); vertical-align:middle;'>◈ RECOMMANDÉ</span>"
+            if is_detected else ""
+        )
+
+        # Header de la carte (toujours visible) — tout sur une seule ligne logique, sans indentation
+        header_html = (
+            "<div style=\"background:" + card_bg + "; border:1px solid " + card_border + "; border-radius:10px; padding:16px 18px; margin-bottom:2px;\">"
+            "<div style=\"display:flex; align-items:center; gap:10px; margin-bottom:6px;\">"
+            "<div style=\"width:32px; height:32px; border-radius:7px; background:" + cas['tag_bg'] + ";"
+            "border:1px solid " + cas['tag_border'] + "; display:flex; align-items:center;"
+            "justify-content:center; font-size:16px; flex-shrink:0;\">" + cas['emoji'] + "</div>"
+            "<div style=\"flex:1;\">"
+            "<div style=\"font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#f0f4f8;\">"
+            "CAS " + str(cas_id) + " — " + cas['label']
+            + recommended_badge +
+            "</div>"
+            "<div style=\"margin-top:3px;\">"
+            "<span style=\"background:" + cas['tag_bg'] + "; border:1px solid " + cas['tag_border'] + ";"
+            "border-radius:5px; padding:2px 8px; font-family:'JetBrains Mono',monospace;"
+            "font-size:10px; color:" + cas['tag_color'] + "; letter-spacing:1px;\">"
+            "MARCHÉ : " + cas['market'] +
+            "</span>"
+            "</div>"
+            "</div>"
+            "</div>"
+            "<div style=\"font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); line-height:1.7;\">" + cas['desc'] + "</div>"
+            "</div>"
+        )
         st.markdown(header_html, unsafe_allow_html=True)
 
         # Détail dans un expander
@@ -2147,11 +2171,11 @@ if k_run:
 
             if cas.get("emergency"):
                 st.markdown(
-                    '<div style="background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.50);'
-                    'border-radius:8px;padding:10px 14px;margin-bottom:14px;'
-                    'font-family:\'JetBrains Mono\',monospace;font-size:11px;color:#ef4444;line-height:1.7;">'
-                    '⚡ ACTION MANUELLE REQUISE : RETRAIT TOTAL recommandé si le prix sort de -25% du range d\'entrée. '
-                    'Compound désactivé — fees accessibles immédiatement si retrait nécessaire.</div>',
+                    "<div style=\"background:rgba(239,68,68,0.10);border:1px solid rgba(239,68,68,0.50);"
+                    "border-radius:8px;padding:10px 14px;margin-bottom:14px;"
+                    "font-family:'JetBrains Mono',monospace;font-size:11px;color:#ef4444;line-height:1.7;\">"
+                    "⚡ ACTION MANUELLE REQUISE : RETRAIT TOTAL recommandé si le prix sort de -25% du range d'entrée. "
+                    "Compound désactivé — fees accessibles immédiatement si retrait nécessaire.</div>",
                     unsafe_allow_html=True
                 )
 
@@ -2163,23 +2187,23 @@ if k_run:
                 for k, v in cas["params"]:
                     val_color = "#ef4444" if "OFF" in v else "#f0f4f8"
                     params_rows += (
-                        '<div style="display:flex;justify-content:space-between;align-items:center;'
-                        'padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);'
-                        'font-family:\'JetBrains Mono\',monospace;font-size:12px;">'
-                        '<span style="color:var(--text-mid);font-size:11px;">' + k + '</span>'
-                        '<span style="color:' + val_color + ';font-weight:600;">' + v + '</span>'
-                        '</div>'
+                        "<div style=\"display:flex;justify-content:space-between;align-items:center;"
+                        "padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);"
+                        "font-family:'JetBrains Mono',monospace;font-size:12px;\">"
+                        "<span style=\"color:var(--text-mid);font-size:11px;\">" + k + "</span>"
+                        "<span style=\"color:" + val_color + ";font-weight:600;\">" + v + "</span>"
+                        "</div>"
                     )
                 params_html = (
-                    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--accent);'
-                    'letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">'
-                    'Paramètres à renseigner — Krystal LP</div>'
+                    "<div style=\"font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);"
+                    "letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;\">"
+                    "Paramètres à renseigner — Krystal LP</div>"
                     + params_rows
                 )
                 if cas.get("note"):
                     params_html += (
-                        '<div style="margin-top:8px;font-family:\'JetBrains Mono\',monospace;font-size:10px;'
-                        'color:#f59e0b;font-style:italic;line-height:1.6;">⚠ ' + cas["note"] + '</div>'
+                        "<div style=\"margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;"
+                        "color:#f59e0b;font-style:italic;line-height:1.6;\">⚠ " + cas["note"] + "</div>"
                     )
                 st.markdown(params_html, unsafe_allow_html=True)
 
@@ -2187,37 +2211,37 @@ if k_run:
                 logic_rows = ""
                 for l in cas["logic"]:
                     logic_rows += (
-                        '<div style="font-family:\'JetBrains Mono\',monospace;font-size:11px;'
-                        'color:var(--text-mid);line-height:1.9;">'
-                        '<span style="color:var(--accent);">·</span> ' + l + '</div>'
+                        "<div style=\"font-family:'JetBrains Mono',monospace;font-size:11px;"
+                        "color:var(--text-mid);line-height:1.9;\">"
+                        "<span style=\"color:var(--accent);\">·</span> " + l + "</div>"
                     )
                 logic_html = (
-                    '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--accent);'
-                    'letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">'
-                    'Logique de la stratégie</div>'
+                    "<div style=\"font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);"
+                    "letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;\">"
+                    "Logique de la stratégie</div>"
                     + logic_rows
                 )
                 st.markdown(logic_html, unsafe_allow_html=True)
 
             # ── Triggers en $ calculés ──
             triggers_html = (
-                '<div style="margin:14px 0 10px 0;font-family:\'JetBrains Mono\',monospace;font-size:10px;'
-                'color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;">'
-                'Triggers en $ — calculés sur prix actuel ' + k_token_a + ' = $' + f'{k_price_a:,.2f}' + '</div>'
-                '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">'
-                '<div style="background:var(--accent-dim);border:1px solid var(--border);'
-                'border-radius:7px;padding:8px 14px;font-family:\'JetBrains Mono\',monospace;font-size:11px;">'
-                '<span style="color:var(--text-mid);">Range actuel (' + f'{rw_used:.0f}' + '%) :</span>'
-                '<span style="color:var(--accent);"> $' + f'{spot_low:,.0f}' + ' – $' + f'{spot_high:,.0f}' + '</span></div>'
-                '<div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);'
-                'border-radius:7px;padding:8px 14px;font-family:\'JetBrains Mono\',monospace;font-size:11px;">'
-                '<span style="color:var(--text-mid);">Trigger BAS :</span>'
-                '<span style="color:#ef4444;"> $' + f'{trig_low_min:,.0f}' + ' – $' + f'{trig_low_max:,.0f}' + '</span></div>'
-                '<div style="background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);'
-                'border-radius:7px;padding:8px 14px;font-family:\'JetBrains Mono\',monospace;font-size:11px;">'
-                '<span style="color:var(--text-mid);">Trigger HAUT :</span>'
-                '<span style="color:#22c55e;"> $' + f'{trig_high_min:,.0f}' + ' – $' + f'{trig_high_max:,.0f}' + '</span></div>'
-                '</div>'
+                "<div style=\"margin:14px 0 10px 0;font-family:'JetBrains Mono',monospace;font-size:10px;"
+                "color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;\">"
+                "Triggers en $ — calculés sur prix actuel " + k_token_a + " = $" + f"{k_price_a:,.2f}" + "</div>"
+                "<div style=\"display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;\">"
+                "<div style=\"background:var(--accent-dim);border:1px solid var(--border);"
+                "border-radius:7px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;\">"
+                "<span style=\"color:var(--text-mid);\">Range actuel (" + f"{rw_used:.0f}" + "%) :</span>"
+                "<span style=\"color:var(--accent);\"> $" + f"{spot_low:,.0f}" + " – $" + f"{spot_high:,.0f}" + "</span></div>"
+                "<div style=\"background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);"
+                "border-radius:7px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;\">"
+                "<span style=\"color:var(--text-mid);\">Trigger BAS :</span>"
+                "<span style=\"color:#ef4444;\"> $" + f"{trig_low_min:,.0f}" + " – $" + f"{trig_low_max:,.0f}" + "</span></div>"
+                "<div style=\"background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);"
+                "border-radius:7px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;\">"
+                "<span style=\"color:var(--text-mid);\">Trigger HAUT :</span>"
+                "<span style=\"color:#22c55e;\"> $" + f"{trig_high_min:,.0f}" + " – $" + f"{trig_high_max:,.0f}" + "</span></div>"
+                "</div>"
             )
             st.markdown(triggers_html, unsafe_allow_html=True)
 
@@ -2292,26 +2316,26 @@ if k_run:
         ("Flash crash ou volatilité extrême",                 "CAS 8 — Mode Urgence, sortie totale"),
     ]:
         decision_rows += (
-            '<div style="display:flex;gap:12px;align-items:center;'
-            'border-bottom:1px solid rgba(255,255,255,0.03);padding:4px 0;">'
-            '<span style="color:var(--text-lo);">→</span>'
-            '<span style="color:var(--text-mid);min-width:260px;'
-            'font-family:\'JetBrains Mono\',monospace;font-size:12px;">' + desc + '</span>'
-            '<span style="color:var(--accent);font-weight:600;white-space:nowrap;'
-            'font-family:\'JetBrains Mono\',monospace;font-size:12px;">' + label + '</span>'
-            '</div>'
+            "<div style=\"display:flex;gap:12px;align-items:center;"
+            "border-bottom:1px solid rgba(255,255,255,0.03);padding:4px 0;\">"
+            "<span style=\"color:var(--text-lo);\">→</span>"
+            "<span style=\"color:var(--text-mid);min-width:260px;"
+            "font-family:'JetBrains Mono',monospace;font-size:12px;\">" + desc + "</span>"
+            "<span style=\"color:var(--accent);font-weight:600;white-space:nowrap;"
+            "font-family:'JetBrains Mono',monospace;font-size:12px;\">" + label + "</span>"
+            "</div>"
         )
     decision_html = (
-        '<div class="m-card-wide">'
-        '<div style="line-height:2.4;">'
+        "<div class=\"m-card-wide\">"
+        "<div style=\"line-height:2.4;\">"
         + decision_rows +
-        '</div></div>'
+        "</div></div>"
     )
     st.markdown(decision_html, unsafe_allow_html=True)
 
     st.markdown(
-        '<div class="disc-bar" style="margin-top:16px;">'
-        '<span>◈</span> Simulation éducative · Ceci n\'est pas un conseil en investissement · DYOR · LP STRATEGY LAB — Pigeon Chanceux'
-        '</div>',
+        "<div class=\"disc-bar\" style=\"margin-top:16px;\">"
+        "<span>◈</span> Simulation éducative · Ceci n'est pas un conseil en investissement · DYOR · LP STRATEGY LAB — Pigeon Chanceux"
+        "</div>",
         unsafe_allow_html=True
     )
