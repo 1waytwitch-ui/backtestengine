@@ -2253,16 +2253,19 @@ if k_run:
             y_min = min(all_vals) * 0.95
             y_max = max(all_vals) * 1.05
 
+            # Ordre gauche → droite (bas en bas de la liste = en bas du graphique en mode horizontal,
+            # donc on inverse l'ordre pour avoir BAS en haut visuellement = à gauche une fois tourné)
             bars_data = [
+                ("Range futur HAUT", trig_high_min, trig_high_max, "#22c55e", "rgba(34,197,94,0.12)"),
                 ("Range actuel",     spot_low,      spot_high,     "#00d4aa", "rgba(0,212,170,0.18)"),
                 ("Range futur BAS",  trig_low_min,  trig_low_max,  "#ef4444", "rgba(239,68,68,0.12)"),
-                ("Range futur HAUT", trig_high_min, trig_high_max, "#22c55e", "rgba(34,197,94,0.12)"),
             ]
 
             for lbl, vmin, vmax, col, fillcol in bars_data:
                 fig_range.add_trace(go.Bar(
-                    x=[lbl], y=[vmax - vmin],
+                    y=[lbl], x=[vmax - vmin],
                     base=[vmin],
+                    orientation="h",
                     marker_color=fillcol,
                     marker_line_color=col,
                     marker_line_width=1.5,
@@ -2273,8 +2276,8 @@ if k_run:
                     width=0.5,
                 ))
 
-            fig_range.add_hline(
-                y=k_price_a,
+            fig_range.add_vline(
+                x=k_price_a,
                 line=dict(color="rgba(255,255,255,0.6)", dash="dot", width=1.5),
                 annotation_text="Prix actuel : $" + f"{k_price_a:,.2f}",
                 annotation_font_color="#f0f4f8",
@@ -2285,13 +2288,18 @@ if k_run:
                 paper_bgcolor="#0d1318",
                 font=dict(color="#8899aa", family="JetBrains Mono"),
                 showlegend=False,
-                yaxis=dict(
+                xaxis=dict(
                     title="Prix " + k_token_a + " ($)",
                     gridcolor="rgba(255,255,255,0.04)",
                     range=[y_min, y_max],
                     tickfont=dict(size=10),
                 ),
-                xaxis=dict(gridcolor="rgba(255,255,255,0)", tickfont=dict(size=11)),
+                yaxis=dict(
+                    gridcolor="rgba(255,255,255,0)",
+                    tickfont=dict(size=11),
+                    categoryorder="array",
+                    categoryarray=["Range futur BAS", "Range actuel", "Range futur HAUT"],
+                ),
                 margin=dict(l=20, r=20, t=20, b=20),
                 height=280,
                 bargap=0.3,
