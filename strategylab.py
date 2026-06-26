@@ -1624,3 +1624,689 @@ st.markdown("""
 </div>
 <div style="height:20px;"></div>
 """, unsafe_allow_html=True)
+
+# ══════════════════════════════════════════════════════════════════
+# ── SECTION : LP AUTOMATION KRYSTAL — 8 CAS DE REBALANCE ──
+# ══════════════════════════════════════════════════════════════════
+#
+# Colle ce bloc à la toute fin de ton fichier app.py, après le guide complet.
+# Il utilise les mêmes helpers (sec, card, tip_label) et le même style HTML
+# que le reste du Strategy Lab.
+#
+# ══════════════════════════════════════════════════════════════════
+
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+sec("⬡", "LP Automation Krystal — 8 Cas de Rebalance Dynamique")
+
+st.markdown("""
+<div style="background:var(--accent-dim); border:1px solid var(--border); border-radius:10px; padding:16px 22px; margin-bottom:16px;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;">
+        ◈ PARAMÈTRES KRYSTAL LP — CONFIGURATIONS PRÊTES À RENSEIGNER
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-mid);">
+        Renseignez votre position actuelle. L'outil détecte automatiquement le(s) cas adapté(s) et génère
+        les paramètres exacts à copier dans l'automation Krystal, avec visualisation des ranges.
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ── INPUTS TOKENS ──
+st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+ka1, ka2 = st.columns(2)
+with ka1:
+    tip_label("Nom du Token A (volatile)", "L'actif le plus volatile de la paire. Ex : WETH, SOL, BTC.")
+    k_token_a = st.text_input("k_token_a", value="WETH", label_visibility="collapsed", placeholder="WETH, SOL, BTC…", key="k_ta")
+with ka2:
+    tip_label("Nom du Token B (stable)", "L'actif stable ou moins volatile. Ex : USDC, USDT.")
+    k_token_b = st.text_input("k_token_b", value="USDC", label_visibility="collapsed", placeholder="USDC, USDT…", key="k_tb")
+
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+sec("⊞", "État actuel de la position LP")
+
+kb1, kb2, kb3, kb4 = st.columns(4)
+with kb1:
+    tip_label(f"Prix actuel {k_token_a} ($)", "Prix de marché actuel du Token A.")
+    k_price_a = st.number_input("k_price_a", value=2000.0, min_value=0.01, max_value=10_000_000.0, step=10.0, label_visibility="collapsed", key="k_pa")
+with kb2:
+    tip_label(f"Prix actuel {k_token_b} ($)", "Prix actuel du Token B. Laisser 1.00$ pour un stablecoin.")
+    k_price_b = st.number_input("k_price_b", value=1.0, min_value=0.001, max_value=100_000.0, step=0.01, label_visibility="collapsed", key="k_pb")
+with kb3:
+    tip_label(f"Prix d'entrée LP {k_token_a} ($)", "Prix de TokenA au moment de votre dépôt initial dans la pool.")
+    k_price_entry = st.number_input("k_price_entry", value=1800.0, min_value=0.01, max_value=10_000_000.0, step=10.0, label_visibility="collapsed", key="k_pe")
+with kb4:
+    tip_label(f"Ratio actuel {k_token_a} en LP (%)", f"Pourcentage estimé de TokenA dans votre position actuelle. 50% = équilibré. >70% = sur-exposé TokenA. <30% = sur-exposé TokenB.")
+    k_ratio_a = st.number_input("k_ratio_a", value=50, min_value=1, max_value=99, step=1, label_visibility="collapsed", key="k_ra")
+
+k_ratio_b = 100 - k_ratio_a
+ratio_imbalance = abs(k_ratio_a - 50)
+ratio_color = "#ef4444" if ratio_imbalance > 25 else "#f59e0b" if ratio_imbalance > 10 else "var(--accent)"
+st.markdown(f"""
+<div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); margin-top:-6px; margin-bottom:10px;">
+    Composition LP : <span style="color:#f59e0b;">{k_token_a} : {k_ratio_a}%</span>
+    &nbsp;/&nbsp; <span style="color:#0ea5e9;">{k_token_b} : {k_ratio_b}%</span>
+    {"&nbsp;&nbsp;<span style='color:#ef4444;'>⚠ Déséquilibre fort</span>" if ratio_imbalance > 25 else ""}
+</div>
+""", unsafe_allow_html=True)
+
+# ── RANGES ──
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+sec("△", "Ranges — Actuel & Futurs (bornes en $)")
+
+st.markdown("""
+<div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); margin-bottom:12px; line-height:1.8;">
+    Renseignez la largeur du range actuel (%) et les bornes manuelles souhaitées pour les ranges futurs bas et haut.
+    Si vous laissez les bornes futures à 0, elles sont calculées automatiquement selon les offsets standards Krystal.
+</div>
+""", unsafe_allow_html=True)
+
+kr1, kr2, kr3 = st.columns(3)
+with kr1:
+    tip_label("Range actuel (%)", "Largeur totale du range actif. 12% → Lower = prix × 0.88, Upper = prix × 1.12.")
+    k_range_width = st.number_input("k_range_w", value=12.0, min_value=1.0, max_value=50.0, step=1.0, label_visibility="collapsed", key="k_rw")
+with kr2:
+    tip_label("% Range futur HAUT personnalisé", "Largeur souhaitée pour le prochain range haut (en cas de hausse). Laissez 0 pour utiliser la config standard Krystal.")
+    k_range_high_pct = st.number_input("k_range_high_pct", value=0.0, min_value=0.0, max_value=50.0, step=1.0, label_visibility="collapsed", key="k_rhp")
+with kr3:
+    tip_label("% Range futur BAS personnalisé", "Largeur souhaitée pour le prochain range bas (en cas de baisse). Laissez 0 pour utiliser la config standard Krystal.")
+    k_range_low_pct = st.number_input("k_range_low_pct", value=0.0, min_value=0.0, max_value=50.0, step=1.0, label_visibility="collapsed", key="k_rlp")
+
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+st.markdown("<div style='font-family:JetBrains Mono,monospace; font-size:10px; color:var(--text-mid); letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;'>Bornes manuelles des ranges futurs ($) — optionnel</div>", unsafe_allow_html=True)
+
+km1, km2, km3, km4 = st.columns(4)
+with km1:
+    tip_label("Range futur BAS — Min ($)", "Borne basse du prochain range en cas de trigger bas. 0 = calculé auto.")
+    k_low_min = st.number_input("k_low_min", value=0.0, min_value=0.0, step=10.0, label_visibility="collapsed", key="k_lmin")
+with km2:
+    tip_label("Range futur BAS — Max ($)", "Borne haute du prochain range en cas de trigger bas. 0 = calculé auto.")
+    k_low_max = st.number_input("k_low_max", value=0.0, min_value=0.0, step=10.0, label_visibility="collapsed", key="k_lmax")
+with km3:
+    tip_label("Range futur HAUT — Min ($)", "Borne basse du prochain range en cas de trigger haut. 0 = calculé auto.")
+    k_high_min = st.number_input("k_high_min", value=0.0, min_value=0.0, step=10.0, label_visibility="collapsed", key="k_hmin")
+with km4:
+    tip_label("Range futur HAUT — Max ($)", "Borne haute du prochain range en cas de trigger haut. 0 = calculé auto.")
+    k_high_max = st.number_input("k_high_max", value=0.0, min_value=0.0, step=10.0, label_visibility="collapsed", key="k_hmax")
+
+# ── Calculs des ranges ──
+k_current_lower = k_price_a * (1 - k_range_width / 100)
+k_current_upper = k_price_a * (1 + k_range_width / 100)
+
+# Range bas : offsets Krystal standard = Min -3% Below / Max +9% Above future spot
+# Range haut : offsets Krystal standard = Min -9% Below / Max +3% Above future spot
+k_std_low_rw  = k_range_low_pct  if k_range_low_pct  > 0 else 12.0
+k_std_high_rw = k_range_high_pct if k_range_high_pct > 0 else 12.0
+
+_spot_after_low  = k_current_lower   # prochain centre approximatif si trigger bas
+_spot_after_high = k_current_upper   # prochain centre approximatif si trigger haut
+
+k_next_low_min  = k_low_min  if k_low_min  > 0 else _spot_after_low  * (1 + (-9)   / 100)
+k_next_low_max  = k_low_max  if k_low_max  > 0 else _spot_after_low  * (1 + 3      / 100)
+k_next_high_min = k_high_min if k_high_min > 0 else _spot_after_high * (1 + (-3)   / 100)
+k_next_high_max = k_high_max if k_high_max > 0 else _spot_after_high * (1 + 9      / 100)
+
+# Résumé visuel des ranges
+st.markdown(f"""
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px; margin-bottom:4px;">
+    <div style="background:var(--accent-dim); border:1px solid var(--border); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+        <span style="color:var(--accent);">◈ Range actuel</span> &nbsp;
+        <span style="color:#f0f4f8;">${k_current_lower:,.0f} – ${k_current_upper:,.0f}</span>
+    </div>
+    <div style="background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.25); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+        <span style="color:#ef4444;">🔻 Range futur BAS</span> &nbsp;
+        <span style="color:#f0f4f8;">${k_next_low_min:,.0f} – ${k_next_low_max:,.0f}</span>
+    </div>
+    <div style="background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.25); border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+        <span style="color:#22c55e;">🔺 Range futur HAUT</span> &nbsp;
+        <span style="color:#f0f4f8;">${k_next_high_min:,.0f} – ${k_next_high_max:,.0f}</span>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# ── BOUTON ──
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+k_run_col, _ = st.columns([1, 3])
+with k_run_col:
+    k_run = st.button("◈ GÉNÉRER LES CONFIGS KRYSTAL", use_container_width=True, key="k_run_btn")
+
+# ══════════════════════════════════════════════════════════════════
+# ── RÉSULTATS ──
+# ══════════════════════════════════════════════════════════════════
+if k_run:
+    k_price_change = ((k_price_a - k_price_entry) / k_price_entry * 100) if k_price_entry > 0 else 0.0
+
+    # ── DIAGNOSTIC ──
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    sec("◉", "Diagnostic — Situation actuelle")
+
+    kd1, kd2, kd3, kd4 = st.columns(4)
+    pc_color = "var(--accent-green)" if k_price_change >= 0 else "var(--accent-red)"
+    ratio_diag_color = "#ef4444" if ratio_imbalance > 25 else "#f59e0b" if ratio_imbalance > 10 else "var(--accent)"
+
+    with kd1:
+        st.markdown(f"""<div class="m-card"><div class="m-label">Prix actuel {k_token_a}</div>
+            <div class="m-value">${k_price_a:,.2f}</div></div>""", unsafe_allow_html=True)
+    with kd2:
+        st.markdown(f"""<div class="m-card"><div class="m-label">Prix d'entrée LP</div>
+            <div class="m-value" style="color:var(--text-mid);">${k_price_entry:,.2f}</div></div>""", unsafe_allow_html=True)
+    with kd3:
+        st.markdown(f"""<div class="m-card"><div class="m-label">Variation depuis entrée</div>
+            <div class="m-value" style="color:{pc_color};">{k_price_change:+.1f}%</div></div>""", unsafe_allow_html=True)
+    with kd4:
+        st.markdown(f"""<div class="m-card"><div class="m-label">Ratio {k_token_a} / {k_token_b}</div>
+            <div class="m-value" style="color:{ratio_diag_color};">{k_ratio_a}% / {k_ratio_b}%</div></div>""", unsafe_allow_html=True)
+
+    # ── DÉTECTION AUTOMATIQUE DU CAS ──
+    def detect_case(pc, ra, rb):
+        """Retourne liste de (cas_id, priorité, raison)"""
+        results = []
+        ri = abs(ra - 50)
+        if pc < -25:
+            results.append((8, "CRITIQUE", f"Baisse critique {pc:.1f}% → mode urgence, envisager sortie totale"))
+        if pc < -20 and ra > 75:
+            results.append((5, "CRITIQUE", f"Baisse sévère ({pc:.1f}%) + sur-exposition {k_token_a} ({ra}%) → défensif 90/10"))
+        if pc < -10 and ra > 60 and (8, "CRITIQUE", "") not in [(r[0], r[1], "") for r in results]:
+            results.append((4, "HAUTE", f"Baisse ({pc:.1f}%) + accumulation {k_token_a} ({ra}%) → CdP baissier 80/20"))
+        if pc > 10 and ra > 70:
+            results.append((2, "HAUTE", f"Hausse {pc:.1f}% + {k_token_a} dominant ({ra}%) → CdP haussier suivi de tendance"))
+        if abs(pc) > 5 and abs(pc) < 15 and ri > 15:
+            results.append((3, "MOYENNE", f"Possible retournement : variation {pc:.1f}% + déséquilibre ratio ({ri}pts)"))
+        if abs(pc) < 5 and ri < 15:
+            results.append((6, "MOYENNE", f"Prix stable ({pc:.1f}%) + ratio équilibré → range serré 8% pour fees max"))
+        if pc < -15 and ra < 40:
+            results.append((7, "MOYENNE", f"Signal rebond potentiel : {pc:.1f}% + {k_token_b} dominant ({rb}%) → CdP haussier"))
+        if not results:
+            results.append((1, "NORMALE", "Situation neutre — entrée initiale ou repositionnement sans biais confirmé"))
+        return results
+
+    detected = detect_case(k_price_change, k_ratio_a, k_ratio_b)
+
+    priority_styles = {
+        "CRITIQUE": ("rgba(239,68,68,0.12)", "rgba(239,68,68,0.45)", "#ef4444"),
+        "HAUTE":    ("rgba(245,158,11,0.10)", "rgba(245,158,11,0.35)", "#f59e0b"),
+        "MOYENNE":  ("rgba(14,165,233,0.10)", "rgba(14,165,233,0.30)", "#0ea5e9"),
+        "NORMALE":  ("var(--accent-dim)", "var(--border)", "var(--accent)"),
+    }
+
+    st.markdown("""
+    <div style="background:#050809; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin:10px 0 20px 0;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:12px;">
+            ◈ Détection automatique — Cas recommandé(s)
+        </div>
+    """ + "".join([
+        f"""<div style="background:{priority_styles[p][0]}; border:1px solid {priority_styles[p][1]};
+            border-radius:8px; padding:10px 14px; margin-bottom:8px; display:flex; gap:14px; align-items:flex-start;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:{priority_styles[p][2]}; line-height:1; min-width:60px;">
+                CAS {cid}
+            </div>
+            <div>
+                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:{priority_styles[p][2]}; letter-spacing:1px; margin-bottom:3px;">
+                    PRIORITÉ {p}
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); line-height:1.7;">{reason}</div>
+            </div>
+        </div>"""
+        for cid, p, reason in detected
+    ]) + "</div>", unsafe_allow_html=True)
+
+    # ── DÉFINITION DES 8 CAS ──
+    KRYSTAL_CASES = [
+        {
+            "id": 1, "label": "Entrée Neutre 50/50", "emoji": "⟷",
+            "market": "NEUTRE",
+            "tag_bg": "rgba(14,165,233,0.10)", "tag_border": "rgba(14,165,233,0.30)", "tag_color": "#0ea5e9",
+            "card_border": "rgba(14,165,233,0.25)",
+            "desc": "Entrée sans biais directionnel. Rebalance dynamique symétrique activé dès le dépôt pour encadrer les deux côtés.",
+            "params": [
+                ("Ratio Below",         f"0% {k_token_a}"),
+                ("Ratio Above",         f"100% {k_token_a}"),
+                ("Time Buffer",         "0.2h"),
+                ("Trigger Bas — Min",   "-3.003% Below Spot"),
+                ("Trigger Bas — Max",   "+9.002% Above Spot"),
+                ("Trigger Haut — Min",  "-9% Below Spot"),
+                ("Trigger Haut — Max",  "+3% Above Spot"),
+                ("Compound",            "ON"),
+                ("Recurring",           "ON"),
+                ("Gas Fee Ceiling",     "1$"),
+                ("Pool Slippage",       "1% Auto"),
+                ("Swap Slippage",       "1% Auto"),
+            ],
+            "logic": [
+                f"Rebalance Dyn. 25/75 baissier / 75/25 haussier",
+                "Triggers encadrent symétriquement le prix actuel",
+                "Time Buffer 0.2h pour éviter les faux signaux",
+                "Compound + Recurring activés dès l'entrée",
+            ],
+            "low_off":  (-3.003, +9.002),
+            "high_off": (-9.0,   +3.0),
+            "note": None,
+        },
+        {
+            "id": 2, "label": "Suivi Haussier — Coup de Pouce 20/80", "emoji": "↑",
+            "market": "HAUSSIER",
+            "tag_bg": "rgba(34,197,94,0.10)", "tag_border": "rgba(34,197,94,0.30)", "tag_color": "#22c55e",
+            "card_border": "rgba(34,197,94,0.25)",
+            "desc": f"Après rebalance haussier confirmé. Mode Coup de Pouce 20/80 pour surexposer {k_token_a} et maximiser la capture de la hausse.",
+            "params": [
+                ("Ratio Below",         f"0% {k_token_a}"),
+                ("Ratio Above",         f"95% {k_token_a}"),
+                ("Time Buffer",         "0.2h"),
+                ("Trigger Bas — Min",   "-3.003% Below Spot"),
+                ("Trigger Bas — Max",   "+9.002% Above Spot"),
+                ("Trigger Haut — Min",  "-3.003% Below Spot"),
+                ("Trigger Haut — Max",  "+9.002% Above Spot"),
+                ("Compound",            "ON"),
+                ("Recurring",           "ON"),
+                ("Gas Fee Ceiling",     "1$"),
+                ("Pool Slippage",       "1% Auto"),
+                ("Swap Slippage",       "1% Auto"),
+            ],
+            "logic": [
+                f"Mode Coup de Pouce 20/80 : surexposition {k_token_a}",
+                f"Trigger bas conservé côté baissier (ratio 0% {k_token_a})",
+                "Si retournement : trigger bas reprend le rebalance dynamique",
+                "Réglages inversés si rebalance précédent était baissier",
+            ],
+            "low_off":  (-3.003, +9.002),
+            "high_off": (-3.003, +9.002),
+            "note": None,
+        },
+        {
+            "id": 3, "label": "Retournement — Capital Préservé", "emoji": "↩",
+            "market": "RETOURNEMENT",
+            "tag_bg": "rgba(245,158,11,0.10)", "tag_border": "rgba(245,158,11,0.30)", "tag_color": "#f59e0b",
+            "card_border": "rgba(245,158,11,0.25)",
+            "desc": "Changement de direction détecté. Protection déclenchée sans valider de perte — Coup de Pouce repositionné du bon côté.",
+            "params": [
+                ("Ratio Below",         f"5% {k_token_a}"),
+                ("Ratio Above",         f"100% {k_token_a}"),
+                ("Time Buffer",         "0.2h"),
+                ("Trigger Bas — Min",   "-9% Below Spot"),
+                ("Trigger Bas — Max",   "+3% Above Spot"),
+                ("Trigger Haut — Min",  "-9.007% Below Spot"),
+                ("Trigger Haut — Max",  "+3.004% Above Spot"),
+                ("Compound",            "ON"),
+                ("Recurring",           "ON"),
+                ("Gas Fee Ceiling",     "1$"),
+                ("Pool Slippage",       "1% Auto"),
+                ("Swap Slippage",       "1% Auto"),
+            ],
+            "logic": [
+                "Protection déclenchée sans perte validée par rebalance",
+                "CdP repositionné côté haussier sur la nouvelle dynamique",
+                "Trigger haut remonté pour coller à la nouvelle tendance",
+                "Rebalance dyn. reprend si second retournement détecté",
+            ],
+            "low_off":  (-9.0,   +3.0),
+            "high_off": (-9.007, +3.004),
+            "note": None,
+        },
+        {
+            "id": 4, "label": "Continuation Baissière — CdP 80/20", "emoji": "↓",
+            "market": "BAISSIER FORT",
+            "tag_bg": "rgba(239,68,68,0.10)", "tag_border": "rgba(239,68,68,0.30)", "tag_color": "#ef4444",
+            "card_border": "rgba(239,68,68,0.25)",
+            "desc": f"Baisse continue après premier rebalance bas. Mode CdP baissier 80/20 — max {k_token_b} + trigger de rebond large.",
+            "params": [
+                ("Ratio Below",         f"80% {k_token_a} (= 20% actif)"),
+                ("Ratio Above",         f"95% {k_token_a}"),
+                ("Time Buffer",         "0.2h"),
+                ("Trigger Bas — Min",   "-3% Below Spot"),
+                ("Trigger Bas — Max",   "+9% Above Spot"),
+                ("Trigger Haut — Min",  "-9% Below Spot"),
+                ("Trigger Haut — Max",  "+3% Above Spot"),
+                ("Compound",            "ON"),
+                ("Recurring",           "ON"),
+                ("Gas Fee Ceiling",     "1$"),
+                ("Pool Slippage",       "1% Auto"),
+                ("Swap Slippage",       "1% Auto"),
+            ],
+            "logic": [
+                f"CdP 80/20 : 20% {k_token_a} seulement",
+                "Trigger bas décalé sous le nouveau range (suit la chute)",
+                "Trigger haut large : se déclenche sur rebond fort (+15%)",
+                f"Si rebond fort : rebalance symétrique pour reprendre position neutre",
+            ],
+            "low_off":  (-3.0, +9.0),
+            "high_off": (-9.0, +3.0),
+            "note": "Inverser les ratios si scénario haussier symétrique",
+        },
+        {
+            "id": 5, "label": "Double Baisse — Mode Défensif 90/10", "emoji": "⬇",
+            "market": "BAISSIER EXTRÊME",
+            "tag_bg": "rgba(239,68,68,0.15)", "tag_border": "rgba(239,68,68,0.50)", "tag_color": "#ef4444",
+            "card_border": "rgba(239,68,68,0.40)",
+            "desc": f"Deux rebalances baissiers consécutifs. Ultra-défensif 90/10 — 10% {k_token_a} seulement. Attendre signal de retournement clair.",
+            "params": [
+                ("Ratio Below",         f"90% {k_token_a} (= 10% actif)"),
+                ("Ratio Above",         f"30% {k_token_a}"),
+                ("Time Buffer",         "0.5h (renforcé)"),
+                ("Trigger Bas — Min",   "-2% Below Spot"),
+                ("Trigger Bas — Max",   "+5% Above Spot"),
+                ("Trigger Haut — Min",  "-12% Below Spot"),
+                ("Trigger Haut — Max",  "+5% Above Spot"),
+                ("Compound",            "ON"),
+                ("Recurring",           "ON"),
+                ("Gas Fee Ceiling",     "0.5$ (réduit — forte volatilité)"),
+                ("Pool Slippage",       "1% Auto"),
+                ("Swap Slippage",       "2% (tolérance augmentée)"),
+            ],
+            "logic": [
+                f"Mode ultra-défensif : 10% {k_token_a} seulement",
+                "Trigger bas très serré — limite toute exposition supp.",
+                "Trigger haut large : rebond fort confirmé (+15%) seulement",
+                "Buffer 0.5h pour filtrer les faux signaux en chute libre",
+            ],
+            "low_off":  (-2.0,  +5.0),
+            "high_off": (-12.0, +5.0),
+            "note": None,
+        },
+        {
+            "id": 6, "label": "Marché Latéral — Range Serré 8%", "emoji": "⟺",
+            "market": "LATÉRAL",
+            "tag_bg": "rgba(14,165,233,0.10)", "tag_border": "rgba(14,165,233,0.30)", "tag_color": "#0ea5e9",
+            "card_border": "rgba(14,165,233,0.25)",
+            "desc": "Consolidation sans direction claire. Range réduit à 8% pour concentrer la liquidité et maximiser les fees collectés.",
+            "params": [
+                ("Range",               "8% (réduit vs 12% standard)"),
+                ("Ratio Below",         f"0% {k_token_a}"),
+                ("Ratio Above",         f"100% {k_token_a}"),
+                ("Time Buffer",         "0.4h (filtrage renforcé)"),
+                ("Trigger Bas — Min",   "-9% Below Spot"),
+                ("Trigger Bas — Max",   "+3% Above Spot"),
+                ("Trigger Haut — Min",  "-3% Below Spot"),
+                ("Trigger Haut — Max",  "+9% Above Spot"),
+                ("Compound",            "ON"),
+                ("Recurring",           "ON"),
+                ("Gas Fee Ceiling",     "1$"),
+                ("Pool Slippage",       "1% Auto"),
+                ("Swap Slippage",       "1% Auto"),
+            ],
+            "logic": [
+                "Range 8% concentre la liquidité → fees boostés",
+                "Triggers aux extrêmes du corridor support/résistance",
+                "Buffer 0.4h filtre les faux breakouts latéraux",
+                "Rebalance dynamique symétrique 25/75 conservé",
+            ],
+            "low_off":  (-9.0, +3.0),
+            "high_off": (-3.0, +9.0),
+            "range_override": 8.0,
+            "note": "Ajuster le range selon le corridor technique identifié (support/résistance)",
+        },
+        {
+            "id": 7, "label": "Rebond après Creux — CdP Haussier 20/80", "emoji": "↗",
+            "market": "REBOND HAUSSIER",
+            "tag_bg": "rgba(34,197,94,0.10)", "tag_border": "rgba(34,197,94,0.30)", "tag_color": "#22c55e",
+            "card_border": "rgba(34,197,94,0.25)",
+            "desc": f"Signal de retournement haussier confirmé (rebond +10% min, volumes en hausse). Repositionnement pour capter la remontée.",
+            "params": [
+                ("Ratio Below",         f"50% {k_token_a} (retour neutre si rechute)"),
+                ("Ratio Above",         f"5% {k_token_a} (exposition max)"),
+                ("Time Buffer",         "0.2h"),
+                ("Trigger Bas — Min",   "-9% Below Spot"),
+                ("Trigger Bas — Max",   "+3% Above Spot"),
+                ("Trigger Haut — Min",  "-3% Below Spot"),
+                ("Trigger Haut — Max",  "+12% Above Spot"),
+                ("Compound",            "ON"),
+                ("Recurring",           "ON"),
+                ("Gas Fee Ceiling",     "1$"),
+                ("Pool Slippage",       "1% Auto"),
+                ("Swap Slippage",       "1% Auto"),
+            ],
+            "logic": [
+                f"CdP 20/80 : surexposition {k_token_a} pour capter le rebond",
+                "Trigger bas serré : coupe si le rebond échoue",
+                "Trigger haut large +12% : laisse la hausse s'exprimer",
+                "Buffer 0.2h : réactivité maximale sur le retournement",
+            ],
+            "low_off":  (-9.0, +3.0),
+            "high_off": (-3.0, +12.0),
+            "note": "Signal minimum requis : rebond +10% + volumes en hausse",
+        },
+        {
+            "id": 8, "label": "Crise / Flash Crash — Mode Urgence", "emoji": "⚡",
+            "market": "CRISE EXTRÊME",
+            "tag_bg": "rgba(239,68,68,0.20)", "tag_border": "rgba(239,68,68,0.60)", "tag_color": "#ef4444",
+            "card_border": "rgba(239,68,68,0.55)",
+            "desc": f"Volatilité extrême ou flash crash. Protection maximale d'urgence. Sortie totale recommandée si -25% du range d'entrée.",
+            "params": [
+                ("Ratio Below",         f"95% {k_token_a} (= 5% actif)"),
+                ("Ratio Above",         f"50% {k_token_a} (réengagement partiel)"),
+                ("Time Buffer",         "0.1h (réactivité max urgence)"),
+                ("Trigger Bas — Min",   "-1% Below Spot"),
+                ("Trigger Bas — Max",   "+3% Above Spot"),
+                ("Trigger Haut — Min",  "-15% Below Spot"),
+                ("Trigger Haut — Max",  "+5% Above Spot"),
+                ("Compound",            "OFF — fees accessibles immédiatement"),
+                ("Recurring",           "ON"),
+                ("Gas Fee Ceiling",     "2$ (priorité vitesse d'exécution)"),
+                ("Pool Slippage",       "1% Auto"),
+                ("Swap Slippage",       "1% Auto"),
+            ],
+            "logic": [
+                "SORTIE TOTALE si prix sort de -25% du range d'entrée",
+                f"Ratio 95/5 : quasiment full {k_token_b}",
+                "Buffer 0.1h : réactivité maximale",
+                "Compound OFF : fees accessibles si retrait nécessaire",
+                "Trigger rebond large : réengage après stabilisation 24–48h",
+            ],
+            "low_off":  (-1.0,  +3.0),
+            "high_off": (-15.0, +5.0),
+            "note": "⚡ ACTION MANUELLE : RETRAIT TOTAL recommandé si -25% du range d'entrée",
+            "emergency": True,
+        },
+    ]
+
+    # ── AFFICHAGE DES 8 CAS ──
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    sec("△", "8 Cas d'automation — Paramètres Krystal complets")
+
+    for cas in KRYSTAL_CASES:
+        cas_id = cas["id"]
+        rw_used = cas.get("range_override", k_range_width)
+        spot_low  = k_price_a * (1 - rw_used / 100)
+        spot_high = k_price_a * (1 + rw_used / 100)
+
+        # Calcul des triggers exacts ($) pour ce cas
+        trig_low_min  = spot_low  * (1 + cas["low_off"][0]  / 100)
+        trig_low_max  = spot_low  * (1 + cas["low_off"][1]  / 100)
+        trig_high_min = spot_high * (1 + cas["high_off"][0] / 100)
+        trig_high_max = spot_high * (1 + cas["high_off"][1] / 100)
+
+        is_detected = any(d[0] == cas_id for d in detected)
+        card_border = cas["card_border"] if is_detected else "rgba(255,255,255,0.06)"
+        card_bg     = f"linear-gradient(135deg,{cas['tag_bg']},rgba(0,0,0,0))" if is_detected else "var(--bg-card)"
+
+        # Header de la carte (toujours visible)
+        header_html = f"""
+        <div style="background:{card_bg}; border:1px solid {card_border}; border-radius:10px; padding:16px 18px; margin-bottom:2px;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                <div style="width:32px; height:32px; border-radius:7px; background:{cas['tag_bg']};
+                    border:1px solid {cas['tag_border']}; display:flex; align-items:center;
+                    justify-content:center; font-size:16px; flex-shrink:0;">{cas['emoji']}</div>
+                <div style="flex:1;">
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#f0f4f8;">
+                        CAS {cas_id} — {cas['label']}
+                        {"&nbsp;&nbsp;<span style='font-size:10px; background:var(--accent-dim); border:1px solid var(--border); border-radius:4px; padding:2px 7px; color:var(--accent); vertical-align:middle;'>◈ RECOMMANDÉ</span>" if is_detected else ""}
+                    </div>
+                    <div style="margin-top:3px;">
+                        <span style="background:{cas['tag_bg']}; border:1px solid {cas['tag_border']};
+                            border-radius:5px; padding:2px 8px; font-family:'JetBrains Mono',monospace;
+                            font-size:10px; color:{cas['tag_color']}; letter-spacing:1px;">
+                            MARCHÉ : {cas['market']}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); line-height:1.7;">{cas['desc']}</div>
+        </div>
+        """
+        st.markdown(header_html, unsafe_allow_html=True)
+
+        # Détail dans un expander
+        with st.expander(f"◈ Voir paramètres complets — CAS {cas_id}", expanded=is_detected):
+
+            if cas.get("emergency"):
+                st.markdown("""
+                <div style="background:rgba(239,68,68,0.10); border:1px solid rgba(239,68,68,0.50);
+                    border-radius:8px; padding:10px 14px; margin-bottom:14px;
+                    font-family:'JetBrains Mono',monospace; font-size:11px; color:#ef4444; line-height:1.7;">
+                    ⚡ ACTION MANUELLE REQUISE : RETRAIT TOTAL recommandé si le prix sort de -25% du range d'entrée.
+                    Compound désactivé — fees accessibles immédiatement si retrait nécessaire.
+                </div>
+                """, unsafe_allow_html=True)
+
+            # Colonnes : params + logique
+            pd1, pd2 = st.columns(2)
+
+            with pd1:
+                st.markdown(f"""
+                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent);
+                    letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px;">
+                    Paramètres à renseigner — Krystal LP
+                </div>
+                """ + "".join([
+                    f"""<div style="display:flex; justify-content:space-between; align-items:center;
+                        padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.03);
+                        font-family:'JetBrains Mono',monospace; font-size:12px;">
+                        <span style="color:var(--text-mid); font-size:11px;">{k}</span>
+                        <span style="color:#f0f4f8; font-weight:600;
+                            {'color:#ef4444;' if 'OFF' in v else ''}">{v}</span>
+                    </div>"""
+                    for k, v in cas["params"]
+                ]), unsafe_allow_html=True)
+
+                if cas.get("note"):
+                    st.markdown(f"""
+                    <div style="margin-top:8px; font-family:'JetBrains Mono',monospace; font-size:10px;
+                        color:#f59e0b; font-style:italic; line-height:1.6;">
+                        ⚠ {cas['note']}
+                    </div>""", unsafe_allow_html=True)
+
+            with pd2:
+                st.markdown(f"""
+                <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent);
+                    letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px;">
+                    Logique de la stratégie
+                </div>
+                """ + "".join([
+                    f"""<div style="font-family:'JetBrains Mono',monospace; font-size:11px;
+                        color:var(--text-mid); line-height:1.9;">
+                        <span style="color:var(--accent);">·</span> {l}
+                    </div>"""
+                    for l in cas["logic"]
+                ]), unsafe_allow_html=True)
+
+            # ── Triggers en $ calculés ──
+            st.markdown(f"""
+            <div style="margin:14px 0 10px 0; font-family:'JetBrains Mono',monospace; font-size:10px;
+                color:var(--accent); letter-spacing:1.5px; text-transform:uppercase;">
+                Triggers en $ — calculés sur prix actuel {k_token_a} = ${k_price_a:,.2f}
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+                <div style="background:var(--accent-dim); border:1px solid var(--border);
+                    border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+                    <span style="color:var(--text-mid);">Range actuel ({rw_used:.0f}%) :</span>
+                    <span style="color:var(--accent);"> ${spot_low:,.0f} – ${spot_high:,.0f}</span>
+                </div>
+                <div style="background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.25);
+                    border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+                    <span style="color:var(--text-mid);">Trigger BAS :</span>
+                    <span style="color:#ef4444;"> ${trig_low_min:,.0f} – ${trig_low_max:,.0f}</span>
+                </div>
+                <div style="background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.25);
+                    border-radius:7px; padding:8px 14px; font-family:'JetBrains Mono',monospace; font-size:11px;">
+                    <span style="color:var(--text-mid);">Trigger HAUT :</span>
+                    <span style="color:#22c55e;"> ${trig_high_min:,.0f} – ${trig_high_max:,.0f}</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # ── Visualisation des ranges (Plotly) ──
+            # go est déjà importé en haut du fichier Strategy Lab
+            fig_range = go.Figure()
+
+            all_vals = [spot_low, spot_high, trig_low_min, trig_low_max, trig_high_min, trig_high_max, k_price_a]
+            y_min = min(all_vals) * 0.95
+            y_max = max(all_vals) * 1.05
+
+            bars_data = [
+                ("Range actuel",       spot_low,      spot_high,     "#00d4aa", "rgba(0,212,170,0.18)"),
+                ("Range futur BAS",    trig_low_min,  trig_low_max,  "#ef4444", "rgba(239,68,68,0.12)"),
+                ("Range futur HAUT",   trig_high_min, trig_high_max, "#22c55e", "rgba(34,197,94,0.12)"),
+            ]
+            positions = [1, 2, 3]
+
+            for (lbl, vmin, vmax, col, fillcol), pos in zip(bars_data, positions):
+                fig_range.add_trace(go.Bar(
+                    x=[lbl], y=[vmax - vmin],
+                    base=[vmin],
+                    marker_color=fillcol,
+                    marker_line_color=col,
+                    marker_line_width=1.5,
+                    name=lbl,
+                    text=[f"${vmin:,.0f} – ${vmax:,.0f}"],
+                    textposition="outside",
+                    textfont=dict(color=col, size=10, family="JetBrains Mono"),
+                    width=0.5,
+                ))
+
+            # Ligne prix actuel
+            fig_range.add_hline(y=k_price_a,
+                line=dict(color="rgba(255,255,255,0.6)", dash="dot", width=1.5),
+                annotation_text=f"Prix actuel : ${k_price_a:,.2f}",
+                annotation_font_color="#f0f4f8",
+                annotation_font_size=10,
+            )
+
+            fig_range.update_layout(
+                plot_bgcolor="#0d1318",
+                paper_bgcolor="#0d1318",
+                font=dict(color="#8899aa", family="JetBrains Mono"),
+                showlegend=False,
+                yaxis=dict(
+                    title=f"Prix {k_token_a} ($)",
+                    gridcolor="rgba(255,255,255,0.04)",
+                    range=[y_min, y_max],
+                    tickfont=dict(size=10),
+                ),
+                xaxis=dict(gridcolor="rgba(255,255,255,0)", tickfont=dict(size=11)),
+                margin=dict(l=20, r=20, t=20, b=20),
+                height=280,
+                bargap=0.3,
+            )
+            st.plotly_chart(fig_range, use_container_width=True)
+
+        st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
+
+    # ── ARBRE DE DÉCISION ──
+    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+    sec("◎", "Arbre de décision rapide — Référence")
+    st.markdown(f"""
+    <div class="m-card-wide">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; line-height:2.4; color:#b0bec5;">
+        {"".join([
+            f"""<div style="display:flex; gap:12px; align-items:center; border-bottom:1px solid rgba(255,255,255,0.03); padding:2px 0;">
+                <span style="color:var(--text-lo);">→</span>
+                <span style="color:var(--text-mid); min-width:260px;">{desc}</span>
+                <span style="color:var(--accent); font-weight:600; white-space:nowrap;">{label}</span>
+            </div>"""
+            for desc, label in [
+                ("Entrée nouvelle position sans biais directionnel",       "CAS 1 — Symétrique 25/75"),
+                ("Rebalance déclenché → direction confirmée",              "CAS 2 — Coup de Pouce"),
+                ("Trigger protection déclenché sans perte validée",        "CAS 3 — Repositionnement CdP"),
+                ("Baisse continue après premier rebalance bas",            "CAS 4 — CdP Baissier 80/20"),
+                ("Deuxième rebalance baissier consécutif",                 "CAS 5 — Défensif 90/10"),
+                ("Prix en range horizontal, pas de breakout",              "CAS 6 — Range Serré 8%, Fees Max"),
+                ("Signal de rebond confirmé sur creux",                    "CAS 7 — CdP Haussier 20/80"),
+                ("Flash crash ou volatilité extrême",                      "CAS 8 — Mode Urgence, sortie totale"),
+            ]
+        ])}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div class="disc-bar" style="margin-top:16px;">
+        <span>◈</span> Simulation éducative · Ceci n'est pas un conseil en investissement · DYOR · LP STRATEGY LAB — Pigeon Chanceux
+    </div>
+    """, unsafe_allow_html=True)
