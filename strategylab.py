@@ -2143,7 +2143,7 @@ if k_run:
         st.markdown(header_html, unsafe_allow_html=True)
 
         # Détail dans un expander
-       with st.expander(f"◈ Voir paramètres complets — CAS {cas_id}", expanded=is_detected):
+        with st.expander(f"◈ Voir paramètres complets — CAS {cas_id}", expanded=is_detected):
 
             if cas.get("emergency"):
                 st.markdown(
