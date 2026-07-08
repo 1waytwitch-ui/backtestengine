@@ -563,6 +563,74 @@ with lp3:
 st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════
+# ── SECTION 3B : LVR BOOSTER ENGINE ──
+# ══════════════════════════════════════════════════════════
+sec("⚡", "LVR Booster Engine — Pricing dynamique avancé")
+
+tip_label("Activer le LVR Booster", "Remplace le moteur de pricing/rebalancing standard par un moteur inspiré de la microstructure des market makers professionnels (oracle blending, skew continu, spread dynamique, concentration Kappa, garde-fou anti-divergence). Objectif : réduire le LVR (Loss-Versus-Rebalancing) et améliorer l'efficience du capital sans gestion manuelle des paliers de ratio.")
+lvr_booster = st.checkbox("Activer le LVR Booster", value=False, key="lvr_booster_toggle")
+
+if lvr_booster:
+    st.markdown("""
+    <div class="m-card" style="margin:6px 0 14px 0; border-color:rgba(0,212,170,0.45);">
+        <div class="m-label" style="color:var(--accent);">◈ LVR Booster actif — le moteur ci-dessous remplace le modèle de tendance classique</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.8;">
+            · Le <b>ratio cible</b> n'est plus un palier fixe (60/40, 70/30...) mais une fonction continue de votre déséquilibre réel de portefeuille (Inventory Skew)<br>
+            · Le <b>coût de rebalance</b> intègre une prime de volatilité dynamique (Dynamic Spread), en plus du slippage fixe<br>
+            · La <b>largeur de range</b> peut être pilotée par un paramètre de concentration unique (Kappa) plutôt qu'un pourcentage arbitraire<br>
+            · Un <b>garde-fou anti-divergence</b> (Divergence Guard) peut retarder un rebalance si le prix instantané s'écarte trop d'un prix de référence lissé — pour éviter d'agir sur une mèche isolée
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    lb1, lb2, lb3 = st.columns(3)
+
+    with lb1:
+        tip_label("Inventory Skew — λ (lambda)", "Contrôle l'agressivité du rebalancing continu vers l'équilibre. 0 = pas de biais directionnel (retour lent vers 50/50). 1 = rebalancing agressif, pousse fortement vers l'actif sous-pondéré à chaque trigger. Remplace les paliers fixes (Fixed 75/25, MA50, ADX...) par une fonction continue : plus le portefeuille est déséquilibré en valeur, plus le nouveau ratio cible pousse fort vers le rééquilibrage — sans saut brutal entre paliers.")
+        skew_lambda = st.slider("skew_lambda", 0.0, 1.0, 0.35, step=0.05, label_visibility="collapsed")
+
+        tip_label("Kappa Concentration Mode", "Active un sélecteur de largeur de range basé sur un paramètre unique K (Kappa), inspiré des market makers à liquidité concentrée. K bas = bande étroite très efficace en capital (mais plus fragile si le prix sort). K haut = bande large façon AMM classique.")
+        kappa_mode_on = st.checkbox("Kappa Concentration Mode", value=False, key="kappa_mode")
+        if kappa_mode_on:
+            tip_label("Kappa (K)", "K=0.001 → bande ±1% (très concentré, ~200x plus efficace en capital qu'un range full). K=2 → bande large (équivalent à un AMM non concentré). Valeurs intermédiaires = compromis efficience/robustesse.")
+            kappa_val = st.select_slider("kappa_slider", options=[0.001, 0.01, 0.1, 0.5, 1.0, 2.0], value=0.1, label_visibility="collapsed")
+            KAPPA_BAND = {0.001: 1.0, 0.01: 2.0, 0.1: 10.0, 0.5: 68.0, 1.0: 90.0, 2.0: 100.0}
+            kappa_range_width = KAPPA_BAND[kappa_val]
+            kappa_concentration = round(2.0 / kappa_val, 1) if kappa_val > 0 else 1.0
+            st.markdown(f"""
+            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent); margin-top:4px;">
+            K={kappa_val} → Range dérivé : ±{kappa_range_width:.0f}% · Concentration ≈ {kappa_concentration}x vs range plein
+            </div>""", unsafe_allow_html=True)
+        else:
+            kappa_range_width = range_width
+
+    with lb2:
+        tip_label("Dynamic Spread — Base (%)", "Coût plancher appliqué à chaque rebalance, toujours prélevé, quelle que soit la volatilité. Analogue à un spread bid-ask minimal de market maker.")
+        spread_base = st.number_input("spread_base", value=0.03, min_value=0.0, max_value=1.0, step=0.01, label_visibility="collapsed")
+
+        tip_label("Dynamic Spread — Prime de volatilité (%)", "Composante additionnelle du coût de rebalance qui s'élargit automatiquement avec la volatilité du marché simulé (proxy ADX). Plus le marché est instable au moment du rebalance, plus le coût effectif est élevé — ce qui reflète le risque accru d'exécuter sur un prix qui bouge vite.")
+        spread_vol_mult = st.number_input("spread_vol_mult", value=0.10, min_value=0.0, max_value=2.0, step=0.01, label_visibility="collapsed")
+
+    with lb3:
+        tip_label("Divergence Guard", "Si activé, un rebalance n'est exécuté que si le prix instantané ne s'écarte pas trop d'un prix de référence lissé (moyenne mobile courte, qui joue le rôle d'oracle de référence). Objectif : éviter de rebalancer sur une mèche isolée ou un pic de prix anormal qui pourrait se résorber immédiatement après.")
+        divergence_guard_on = st.checkbox("Divergence Guard", value=True, key="div_guard")
+        if divergence_guard_on:
+            tip_label("Seuil de divergence toléré (%)", "Écart maximal toléré entre le prix instantané et le prix de référence lissé avant qu'un rebalance ne soit retardé d'une bougie. Plus bas = plus prudent (mais peut retarder des rebalances légitimes sur marché rapide). Plus haut = plus permissif.")
+            divergence_threshold = st.number_input("divergence_threshold", value=2.0, min_value=0.1, max_value=20.0, step=0.1, label_visibility="collapsed")
+        else:
+            divergence_threshold = 999.0
+else:
+    skew_lambda = 0.35
+    kappa_mode_on = False
+    kappa_range_width = range_width
+    spread_base = 0.0
+    spread_vol_mult = 0.0
+    divergence_guard_on = False
+    divergence_threshold = 999.0
+
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+
+# ══════════════════════════════════════════════════════════
 # ── SECTION 4 : SCÉNARIO & TENDANCE ──
 # ══════════════════════════════════════════════════════════
 sec("△", "Scénario de marché & Modèle de tendance")
@@ -589,11 +657,21 @@ with sc1:
     """, unsafe_allow_html=True)
 
 with sc2:
-    tip_label("Modèle de tendance", "Algorithme de calcul du ratio lors d'un rebalance. Chaque modèle a une logique différente — une carte explicative s'affiche à la sélection.")
+    tip_label("Modèle de tendance", "Algorithme de calcul du ratio lors d'un rebalance. Chaque modèle a une logique différente — une carte explicative s'affiche à la sélection. Ignoré si le LVR Booster est actif (Inventory Skew continu prend le relais).")
     trend_mode = st.selectbox("trend_sel",
         ["Neutre 50/50", "Fixed 75/25", "Fixed 70/30", "MA50", "MA50+MA200",
          "ADX", "Manuel Distance MA50", "Ratio Manuel", "Coup de Pouce"],
         label_visibility="collapsed")
+
+    if lvr_booster:
+        st.markdown(
+            "<div style=\"font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); "
+            "background:var(--accent-dim); border:1px solid var(--border); border-radius:6px; "
+            "padding:6px 10px; margin-top:-2px; margin-bottom:6px;\">"
+            "⚡ LVR Booster actif — ce modèle de tendance est ignoré, l'Inventory Skew (λ) pilote le ratio cible"
+            "</div>",
+            unsafe_allow_html=True
+        )
 
     # ── Initialisation des variables optionnelles ──
     manual_ma50_dist = 0.0
@@ -783,14 +861,16 @@ def run_simulation(prices, price_b_end, price_a_proj_high, price_b_proj_high,
     df = pd.DataFrame({"price": prices})
     df["ma50"]  = ma_series(df.price, 50)
     df["ma200"] = ma_series(df.price, 200)
+    df["ma_fast"] = ma_series(df.price, 5)
     df["adx"]   = adx_proxy(df.price)
     df["dist_ma50_pct"] = (df["price"] - df["ma50"]) / df["ma50"] * 100
 
     qty_a  = (capital * 0.5) / price_a0
     qty_b  = (capital * 0.5) / price_b0
     center = prices[0]
-    lower  = center * (1 - range_width / 100)
-    upper  = center * (1 + range_width / 100)
+    init_rw = kappa_range_width if (lvr_booster and kappa_mode_on) else range_width
+    lower  = center * (1 - init_rw / 100)
+    upper  = center * (1 + init_rw / 100)
 
     pending = None
     pending_count = 0
@@ -824,14 +904,35 @@ def run_simulation(prices, price_b_end, price_a_proj_high, price_b_proj_high,
                 pending = direction
                 pending_count = 1
 
-            if pending_count >= buffer:
+            # ── LVR BOOSTER : Divergence Guard ──
+            # Retarde le rebalance si le prix instantané s'écarte trop d'un prix
+            # de référence lissé (proxy d'un oracle externe), pour éviter d'agir
+            # sur une mèche isolée qui pourrait se résorber immédiatement après.
+            if lvr_booster and divergence_guard_on:
+                ref_price = row.ma_fast if not np.isnan(row.ma_fast) else price
+                divergence_pct = abs(price - ref_price) / max(ref_price, 1e-9) * 100
+                guard_blocked = divergence_pct > divergence_threshold
+            else:
+                guard_blocked = False
+
+            if pending_count >= buffer and not guard_blocked:
                 rebalances += 1
                 if last_dir and last_dir != direction:
                     whipsaws += 1
                 last_dir = direction
 
-                # ── Calcul du target ratio selon le modèle ──
-                if trend_mode == "Fixed 75/25":
+                # ── Calcul du target ratio ──
+                if lvr_booster:
+                    # Inventory Skew (continu) — remplace les paliers fixes du
+                    # modèle de tendance par une fonction continue du déséquilibre
+                    # réel de valeur en $ entre Token A et Token B.
+                    val_a_now = qty_a * price
+                    val_b_now = qty_b * price_b_now
+                    denom_sk  = max(val_a_now + val_b_now, 1e-9)
+                    skew_factor = skew_lambda * (val_a_now - val_b_now) / denom_sk
+                    target = 0.5 * (1 - skew_factor)
+                    target = min(max(target, 0.05), 0.95)
+                elif trend_mode == "Fixed 75/25":
                     target = 0.75 if direction == "upper" else 0.25
                 elif trend_mode == "Fixed 70/30":
                     target = 0.70 if direction == "upper" else 0.30
@@ -868,15 +969,27 @@ def run_simulation(prices, price_b_end, price_a_proj_high, price_b_proj_high,
                     else:
                         target = 1 - base if direction == "upper" else base
 
+                # ── LVR BOOSTER : Dynamic Spread ──
+                # Ajoute une prime de volatilité au coût de rebalance : plus le
+                # marché est instable (proxy ADX) au moment du trigger, plus le
+                # coût effectif est élevé — analogue à un spread qui s'élargit.
+                if lvr_booster:
+                    dyn_spread_pct = spread_base + spread_vol_mult * (row.adx / 100)
+                    effective_slippage = slippage + dyn_spread_pct
+                else:
+                    effective_slippage = slippage
+
                 total_usd = qty_a * price + qty_b * price_b_now
                 total_usd -= rebalance_cost
-                total_usd *= (1 - slippage / 100)
+                total_usd *= (1 - effective_slippage / 100)
                 qty_a = (total_usd * target) / max(price, 0.0001)
                 qty_b = (total_usd * (1 - target)) / max(price_b_now, 0.0001)
 
+                # ── LVR BOOSTER : Kappa Concentration ──
+                rw_now = kappa_range_width if (lvr_booster and kappa_mode_on) else range_width
                 center = price
-                lower  = center * (1 - range_width / 100)
-                upper  = center * (1 + range_width / 100)
+                lower  = center * (1 - rw_now / 100)
+                upper  = center * (1 + rw_now / 100)
                 pending = None
                 pending_count = 0
 
@@ -1689,6 +1802,48 @@ st.markdown(
 
 # ── RANGES ──
 st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+sec("⛨", "Divergence Guard — Garde-fou anti-mèche")
+
+st.markdown(
+    "<div style=\"font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); margin-bottom:10px; line-height:1.8;\">"
+    "Krystal ne peut pas rejeter un swap individuel comme le ferait un contrat AMM avec oracle intégré, mais vous pouvez "
+    "appliquer la même logique de garde-fou <b>avant de valider un rebalance</b> : si le prix spot que vous vous préparez "
+    "à utiliser diverge trop d'un prix de référence externe (CoinGecko / Chainlink / Pyth), retardez le rebalance plutôt "
+    "que de l'exécuter sur une mèche potentiellement manipulée ou un flux de prix obsolète."
+    "</div>",
+    unsafe_allow_html=True
+)
+
+og1, og2 = st.columns(2)
+with og1:
+    tip_label("Prix Oracle de référence ($)", "Prix externe fiable (CoinGecko, Chainlink, Pyth) au moment où vous vous préparez à valider un rebalance. Laissez à 0 pour désactiver cette vérification. Doit être renseigné manuellement à partir d'une source externe.")
+    k_oracle_price = st.number_input("k_oracle_price", value=0.0, min_value=0.0, step=1.0, label_visibility="collapsed", key="k_oracle")
+with og2:
+    tip_label("Seuil de divergence toléré (%)", "Au-delà de cet écart entre le prix spot Krystal/pool et le prix oracle externe, le rebalance est considéré comme risqué. Un seuil de l'ordre de 1 à 3% est un point de départ raisonnable sur une paire liquide.")
+    k_div_threshold = st.number_input("k_div_threshold", value=1.5, min_value=0.1, max_value=10.0, step=0.1, label_visibility="collapsed", key="k_divthresh")
+
+if k_oracle_price > 0:
+    k_divergence = abs(k_price_a - k_oracle_price) / k_oracle_price * 100
+    if k_divergence > k_div_threshold:
+        st.markdown(
+            "<div class=\"m-card-alert\"><div class=\"m-label\" style=\"color:#ef4444;\">⚠ DIVERGENCE DÉTECTÉE</div>"
+            "<div style=\"font-family:'JetBrains Mono',monospace;font-size:12px;color:#f0f4f8;\">"
+            "Écart de " + f"{k_divergence:.2f}" + "% entre le prix spot ($" + f"{k_price_a:,.2f}" + ") et l'oracle ($" + f"{k_oracle_price:,.2f}" + ").<br>"
+            "Recommandation : <b>reportez le rebalance</b> tant que cet écart ne s'est pas résorbé — "
+            "risque de mèche isolée ou de flux de prix anormal."
+            "</div></div>",
+            unsafe_allow_html=True
+        )
+    else:
+        st.markdown(
+            "<div class=\"m-card\" style=\"border-color:rgba(34,197,94,0.35);\"><div class=\"m-label\" style=\"color:#22c55e;\">✓ Divergence sous contrôle</div>"
+            "<div style=\"font-family:'JetBrains Mono',monospace;font-size:12px;color:#f0f4f8;\">"
+            "Écart de " + f"{k_divergence:.2f}" + "% — sous le seuil de " + f"{k_div_threshold:.1f}" + "%. Rebalance jugé sûr côté prix."
+            "</div></div>",
+            unsafe_allow_html=True
+        )
+
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 sec("△", "Ranges — Actuel & Futurs (bornes en $)")
 
 st.markdown(
@@ -1731,18 +1886,51 @@ with km4:
 k_current_lower = k_price_a * (1 - k_range_width / 100)
 k_current_upper = k_price_a * (1 + k_range_width / 100)
 
-# Range bas : offsets Krystal standard = Min -3% Below / Max +9% Above future spot
-# Range haut : offsets Krystal standard = Min -9% Below / Max +3% Above future spot
-k_std_low_rw  = k_range_low_pct  if k_range_low_pct  > 0 else 12.0
-k_std_high_rw = k_range_high_pct if k_range_high_pct > 0 else 12.0
+# ── Largeur des ranges futurs ──
+# Par défaut : soit une valeur personnalisée renseignée manuellement, soit —
+# si le LVR Booster + Kappa Concentration Mode sont actifs — la largeur
+# dérivée du paramètre Kappa choisi dans le simulateur, soit 12% par défaut.
+if k_range_low_pct > 0:
+    k_std_low_rw = k_range_low_pct
+elif lvr_booster and kappa_mode_on:
+    k_std_low_rw = kappa_range_width
+else:
+    k_std_low_rw = 12.0
+
+if k_range_high_pct > 0:
+    k_std_high_rw = k_range_high_pct
+elif lvr_booster and kappa_mode_on:
+    k_std_high_rw = kappa_range_width
+else:
+    k_std_high_rw = 12.0
+
+# ── LVR BOOSTER : Inventory Skew appliqué à l'asymétrie des ranges ──
+# Une position déjà surexposée sur un côté justifie une bande plus resserrée
+# de ce côté (pour rebalancer plus vite si ça continue) et plus large de
+# l'autre (pour laisser courir si le marché se retourne).
+if lvr_booster:
+    k_skew_signal = skew_lambda * (k_ratio_a - 50) / 50  # borné par lambda, entre -λ et +λ
+    k_std_low_rw  = max(3.0, k_std_low_rw  * (1 - k_skew_signal))
+    k_std_high_rw = max(3.0, k_std_high_rw * (1 + k_skew_signal))
 
 _spot_after_low  = k_current_lower   # prochain centre approximatif si trigger bas
 _spot_after_high = k_current_upper   # prochain centre approximatif si trigger haut
 
-k_next_low_min  = k_low_min  if k_low_min  > 0 else _spot_after_low  * (1 + (-9)   / 100)
-k_next_low_max  = k_low_max  if k_low_max  > 0 else _spot_after_low  * (1 + 3      / 100)
-k_next_high_min = k_high_min if k_high_min > 0 else _spot_after_high * (1 + (-3)   / 100)
-k_next_high_max = k_high_max if k_high_max > 0 else _spot_after_high * (1 + 9      / 100)
+# Offsets internes 75/25 par défaut (même logique que la config Krystal standard),
+# mais appliqués sur la largeur réelle définie ci-dessus au lieu d'être figés à ±9/±3.
+k_next_low_min  = k_low_min  if k_low_min  > 0 else _spot_after_low  * (1 - k_std_low_rw  * 0.75 / 100)
+k_next_low_max  = k_low_max  if k_low_max  > 0 else _spot_after_low  * (1 + k_std_low_rw  * 0.25 / 100)
+k_next_high_min = k_high_min if k_high_min > 0 else _spot_after_high * (1 - k_std_high_rw * 0.25 / 100)
+k_next_high_max = k_high_max if k_high_max > 0 else _spot_after_high * (1 + k_std_high_rw * 0.75 / 100)
+
+if lvr_booster:
+    st.markdown(
+        "<div style=\"font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); margin-top:-4px; margin-bottom:8px;\">"
+        "⚡ LVR Booster actif — asymétrie dérivée du Skew (ratio actuel " + str(k_ratio_a) + "%) : "
+        "range bas ±" + f"{k_std_low_rw:.1f}" + "% · range haut ±" + f"{k_std_high_rw:.1f}" + "%"
+        "</div>",
+        unsafe_allow_html=True
+    )
 
 # Résumé visuel des ranges
 st.markdown(
