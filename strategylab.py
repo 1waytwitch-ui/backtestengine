@@ -2529,6 +2529,348 @@ if k_run:
     )
     st.markdown(decision_html, unsafe_allow_html=True)
 
+# ══════════════════════════════════════════════════════════════════
+# ── MODULE : RECALIBRATION POST-TRIGGER — LVR BOOSTER LIVE ──
+# ══════════════════════════════════════════════════════════════════
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+sec("⚡", "Recalibration Post-Trigger — LVR Booster Live")
+
+st.markdown(
+    "<div style=\"background:var(--accent-dim); border:1px solid var(--border); border-radius:10px; padding:16px 22px; margin-bottom:16px;\">"
+    "<div style=\"font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px;\">"
+    "◈ RECALCUL MANUEL APRÈS CHAQUE TRIGGER KRYSTAL"
+    "</div>"
+    "<div style=\"font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-mid); line-height:1.8;\">"
+    "Krystal applique une config figée à chaque déclenchement. Le moteur Inventory Skew / Kappa / Divergence Guard, lui, "
+    "est pensé pour être recalculé en continu. Ce module comble l'écart : à chaque fois qu'un rebalance se déclenche sur "
+    "Krystal, reviens ici, renseigne l'état actuel de ta position, et génère la config exacte à reporter pour le prochain cycle — "
+    "avec le même visuel et le même format de paramètres que les 8 cas ci-dessus."
+    "</div>"
+    "</div>",
+    unsafe_allow_html=True
+)
+
+# ── INPUTS TOKENS ──
+pt1, pt2 = st.columns(2)
+with pt1:
+    tip_label("Nom du Token A (volatile)", "L'actif le plus volatile de la paire. Ex : WETH, SOL, BTC.")
+    pt_token_a = st.text_input("pt_token_a", value="WETH", label_visibility="collapsed", placeholder="WETH, SOL, BTC…", key="pt_ta")
+with pt2:
+    tip_label("Nom du Token B (stable)", "L'actif stable ou moins volatile. Ex : USDC, USDT.")
+    pt_token_b = st.text_input("pt_token_b", value="USDC", label_visibility="collapsed", placeholder="USDC, USDT…", key="pt_tb")
+
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+sec("⊞", "État de la position — juste après le trigger")
+
+pp1, pp2, pp3, pp4 = st.columns(4)
+with pp1:
+    tip_label(f"Prix actuel {pt_token_a} ($)", "Prix de marché actuel du Token A, à lire dans Krystal au moment du recalcul.")
+    pt_price_a = st.number_input("pt_price_a", value=2000.0, min_value=0.01, max_value=10_000_000.0, step=10.0, label_visibility="collapsed", key="pt_pa")
+with pp2:
+    tip_label(f"Valeur $ {pt_token_a} en pool", "Valeur en $ de la poche Token A dans ta position LP actuelle — lisible dans le panneau 'Your position' de Krystal (Pooled WETH $).")
+    pt_val_a = st.number_input("pt_val_a", value=1000.0, min_value=0.0, max_value=100_000_000.0, step=10.0, label_visibility="collapsed", key="pt_va")
+with pp3:
+    tip_label(f"Valeur $ {pt_token_b} en pool", "Valeur en $ de la poche Token B dans ta position LP actuelle — lisible dans le panneau 'Your position' de Krystal (Pooled USDC $).")
+    pt_val_b = st.number_input("pt_val_b", value=1000.0, min_value=0.0, max_value=100_000_000.0, step=10.0, label_visibility="collapsed", key="pt_vb")
+with pp4:
+    tip_label("Range actuel (%)", "Largeur du range que tu viens de quitter (celle qui vient de déclencher le trigger). Sert de base pour dériver la prochaine largeur si le Kappa Mode n'est pas utilisé.")
+    pt_range_now = st.number_input("pt_range_now", value=12.0, min_value=1.0, max_value=50.0, step=1.0, label_visibility="collapsed", key="pt_rn")
+
+pt_total_val = max(pt_val_a + pt_val_b, 1e-9)
+pt_ratio_a_now = pt_val_a / pt_total_val * 100
+st.markdown(
+    "<div style=\"font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-mid); margin-top:-6px; margin-bottom:6px;\">"
+    "Composition actuelle : <span style=\"color:#f59e0b;\">" + pt_token_a + " : " + f"{pt_ratio_a_now:.1f}" + "%</span>"
+    "&nbsp;/&nbsp; <span style=\"color:#0ea5e9;\">" + pt_token_b + " : " + f"{100-pt_ratio_a_now:.1f}" + "%</span>"
+    "</div>",
+    unsafe_allow_html=True
+)
+
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+sec("⚙", "Moteur LVR Booster — Paramètres du recalcul")
+
+pe1, pe2, pe3 = st.columns(3)
+with pe1:
+    tip_label("Inventory Skew — λ (lambda)", "Même paramètre que dans le simulateur. Contrôle l'agressivité du retour vers l'équilibre. 0 = pas de correction. 1 = correction maximale. La cible est identique pour Ratio Below et Ratio Above (le skew ne dépend pas de la direction du prochain trigger, seulement du déséquilibre actuel).")
+    pt_lambda = st.slider("pt_lambda", 0.0, 1.0, 0.35, step=0.05, label_visibility="collapsed", key="pt_lam")
+
+    tip_label("Kappa Concentration Mode", "Si activé, dérive la largeur de range du paramètre K plutôt que du champ 'Range actuel (%)' saisi plus haut.")
+    pt_kappa_on = st.checkbox("Kappa Concentration Mode", value=False, key="pt_kappa_on")
+    if pt_kappa_on:
+        tip_label("Kappa (K)", "K bas = bande étroite, très concentrée. K haut = bande large.")
+        pt_kappa_val = st.select_slider("pt_kappa_slider", options=[0.001, 0.01, 0.1, 0.5, 1.0, 2.0], value=0.1, label_visibility="collapsed", key="pt_kv")
+        PT_KAPPA_BAND = {0.001: 1.0, 0.01: 2.0, 0.1: 10.0, 0.5: 68.0, 1.0: 90.0, 2.0: 100.0}
+        pt_range_base = PT_KAPPA_BAND[pt_kappa_val]
+    else:
+        pt_range_base = pt_range_now
+
+with pe2:
+    tip_label("Volatilité estimée (0-100)", "Proxy de la volatilité récente du marché (façon ADX). Sers-toi de l'amplitude des dernières bougies sur TradingView : marché calme ≈ 10-20, marché agité ≈ 40-60+. Alimente le Dynamic Spread ci-dessous.")
+    pt_vol_proxy = st.slider("pt_vol_proxy", 0, 100, 25, label_visibility="collapsed", key="pt_vp")
+
+    tip_label("Dynamic Spread — Base + Volatilité (%)", "Coût plancher + prime qui s'élargit avec la volatilité estimée ci-dessus. Vient s'ajouter au Swap Slippage de base pour donner le slippage recommandé dans la config finale.")
+    pt_spread_base = st.number_input("pt_spread_base", value=0.03, min_value=0.0, max_value=1.0, step=0.01, label_visibility="collapsed", key="pt_sb")
+    pt_spread_vol_mult = st.number_input("pt_spread_vol_mult", value=0.10, min_value=0.0, max_value=2.0, step=0.01, label_visibility="collapsed", key="pt_svm")
+
+with pe3:
+    tip_label("Prix Oracle de référence ($)", "Prix externe (CoinGecko/Chainlink/Pyth) au moment du recalcul. Laisse à 0 pour désactiver le Divergence Guard.")
+    pt_oracle_price = st.number_input("pt_oracle_price", value=0.0, min_value=0.0, step=1.0, label_visibility="collapsed", key="pt_op")
+    tip_label("Seuil de divergence toléré (%)", "Écart maximal toléré entre le prix spot et l'oracle avant d'afficher une alerte de prudence.")
+    pt_div_threshold = st.number_input("pt_div_threshold", value=1.5, min_value=0.1, max_value=10.0, step=0.1, label_visibility="collapsed", key="pt_dt")
+
+st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+sec("▤", "Paramètres fixes de la config Krystal")
+
+pf1c, pf2c, pf3c, pf4c = st.columns(4)
+with pf1c:
+    tip_label("Time Buffer (h)", "Durée de confirmation avant rebalance sur Krystal.")
+    pt_time_buffer = st.number_input("pt_time_buffer", value=0.2, min_value=0.05, max_value=5.0, step=0.05, label_visibility="collapsed", key="pt_tbuf")
+with pf2c:
+    tip_label("Gas Fee Ceiling ($)", "Plafond de gas accepté pour exécuter le rebalance.")
+    pt_gas_ceiling = st.number_input("pt_gas_ceiling", value=1.0, min_value=0.1, max_value=20.0, step=0.1, label_visibility="collapsed", key="pt_gas")
+with pf3c:
+    tip_label("Pool Slippage (%)", "Slippage toléré côté pool.")
+    pt_pool_slip = st.number_input("pt_pool_slip", value=1.0, min_value=0.1, max_value=10.0, step=0.1, label_visibility="collapsed", key="pt_pslip")
+with pf4c:
+    tip_label("Swap Slippage de base (%)", "Slippage de base avant ajout de la prime Dynamic Spread.")
+    pt_swap_slip_base = st.number_input("pt_swap_slip_base", value=1.0, min_value=0.1, max_value=10.0, step=0.1, label_visibility="collapsed", key="pt_sslip")
+
+pcomp1, pcomp2 = st.columns(2)
+with pcomp1:
+    pt_compound = st.checkbox("Compound", value=True, key="pt_compound")
+with pcomp2:
+    pt_recurring = st.checkbox("Recurring", value=True, key="pt_recurring")
+
+# ── BOUTON ──
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+pt_run_col, _ = st.columns([1, 3])
+with pt_run_col:
+    pt_run = st.button("◈ GÉNÉRER LA PROCHAINE CONFIG", use_container_width=True, key="pt_run_btn")
+
+if pt_run:
+    # ── Inventory Skew : target ratio (identique Below/Above) ──
+    pt_skew_factor = pt_lambda * (pt_val_a - pt_val_b) / pt_total_val
+    pt_target = 0.5 * (1 - pt_skew_factor)
+    pt_target = min(max(pt_target, 0.05), 0.95)
+    pt_target_pct = pt_target * 100
+
+    # ── Dynamic Spread → slippage recommandé ──
+    pt_dyn_spread = pt_spread_base + pt_spread_vol_mult * (pt_vol_proxy / 100)
+    pt_swap_slip_final = pt_swap_slip_base + pt_dyn_spread
+
+    # ── Asymétrie des ranges via Skew (même logique que la section Krystal) ──
+    pt_skew_signal = pt_lambda * (pt_ratio_a_now - 50) / 50
+    pt_rw_low  = max(3.0, pt_range_base * (1 - pt_skew_signal))
+    pt_rw_high = max(3.0, pt_range_base * (1 + pt_skew_signal))
+
+    pt_spot_low  = pt_price_a * (1 - pt_range_base / 100)
+    pt_spot_high = pt_price_a * (1 + pt_range_base / 100)
+
+    pt_trig_low_min  = pt_spot_low  * (1 - pt_rw_low  * 0.75 / 100)
+    pt_trig_low_max  = pt_spot_low  * (1 + pt_rw_low  * 0.25 / 100)
+    pt_trig_high_min = pt_spot_high * (1 - pt_rw_high * 0.25 / 100)
+    pt_trig_high_max = pt_spot_high * (1 + pt_rw_high * 0.75 / 100)
+
+    # ── Diagnostic ──
+    sec("◉", "Diagnostic")
+
+    pd1c, pd2c, pd3c, pd4c = st.columns(4)
+    with pd1c:
+        st.markdown(
+            "<div class=\"m-card\"><div class=\"m-label\">Prix actuel " + pt_token_a + "</div>"
+            "<div class=\"m-value\">$" + f"{pt_price_a:,.2f}" + "</div></div>",
+            unsafe_allow_html=True
+        )
+    with pd2c:
+        st.markdown(
+            "<div class=\"m-card\"><div class=\"m-label\">Ratio actuel</div>"
+            "<div class=\"m-value\">" + f"{pt_ratio_a_now:.1f}" + "% / " + f"{100-pt_ratio_a_now:.1f}" + "%</div></div>",
+            unsafe_allow_html=True
+        )
+    with pd3c:
+        st.markdown(
+            "<div class=\"m-card\"><div class=\"m-label\">Skew Factor</div>"
+            "<div class=\"m-value\" style=\"color:" + ("#ef4444" if pt_skew_factor > 0 else "#22c55e") + ";\">" + f"{pt_skew_factor:+.3f}" + "</div></div>",
+            unsafe_allow_html=True
+        )
+    with pd4c:
+        st.markdown(
+            "<div class=\"m-card\"><div class=\"m-label\">Target Ratio (Skew)</div>"
+            "<div class=\"m-value\" style=\"color:var(--accent);\">" + f"{pt_target_pct:.1f}" + "% " + pt_token_a + "</div></div>",
+            unsafe_allow_html=True
+        )
+
+    # ── Divergence Guard ──
+    if pt_oracle_price > 0:
+        pt_divergence = abs(pt_price_a - pt_oracle_price) / pt_oracle_price * 100
+        if pt_divergence > pt_div_threshold:
+            st.markdown(
+                "<div class=\"m-card-alert\"><div class=\"m-label\" style=\"color:#ef4444;\">⚠ DIVERGENCE DÉTECTÉE</div>"
+                "<div style=\"font-family:'JetBrains Mono',monospace;font-size:12px;color:#f0f4f8;\">"
+                "Écart de " + f"{pt_divergence:.2f}" + "% entre le prix spot et l'oracle. Recommandation : "
+                "<b>reporte le recalcul</b> tant que l'écart ne s'est pas résorbé."
+                "</div></div>",
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                "<div class=\"m-card\" style=\"border-color:rgba(34,197,94,0.35);\"><div class=\"m-label\" style=\"color:#22c55e;\">✓ Divergence sous contrôle</div>"
+                "<div style=\"font-family:'JetBrains Mono',monospace;font-size:12px;color:#f0f4f8;\">"
+                "Écart de " + f"{pt_divergence:.2f}" + "% — sous le seuil de " + f"{pt_div_threshold:.1f}" + "%."
+                "</div></div>",
+                unsafe_allow_html=True
+            )
+
+    # ── CONFIG EXACTE (même format que les 8 cas) ──
+    st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+    sec("△", "Config exacte à reporter dans Krystal")
+
+    pt_params = [
+        ("Ratio Below",        f"{pt_target_pct:.1f}% {pt_token_a}"),
+        ("Ratio Above",        f"{pt_target_pct:.1f}% {pt_token_a}"),
+        ("Range",              f"{pt_range_base:.1f}%"),
+        ("Time Buffer",        f"{pt_time_buffer:.2f}h"),
+        ("Trigger Bas — Min",  f"${pt_trig_low_min:,.0f}"),
+        ("Trigger Bas — Max",  f"${pt_trig_low_max:,.0f}"),
+        ("Trigger Haut — Min", f"${pt_trig_high_min:,.0f}"),
+        ("Trigger Haut — Max", f"${pt_trig_high_max:,.0f}"),
+        ("Compound",           "ON" if pt_compound else "OFF"),
+        ("Recurring",          "ON" if pt_recurring else "OFF"),
+        ("Gas Fee Ceiling",    f"{pt_gas_ceiling:.1f}$"),
+        ("Pool Slippage",      f"{pt_pool_slip:.1f}%"),
+        ("Swap Slippage",      f"{pt_swap_slip_final:.2f}% (base {pt_swap_slip_base:.1f}% + spread dyn. {pt_dyn_spread:.2f}%)"),
+    ]
+
+    pc1, pc2 = st.columns(2)
+    with pc1:
+        pt_params_rows = ""
+        for k, v in pt_params:
+            val_color = "#ef4444" if "OFF" in v else "#f0f4f8"
+            pt_params_rows += (
+                "<div style=\"display:flex;justify-content:space-between;align-items:center;"
+                "padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.03);"
+                "font-family:'JetBrains Mono',monospace;font-size:12px;\">"
+                "<span style=\"color:var(--text-mid);font-size:11px;\">" + k + "</span>"
+                "<span style=\"color:" + val_color + ";font-weight:600;text-align:right;\">" + v + "</span>"
+                "</div>"
+            )
+        st.markdown(
+            "<div style=\"font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);"
+            "letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;\">"
+            "Paramètres à renseigner — Krystal LP</div>"
+            + pt_params_rows,
+            unsafe_allow_html=True
+        )
+
+    with pc2:
+        pt_logic = [
+            f"Target ratio {pt_target_pct:.1f}% dérivé du Skew (λ={pt_lambda}), identique Below/Above",
+            "Le skew ne dépend pas de la direction du prochain trigger, seulement du déséquilibre $ actuel",
+            f"Asymétrie de range : bas ±{pt_rw_low:.1f}% / haut ±{pt_rw_high:.1f}%" + (" (Kappa)" if pt_kappa_on else ""),
+            f"Swap Slippage relevé de {pt_dyn_spread:.2f}pt pour une volatilité estimée à {pt_vol_proxy}/100",
+        ]
+        pt_logic_rows = ""
+        for l in pt_logic:
+            pt_logic_rows += (
+                "<div style=\"font-family:'JetBrains Mono',monospace;font-size:11px;"
+                "color:var(--text-mid);line-height:1.9;\">"
+                "<span style=\"color:var(--accent);\">·</span> " + l + "</div>"
+            )
+        st.markdown(
+            "<div style=\"font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);"
+            "letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;\">"
+            "Logique du recalcul</div>"
+            + pt_logic_rows,
+            unsafe_allow_html=True
+        )
+
+    # ── Triggers en $ résumé ──
+    st.markdown(
+        "<div style=\"margin:14px 0 10px 0;font-family:'JetBrains Mono',monospace;font-size:10px;"
+        "color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;\">"
+        "Triggers en $ — calculés sur prix actuel " + pt_token_a + " = $" + f"{pt_price_a:,.2f}" + "</div>"
+        "<div style=\"display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;\">"
+        "<div style=\"background:var(--accent-dim);border:1px solid var(--border);"
+        "border-radius:7px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;\">"
+        "<span style=\"color:var(--text-mid);\">Range actuel (" + f"{pt_range_base:.1f}" + "%) :</span>"
+        "<span style=\"color:var(--accent);\"> $" + f"{pt_spot_low:,.0f}" + " – $" + f"{pt_spot_high:,.0f}" + "</span></div>"
+        "<div style=\"background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);"
+        "border-radius:7px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;\">"
+        "<span style=\"color:var(--text-mid);\">Trigger BAS :</span>"
+        "<span style=\"color:#ef4444;\"> $" + f"{pt_trig_low_min:,.0f}" + " – $" + f"{pt_trig_low_max:,.0f}" + "</span></div>"
+        "<div style=\"background:rgba(34,197,94,0.07);border:1px solid rgba(34,197,94,0.25);"
+        "border-radius:7px;padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;\">"
+        "<span style=\"color:var(--text-mid);\">Trigger HAUT :</span>"
+        "<span style=\"color:#22c55e;\"> $" + f"{pt_trig_high_min:,.0f}" + " – $" + f"{pt_trig_high_max:,.0f}" + "</span></div>"
+        "</div>",
+        unsafe_allow_html=True
+    )
+
+    # ── Visualisation des ranges (même style que les 8 cas) ──
+    pt_fig_range = go.Figure()
+
+    pt_all_vals = [pt_spot_low, pt_spot_high, pt_trig_low_min, pt_trig_low_max, pt_trig_high_min, pt_trig_high_max, pt_price_a]
+    pt_y_min = min(pt_all_vals) * 0.95
+    pt_y_max = max(pt_all_vals) * 1.05
+
+    pt_bars_data = [
+        ("Range futur HAUT", pt_trig_high_min, pt_trig_high_max, "#22c55e", "rgba(34,197,94,0.12)"),
+        ("Range actuel",     pt_spot_low,      pt_spot_high,     "#00d4aa", "rgba(0,212,170,0.18)"),
+        ("Range futur BAS",  pt_trig_low_min,  pt_trig_low_max,  "#ef4444", "rgba(239,68,68,0.12)"),
+    ]
+
+    for lbl, vmin, vmax, col, fillcol in pt_bars_data:
+        pt_fig_range.add_trace(go.Bar(
+            y=[lbl], x=[vmax - vmin],
+            base=[vmin],
+            orientation="h",
+            marker_color=fillcol,
+            marker_line_color=col,
+            marker_line_width=1.5,
+            name=lbl,
+            text=["$" + f"{vmin:,.0f}" + " – $" + f"{vmax:,.0f}"],
+            textposition="outside",
+            textfont=dict(color=col, size=10, family="JetBrains Mono"),
+            width=0.5,
+        ))
+
+    pt_fig_range.add_vline(
+        x=pt_price_a,
+        line=dict(color="rgba(255,255,255,0.6)", dash="dot", width=1.5),
+        annotation_text="Prix actuel : $" + f"{pt_price_a:,.2f}",
+        annotation_font_color="#f0f4f8",
+        annotation_font_size=10,
+    )
+    pt_fig_range.update_layout(
+        plot_bgcolor="#0d1318",
+        paper_bgcolor="#0d1318",
+        font=dict(color="#8899aa", family="JetBrains Mono"),
+        showlegend=False,
+        xaxis=dict(
+            title="Prix " + pt_token_a + " ($)",
+            gridcolor="rgba(255,255,255,0.04)",
+            range=[pt_y_min, pt_y_max],
+            tickfont=dict(size=10),
+        ),
+        yaxis=dict(
+            gridcolor="rgba(255,255,255,0)",
+            tickfont=dict(size=11),
+            categoryorder="array",
+            categoryarray=["Range futur BAS", "Range actuel", "Range futur HAUT"],
+        ),
+        margin=dict(l=20, r=20, t=20, b=20),
+        height=280,
+        bargap=0.3,
+    )
+    st.plotly_chart(pt_fig_range, use_container_width=True)
+
+    st.markdown(
+        "<div class=\"disc-bar\" style=\"margin-top:10px;\">"
+        "<span>◈</span> Recalcul manuel — reporte ces valeurs dans Krystal, puis reviens ici après le prochain trigger · DYOR"
+        "</div>",
+        unsafe_allow_html=True
+    )
+    
     st.markdown(
         "<div class=\"disc-bar\" style=\"margin-top:16px;\">"
         "<span>◈</span> Simulation éducative · Ceci n'est pas un conseil en investissement · DYOR · LP STRATEGY LAB — Pigeon Chanceux"
