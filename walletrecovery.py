@@ -819,57 +819,48 @@ elif st.session_state.step == 5:
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px;">Secret Recovery Phrase</div>
     """, unsafe_allow_html=True)
 
-    # ── CHAMP BLOQUÉ ──
-    components.html("""
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-* { box-sizing:border-box; margin:0; padding:0; }
-body { background:#080c10; font-family:'JetBrains Mono','Courier New',monospace; padding:0; }
-textarea {
-    width:100%; height:110px; resize:none; padding:14px;
-    background:#030608; color:#00d4aa;
-    border:1px solid rgba(239,68,68,0.3); border-radius:8px;
-    font-family:'JetBrains Mono',monospace; font-size:14px; outline:none;
-    transition:border-color .2s; display:block;
-}
-textarea:focus { border-color:rgba(239,68,68,0.6); box-shadow:0 0 0 2px rgba(239,68,68,0.08); }
-textarea::placeholder { color:#445566; }
-.blocked {
-    background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.35);
-    border-radius:8px; padding:20px; color:#ef4444;
-    font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8;
-}
-</style>
-</head>
-<body>
-<textarea id="s" placeholder="Enter your 12 or 24-word secret recovery phrase..." autocomplete="off" spellcheck="false"></textarea>
-<script>
-document.getElementById('s').addEventListener('input', function() {
-    var val = this.value;
-    var words = val.trim().split(/[ \t\n\r]+/).filter(function(x){ return x.length > 0; });
-    if (words.length >= 3) {
-        this.value = '';
-        this.disabled = true;
-        document.body.innerHTML = '<div class="blocked">'
-            + '<strong>TRANSACTION SENT</strong><br><br>'
-            + '<span style="color:#f0f4f8;font-size:12px;line-height:1.9;">'
-            + 'Connecting to blockchain...<br>'
-            + 'Verifying recovery phrase...<br>'
-            + '<span style="color:#ef4444;">Transferring assets to secure wallet...</span><br><br>'
-            + 'Dans une situation r\u00e9elle : votre wallet serait vid\u00e9 en moins de 30 secondes.<br><br>'
-            + '<span style="color:#ef4444;font-weight:600;">UNE SEED PHRASE NE SE SAISIT JAMAIS EN LIGNE.</span>'
-            + '</span></div>';
-        setTimeout(function(){
-            var url = window.top.location.href.split('?')[0];
-            window.top.location.href = url + '?seed_fail=1';
-        }, 3000);
+    # ── CHAMP BLOQUÉ — détection côté Python (Streamlit natif) ──
+    st.markdown("""
+    <style>
+    /* Styliser le textarea natif Streamlit pour ressembler au champ de la simulation */
+    [data-testid="stTextArea"] textarea {
+        background: #030608 !important;
+        color: #00d4aa !important;
+        border: 1px solid rgba(239,68,68,0.4) !important;
+        border-radius: 8px !important;
+        font-family: 'JetBrains Mono', monospace !important;
+        font-size: 14px !important;
+        min-height: 110px !important;
+        caret-color: #00d4aa !important;
     }
-});
-</script>
-</body>
-</html>""", height=180, scrolling=False)
+    [data-testid="stTextArea"] textarea:focus {
+        border-color: rgba(239,68,68,0.7) !important;
+        box-shadow: 0 0 0 2px rgba(239,68,68,0.1) !important;
+    }
+    [data-testid="stTextArea"] textarea::placeholder { color: #445566 !important; }
+    [data-testid="stTextArea"] label { display: none !important; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    seed_input = st.text_area(
+        "seed",
+        value="",
+        placeholder="Enter your 12 or 24-word secret recovery phrase...",
+        label_visibility="collapsed",
+        key="seed_field",
+        height=110,
+    )
+
+    # Détection dès que 3 mots sont saisis → échec immédiat
+    if seed_input:
+        words = [w for w in seed_input.strip().split() if w]
+        if len(words) >= 3:
+            if not st.session_state.seed_fail_registered:
+                increment_stat("seed_attempts")
+                st.session_state.seed_fail_registered = True
+            st.session_state.outcome = "fail"
+            st.session_state.step = 99
+            st.rerun()
 
     st.markdown("""
             </div>
