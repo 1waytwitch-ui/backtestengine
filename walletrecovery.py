@@ -1726,8 +1726,3 @@ st.markdown("""
     ◈ WALLET RECOVERY · SESSION LOCKED · WARNING AUTO ALERT
 </div>
 """, unsafe_allow_html=True)
-'''
-
-path = Path("/mnt/data/wallet_recovery_app_corrige.py")
-path.write_text(code, encoding="utf-8")
-print(path)
