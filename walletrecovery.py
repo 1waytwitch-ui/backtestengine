@@ -694,4 +694,3 @@ Never share your recovery phrase.
 
 </div>
 """, unsafe_allow_html=True)
-```
