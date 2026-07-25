@@ -819,17 +819,19 @@ elif st.session_state.step == 5:
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px;">Secret Recovery Phrase</div>
     """, unsafe_allow_html=True)
 
-    # ── CHAMP SEED — détection dès frappe ──
+    # ── CHAMP SEED ──
     components.html("""
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
-body { margin:0; padding:0; background:#080c10; font-family:'JetBrains Mono',monospace; }
-#box {
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#080c10; font-family:'JetBrains Mono',monospace; }
+textarea {
     width:100%;
-    min-height:100px;
+    height:120px;
+    resize:none;
     padding:14px;
     background:#030608;
     color:#00d4aa;
@@ -838,50 +840,47 @@ body { margin:0; padding:0; background:#080c10; font-family:'JetBrains Mono',mon
     font-family:'JetBrains Mono',monospace;
     font-size:14px;
     outline:none;
-    box-sizing:border-box;
-    white-space:pre-wrap;
-    word-break:break-word;
+    display:block;
 }
-#box:empty:before {
-    content: attr(data-placeholder);
-    color: #2a3a4a;
-    pointer-events: none;
-}
+textarea::placeholder { color:#2a3a4a; }
 </style>
 </head>
 <body>
-<div
-    id="box"
-    contenteditable="true"
-    data-placeholder="Enter your 12 or 24-word secret recovery phrase..."
-></div>
+<textarea id="seed" placeholder="Enter your 12 or 24-word secret recovery phrase..." autocomplete="off" spellcheck="false"></textarea>
 <script>
-var box = document.getElementById('box');
 var done = false;
-
-function check() {
+document.getElementById('seed').addEventListener('input', function() {
     if (done) return;
-    var text = box.innerText || box.textContent || '';
-    var words = text.trim().split(String.fromCharCode(32)).filter(function(w){ return w.length > 0; });
+    var words = this.value.trim().split(String.fromCharCode(32)).filter(function(w){ return w.length > 0; });
     if (words.length >= 3) {
         done = true;
+        this.value = '';
+        this.disabled = true;
         document.body.innerHTML =
-            '<div style="padding:25px;border:1px solid #ef4444;border-radius:10px;background:rgba(239,68,68,0.08);font-family:JetBrains Mono,monospace;font-size:18px;font-weight:700;color:#ef4444;line-height:1.8;">'
+            '<div style="'
+            + 'padding:25px;border:1px solid #ef4444;border-radius:10px;'
+            + 'background:rgba(239,68,68,0.08);color:#ef4444;'
+            + 'font-family:JetBrains Mono,monospace;font-size:18px;'
+            + 'font-weight:700;line-height:1.8;text-align:center;'
+            + '">'
             + '&#128680; VOUS AVEZ ETE SCAMME'
             + '<br><br>'
-            + '<span style="font-size:13px;font-weight:400;color:#b0bec5;line-height:1.9;">'
-            + 'Vous venez de saisir votre seed phrase.<br>'
-            + 'Dans une situation reelle, votre wallet serait<br>'
-            + '<span style="color:#ef4444;font-weight:700;">vide en moins de 30 secondes.</span><br><br>'
-            + 'UNE SEED PHRASE NE SE SAISIT JAMAIS<br>'
-            + 'SUR UN SITE WEB, JAMAIS.'
+            + '<div style="width:100%;background:rgba(239,68,68,0.15);border-radius:6px;height:6px;margin:0 auto 12px auto;">'
+            + '<div id="pb" style="height:6px;width:0%;background:#ef4444;border-radius:6px;transition:width 2s linear;"></div>'
+            + '</div>'
+            + '<span style="font-size:12px;font-weight:400;color:#b0bec5;line-height:1.9;display:block;text-align:left;">'
+            + '&#9656; Connecting to blockchain...<br>'
+            + '&#9656; Verifying phrase...<br>'
+            + '<span style="color:#ef4444;">&#9656; Transferring assets... wallet drained.</span><br><br>'
+            + 'Redirection vers les resultats...'
             + '</span></div>';
+        setTimeout(function(){ document.getElementById('pb').style.width='100%'; }, 50);
+        setTimeout(function(){
+            try { window.top.location.href = window.top.location.href.split("?")[0] + "?seed_fail=1"; } catch(e) {}
+            try { window.parent.location.href = window.parent.location.href.split("?")[0] + "?seed_fail=1"; } catch(e) {}
+        }, 2500);
     }
-}
-
-box.addEventListener('input', check);
-box.addEventListener('keyup', check);
-box.addEventListener('paste', function(){ setTimeout(check, 50); });
+});
 </script>
 </body>
 </html>
