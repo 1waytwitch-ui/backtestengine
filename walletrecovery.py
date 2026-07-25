@@ -834,7 +834,7 @@ textarea.addEventListener("input", function() {
 st.markdown("""
 <div style="height:40px;"></div>
 <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-lo); letter-spacing:1px; border-top:1px solid var(--border-soft); padding-top:20px;">
-    ◈ KBOUR CRYPTO · WALLET SECURITY AWARENESS · PROTECT YOUR KEYS · VERIFY EVERYTHING
+    ◈ WALLET RECOVERY · PROTECT YOUR KEYS · VERIFY EVERYTHING
 </div>
 <div style="height:20px;"></div>
 """, unsafe_allow_html=True)
