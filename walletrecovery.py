@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import streamlit.components.v1 as components
 import sqlite3
@@ -445,14 +446,14 @@ def show_pedagogy(outcome):
             <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:1.8;">
                 des personnes ayant fait cette simulation ont tenté de saisir leur seed phrase.<br>
                 <span style="color:#f0f4f8; font-weight:600;">Un vrai scammer ne les aurait pas arrêtées.</span><br><br>
-                Partagez cette simulation. Une seed compromise = wallet vidé.
+                Partagez cette simulation à vos proches. Une seed compromise = wallet vidé.
             </div>
         </div>""", unsafe_allow_html=True)
 
     st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
     st.markdown('<div class="btn-accent">', unsafe_allow_html=True)
-    if st.button("◈ RECOMMENCER LA RECUPERATION"):
+    if st.button("◈ RECOMMENCER LA SIMULATION"):
         reset_app()
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -524,7 +525,9 @@ if st.session_state.step == 0:
         st.session_state.step = 1
         st.rerun()
 
-    
+    st.markdown("""
+    <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); margin-top:16px; letter-spacing:1px;">
+        Ce site est une simulation éducative · KBOUR CRYPTO
     </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════
@@ -540,7 +543,7 @@ elif st.session_state.step == 1:
                 <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
             </div>
             <div class="fake-url-bar">
-                <span class="fake-lock"></span>
+                <span class="fake-lock">🔒</span>
                 <span class="fake-url-text">https://</span><span class="fake-url-host">uniswap-security.protocol-verify.com</span><span style="color:#8899aa;">/wallet/connect</span>
             </div>
         </div>
@@ -888,7 +891,7 @@ document.getElementById('s').addEventListener('input',function(){
 st.markdown("""
 <div style="height:40px;"></div>
 <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); letter-spacing:1px; padding-top:16px;">
-    ◈ WALLET RECOVERY · Protect your keys · Never share your seed
+    ◈ Simulation éducative · KBOUR CRYPTO · Protect your keys · Never share your seed
 </div>
 <div style="height:20px;"></div>
 """, unsafe_allow_html=True)
