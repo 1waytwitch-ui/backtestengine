@@ -15,501 +15,422 @@ st.set_page_config(
 )
 
 # =========================================================
-# CSS
+# CSS GLOBAL
 # =========================================================
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    --bg-main:#080c10;
-    --bg-panel:#0d1318;
-    --bg-card:#111820;
-    --accent:#00d4aa;
-    --accent-dim:rgba(0,212,170,.10);
-    --border:rgba(0,212,170,.18);
-    --border-soft:rgba(255,255,255,.06);
-    --text-hi:#f0f4f8;
-    --text-mid:#8899aa;
-    --text-lo:#445566;
-    --red:#ef4444;
-    --green:#22c55e;
-    --yellow:#f59e0b;
-    --font-mono:'JetBrains Mono','Courier New',monospace;
-    --font-ui:'Inter',sans-serif;
+    --bg: #080c10;
+    --panel: #0d1318;
+    --card: #111820;
+    --text: #f0f4f8;
+    --muted: #8899aa;
+    --dim: #445566;
+    --green: #00d4aa;
+    --red: #ef4444;
+    --orange: #f59e0b;
+    --success: #22c55e;
+    --border: rgba(255,255,255,.08);
 }
 
-#MainMenu, footer { visibility:hidden !important; }
+#MainMenu, footer,
 [data-testid="stSidebar"],
 [data-testid="collapsedControl"],
 [data-testid="stToolbar"],
-[data-testid="stHeader"] { display:none !important; }
-
-.block-container {
-    padding-top:72px !important;
-    padding-bottom:60px !important;
-    width:100% !important;
-    max-width:780px !important;
+[data-testid="stHeader"] {
+    display: none !important;
 }
 
 html, body, [data-testid="stAppViewContainer"] {
-    background:var(--bg-main) !important;
-    color:var(--text-hi);
-    font-family:var(--font-ui);
+    background: var(--bg) !important;
+    color: var(--text) !important;
+    font-family: Inter, sans-serif;
+}
+
+.block-container {
+    max-width: 820px !important;
+    padding: 82px 18px 60px !important;
 }
 
 .nav-bar {
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:58px;
-    z-index:99999;
-    background:rgba(6,10,14,.98);
-    backdrop-filter:blur(16px);
-    border-bottom:1px solid rgba(239,68,68,.25);
-    display:flex;
-    align-items:center;
-    padding:0 28px;
-    box-sizing:border-box;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 58px;
+    padding: 8px 18px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    background: rgba(6,10,14,.98);
+    border-bottom: 1px solid rgba(239,68,68,.25);
 }
 
 .nav-brand {
-    display:flex;
-    align-items:center;
-    gap:10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .nav-glyph {
-    width:28px;
-    height:28px;
-    border:2px solid var(--red);
-    border-radius:6px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:14px;
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--red);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .nav-title {
-    font-family:var(--font-mono);
-    font-size:13px;
-    font-weight:600;
-    color:var(--text-hi);
-    letter-spacing:2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
 }
 
 .nav-subtitle {
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--text-mid);
-    letter-spacing:1px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .7px;
+    margin-top: 2px;
 }
 
 .status-dot {
-    width:7px;
-    height:7px;
-    border-radius:50%;
-    background:var(--red);
-    display:inline-block;
-    margin-right:5px;
-    animation:pulse-red 1.2s infinite;
-}
-
-@keyframes pulse-red {
-    0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(239,68,68,.5); }
-    50% { opacity:.8; box-shadow:0 0 0 5px rgba(239,68,68,0); }
-}
-
-.sec-head {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:28px 0 14px;
-    padding-bottom:8px;
-    border-bottom:1px solid var(--border);
-}
-
-.sec-head-icon {
-    width:24px;
-    height:24px;
-    background:var(--accent-dim);
-    border:1px solid var(--border);
-    border-radius:5px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:11px;
-}
-
-.sec-head-label {
-    font-family:var(--font-mono);
-    font-size:11px;
-    font-weight:600;
-    letter-spacing:2px;
-    text-transform:uppercase;
-}
-
-.m-card,
-.m-card-wide,
-.step-card,
-.stat-card {
-    background:var(--bg-card);
-    border:1px solid var(--border-soft);
-    border-radius:10px;
-}
-
-.m-card { padding:16px 18px; margin:8px 0; }
-.m-card-wide { padding:18px 20px; margin:8px 0; }
-
-.term-block {
-    background:#030608;
-    border:1px solid rgba(0,212,170,.12);
-    border-radius:10px;
-    padding:20px;
-    font-family:var(--font-mono);
-    font-size:12px;
-    line-height:1.7;
-    color:var(--accent);
-    margin:12px 0;
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 5px;
+    border-radius: 50%;
+    background: var(--red);
 }
 
 .fake-browser {
-    width:100%;
-    max-width:100%;
-    box-sizing:border-box;
-    border-radius:12px;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,.08);
-    box-shadow:0 20px 60px rgba(0,0,0,.5);
-    margin:16px 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 12px;
+    background: #0d1117;
+    box-shadow: 0 18px 50px rgba(0,0,0,.40);
 }
 
 .fake-browser-bar {
-    width:100%;
-    min-width:0;
-    box-sizing:border-box;
-    background:#1a1f2e;
-    padding:10px 12px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    border-bottom:1px solid rgba(255,255,255,.06);
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 52px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #1a1f2e;
+    border-bottom: 1px solid rgba(255,255,255,.07);
 }
 
 .fake-dots {
-    display:flex;
-    gap:6px;
-    flex-shrink:0;
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 .dot {
-    width:12px;
-    height:12px;
-    border-radius:50%;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
 }
 
-.dot-r { background:#ff5f57; }
-.dot-y { background:#febc2e; }
-.dot-g { background:#28c840; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
 
 .fake-url-bar {
-    min-width:0;
-    flex:1;
-    overflow:hidden;
-    background:#0d1117;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:6px;
-    padding:5px 10px;
-    font-family:var(--font-mono);
-    font-size:11px;
-    color:#8899aa;
-    display:flex;
-    align-items:center;
-    gap:6px;
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    background: #0d1117;
+    border: 1px solid rgba(255,255,255,.08);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    white-space: nowrap;
 }
 
-.fake-url-text,
-.fake-url-host {
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+.fake-url-text {
+    color: #8899aa;
+    flex-shrink: 0;
 }
 
 .fake-url-host {
-    color:#f0f4f8;
-    font-weight:600;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #f0f4f8;
+    font-weight: 600;
 }
 
 .fake-browser-content {
-    width:100%;
-    max-width:100%;
-    box-sizing:border-box;
-    background:#0d1117;
-    padding:24px 28px;
-    overflow:hidden;
+    width: 100%;
+    box-sizing: border-box;
+    padding: clamp(16px, 4vw, 30px);
+    background: #0d1117;
+}
+
+.sec-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 28px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0,212,170,.18);
+}
+
+.sec-head-icon {
+    width: 25px;
+    height: 25px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,212,170,.10);
+    border: 1px solid rgba(0,212,170,.20);
+}
+
+.sec-head-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+}
+
+.card {
+    padding: 20px;
+    margin: 12px 0;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+}
+
+.danger-card {
+    padding: 28px 20px;
+    margin: 14px 0;
+    border-radius: 10px;
+    text-align: center;
+    background: rgba(239,68,68,.07);
+    border: 1px solid rgba(239,68,68,.35);
+}
+
+.success-card {
+    padding: 28px 20px;
+    margin: 14px 0;
+    border-radius: 10px;
+    text-align: center;
+    background: rgba(34,197,94,.07);
+    border: 1px solid rgba(34,197,94,.30);
+}
+
+.step-card {
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+    margin: 14px 0;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+}
+
+.step-card:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: var(--red);
+}
+
+.progress-wrap {
+    margin: 10px 0 24px;
+}
+
+.progress-track {
+    height: 3px;
+    border-radius: 3px;
+    background: rgba(255,255,255,.08);
+}
+
+.progress-fill {
+    height: 3px;
+    border-radius: 3px;
+    background: var(--red);
+    box-shadow: 0 0 8px rgba(239,68,68,.5);
+}
+
+.progress-label {
+    margin-top: 6px;
+    text-align: right;
+    color: var(--dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
 }
 
 .chat-wrap {
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-    margin:16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.chat-bubble-left,
-.chat-bubble-right {
-    display:flex;
-    gap:10px;
-    align-items:flex-start;
-    max-width:85%;
+.chat-left, .chat-right {
+    display: flex;
+    gap: 10px;
+    max-width: 88%;
 }
 
-.chat-bubble-right {
-    align-self:flex-end;
-    flex-direction:row-reverse;
+.chat-right {
+    align-self: flex-end;
+    flex-direction: row-reverse;
 }
 
-.chat-avatar {
-    width:32px;
-    height:32px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
+.avatar {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.avatar-support { background:linear-gradient(135deg,#0ea5e9,#0369a1); }
-.avatar-user { background:linear-gradient(135deg,#374151,#1f2937); }
+.avatar-support { background: linear-gradient(135deg,#0ea5e9,#0369a1); }
+.avatar-user { background: #273244; font-size: 11px; }
 
-.chat-content-left,
-.chat-content-right {
-    padding:12px 16px;
-    font-size:13px;
-    line-height:1.7;
+.chat-bubble {
+    padding: 12px 15px;
+    border-radius: 0 10px 10px 10px;
+    color: #b0bec5;
+    background: #111820;
+    border: 1px solid var(--border);
+    line-height: 1.65;
+    font-size: 13px;
 }
 
-.chat-content-left {
-    background:#111820;
-    border:1px solid var(--border-soft);
-    border-radius:0 10px 10px 10px;
-    color:#b0bec5;
-}
-
-.chat-content-right {
-    background:#1a2535;
-    border:1px solid rgba(14,165,233,.2);
-    border-radius:10px 0 10px 10px;
-    color:#f0f4f8;
+.chat-right .chat-bubble {
+    border-radius: 10px 0 10px 10px;
+    color: var(--text);
+    background: #1a2535;
 }
 
 .chat-name {
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--text-mid);
-    letter-spacing:1px;
-    margin-bottom:4px;
-}
-
-.chat-typing {
-    display:flex;
-    gap:4px;
-    align-items:center;
-    padding:10px 16px;
-    background:#111820;
-    border:1px solid var(--border-soft);
-    border-radius:0 10px 10px 10px;
-    width:70px;
-}
-
-.typing-dot {
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background:#8899aa;
-    animation:typing 1.2s infinite;
-}
-
-.typing-dot:nth-child(2) { animation-delay:.2s; }
-.typing-dot:nth-child(3) { animation-delay:.4s; }
-
-@keyframes typing {
-    0%,100% { opacity:.3; transform:translateY(0); }
-    50% { opacity:1; transform:translateY(-3px); }
-}
-
-.d-card,
-.s-card,
-.w-card,
-.abs-rule {
-    border-radius:10px;
-    padding:20px 22px;
-    margin:14px 0;
-}
-
-.d-card {
-    background:rgba(239,68,68,.07);
-    border:1px solid rgba(239,68,68,.35);
-}
-
-.s-card {
-    background:rgba(34,197,94,.07);
-    border:1px solid rgba(34,197,94,.3);
-}
-
-.w-card {
-    background:rgba(245,158,11,.06);
-    border:1px solid rgba(245,158,11,.28);
-}
-
-.d-card-title,
-.s-card-title,
-.w-card-title {
-    font-family:var(--font-mono);
-    font-weight:700;
-    letter-spacing:1px;
-}
-
-.d-card-title { color:var(--red); }
-.s-card-title { color:var(--green); }
-.w-card-title { color:var(--yellow); }
-
-.progress-bar-wrap { margin:16px 0 24px; }
-.progress-bar-track {
-    height:3px;
-    background:var(--border-soft);
-    border-radius:2px;
-}
-.progress-bar-fill {
-    height:3px;
-    background:var(--red);
-    border-radius:2px;
-    box-shadow:0 0 8px rgba(239,68,68,.5);
-}
-.progress-label {
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--text-lo);
-    letter-spacing:1px;
-    margin-top:6px;
-    text-align:right;
-}
-
-.rule-item {
-    display:flex;
-    align-items:flex-start;
-    gap:12px;
-    padding:16px 0;
-    border-bottom:1px solid var(--border-soft);
-    font-size:13px;
-    color:#b0bec5;
-    line-height:1.6;
-}
-
-.rule-num {
-    min-width:28px;
-    height:28px;
-    border-radius:6px;
-    background:rgba(239,68,68,.1);
-    border:1px solid rgba(239,68,68,.25);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-family:var(--font-mono);
-    font-size:11px;
-    font-weight:700;
-    color:var(--red);
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
 }
 
 .stat-card {
-    padding:20px;
-    text-align:center;
-    margin-bottom:10px;
+    padding: 18px 10px;
+    margin-bottom: 10px;
+    text-align: center;
+    border-radius: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
 }
 
 .stat-num {
-    font-family:var(--font-mono);
-    font-size:30px;
-    font-weight:700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
 }
 
-.stat-lbl {
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--text-mid);
-    letter-spacing:1.5px;
-    text-transform:uppercase;
-    margin-top:8px;
+.stat-label {
+    margin-top: 7px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.rule {
+    display: flex;
+    gap: 12px;
+    padding: 15px 0;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    color: #b0bec5;
+    line-height: 1.6;
+    font-size: 13px;
+}
+
+.rule:last-child { border-bottom: 0; }
+
+.rule-num {
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: var(--red);
+    background: rgba(239,68,68,.10);
+    border: 1px solid rgba(239,68,68,.25);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+}
+
+button {
+    min-height: 44px !important;
 }
 
 .stButton > button {
-    background:var(--red) !important;
-    color:#fff !important;
-    border:none !important;
-    border-radius:8px !important;
-    font-family:var(--font-mono) !important;
-    font-size:12px !important;
-    font-weight:700 !important;
-    letter-spacing:1px !important;
-    padding:12px 20px !important;
-    text-transform:uppercase !important;
-    width:100% !important;
+    width: 100%;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: var(--red) !important;
+    color: white !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    letter-spacing: .8px !important;
 }
 
-.btn-success > button {
-    background:transparent !important;
-    color:var(--green) !important;
-    border:1px solid rgba(34,197,94,.4) !important;
+.stButton > button:hover {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 20px rgba(239,68,68,.30);
 }
 
-.btn-neutral > button {
-    background:#1a2535 !important;
-    color:#8899aa !important;
-    border:1px solid var(--border-soft) !important;
-}
-
-.btn-accent > button {
-    background:var(--accent) !important;
-    color:#030a07 !important;
-}
-
-.v2-divider {
-    height:1px;
-    background:linear-gradient(90deg,var(--border),transparent);
-    margin:28px 0;
-}
-
-@media (max-width:600px) {
+@media (max-width: 600px) {
     .block-container {
-        padding-left:12px !important;
-        padding-right:12px !important;
+        padding-left: 10px !important;
+        padding-right: 10px !important;
     }
 
-    .nav-bar {
-        padding:0 12px;
-    }
-
-    .fake-browser-content {
-        padding:18px 14px;
-    }
+    .nav-title { font-size: 11px; }
+    .nav-subtitle { font-size: 8px; }
 
     .fake-browser-bar {
-        padding:8px;
-    }
-
-    .fake-url-bar {
-        font-size:9px;
+        padding: 8px;
+        gap: 7px;
     }
 
     .dot {
-        width:8px;
-        height:8px;
+        width: 9px;
+        height: 9px;
     }
 
-    .chat-bubble-left,
-    .chat-bubble-right {
-        max-width:95%;
+    .fake-url-bar {
+        font-size: 8px;
+        padding: 6px 7px;
+    }
+
+    .chat-left, .chat-right {
+        max-width: 96%;
     }
 }
 </style>
@@ -596,7 +517,7 @@ def get_statistics():
 init_database()
 
 # =========================================================
-# SESSION STATE
+# SESSION
 # =========================================================
 defaults = {
     "step": 0,
@@ -613,14 +534,13 @@ for key, value in defaults.items():
         st.session_state[key] = value
 
 if not st.session_state.participant_registered:
-    st.session_state.participant_registered = True
     increment_stat("participants")
+    st.session_state.participant_registered = True
 
 # =========================================================
-# SEED FAILURE CALLBACK
+# SEED FAIL CALLBACK VIA QUERY PARAMETER
 # =========================================================
 if "seed_fail" in st.query_params:
-
     if not st.session_state.seed_fail_registered:
         increment_stat("seed_attempts")
         st.session_state.seed_fail_registered = True
@@ -628,11 +548,35 @@ if "seed_fail" in st.query_params:
     st.query_params.clear()
     st.session_state.outcome = "fail"
     st.session_state.step = 99
-    st.rerun()
 
 # =========================================================
 # HELPERS
 # =========================================================
+def section_header(icon, title, color="#00d4aa"):
+    st.markdown(
+        f"""
+        <div class="sec-head">
+            <div class="sec-head-icon" style="color:{color};">{icon}</div>
+            <div class="sec-head-label" style="color:{color};">{title}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+def progress(step, total=5):
+    pct = min(100, max(0, step / total * 100))
+    st.markdown(
+        f"""
+        <div class="progress-wrap">
+            <div class="progress-track">
+                <div class="progress-fill" style="width:{pct:.0f}%;"></div>
+            </div>
+            <div class="progress-label">ÉTAPE {step} / {total}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 def reset_app():
     st.session_state.step = 0
     st.session_state.completed = False
@@ -642,140 +586,144 @@ def reset_app():
     st.session_state.chat_step = 0
     st.rerun()
 
-def sec(icon, label, color="var(--accent)"):
-    st.markdown(
-        f"""
-        <div class="sec-head">
-            <div class="sec-head-icon" style="color:{color};">{icon}</div>
-            <div class="sec-head-label" style="color:{color};">{label}</div>
+def browser_header(path=""):
+    return f"""
+    <div class="fake-browser-bar">
+        <div class="fake-dots">
+            <div class="dot dot-r"></div>
+            <div class="dot dot-y"></div>
+            <div class="dot dot-g"></div>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
-def progress_bar(step, total=5):
-    pct = min(step / total * 100, 100)
-    st.markdown(
-        f"""
-        <div class="progress-bar-wrap">
-            <div class="progress-bar-track">
-                <div class="progress-bar-fill" style="width:{pct:.0f}%;"></div>
-            </div>
-            <div class="progress-label">ÉTAPE {step} / {total}</div>
+        <div class="fake-url-bar">
+            <span>🔒</span>
+            <span class="fake-url-text">https://</span>
+            <span class="fake-url-host">uniswap-security.protocol-verify.com</span>
+            <span style="color:#8899aa; overflow:hidden; text-overflow:ellipsis;">
+                {path}
+            </span>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    </div>
+    """
 
-# =========================================================
-# PEDAGOGY
-# =========================================================
 def show_pedagogy(outcome):
     stats = get_statistics()
 
     if outcome == "fail":
         st.markdown("""
-        <div class="d-card" style="text-align:center;padding:36px;">
+        <div class="danger-card">
             <div style="font-size:48px;">💀</div>
-            <div class="d-card-title" style="font-size:22px;text-align:center;">
+            <h2 style="color:#ef4444; font-family:'JetBrains Mono',monospace;">
                 VOUS AVEZ ÉTÉ SCAMMÉ
-            </div>
-            <div style="font-size:14px;color:#b0bec5;line-height:1.8;margin-top:12px;">
-                Vous avez tenté de saisir votre phrase de récupération.<br>
-                <span style="color:#ef4444;font-weight:600;">
-                    Dans une situation réelle, votre wallet pourrait être compromis immédiatement.
-                </span>
-            </div>
+            </h2>
+            <p style="color:#b0bec5; line-height:1.8;">
+                Vous avez tenté de communiquer votre phrase de récupération.
+                <br>
+                <b style="color:#ef4444;">
+                    Dans une situation réelle, votre wallet pourrait être vidé très rapidement.
+                </b>
+            </p>
         </div>
         """, unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div class="s-card" style="text-align:center;padding:36px;">
+        <div class="success-card">
             <div style="font-size:48px;">🛡️</div>
-            <div class="s-card-title" style="font-size:22px;text-align:center;">
+            <h2 style="color:#22c55e; font-family:'JetBrains Mono',monospace;">
                 VOUS AVEZ RÉSISTÉ
-            </div>
-            <div style="font-size:14px;color:#b0bec5;line-height:1.8;margin-top:12px;">
-                Vous avez refusé de communiquer votre phrase de récupération.<br>
-                <span style="color:#22c55e;font-weight:600;">
+            </h2>
+            <p style="color:#b0bec5; line-height:1.8;">
+                Vous avez refusé de communiquer votre phrase de récupération.
+                <br>
+                <b style="color:#22c55e;">
                     C'est la seule décision correcte.
-                </span>
-            </div>
+                </b>
+            </p>
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
-
-    sec("◈", "Ce qui vient de se passer", "#ef4444")
+    section_header("◈", "CE QUI VIENT DE SE PASSER", "#ef4444")
 
     st.markdown("""
-    <div class="m-card-wide">
-        <div style="font-size:13px;color:#b0bec5;line-height:2;">
+    <div class="card">
+        <div style="color:#b0bec5; line-height:2;">
             Vous venez de traverser une simulation de
-            <b style="color:#f0f4f8;">phishing DeFi</b>.<br><br>
-            <span style="color:#ef4444;">1.</span> Fausse alerte de sécurité<br>
-            <span style="color:#ef4444;">2.</span> Fausse connexion wallet<br>
-            <span style="color:#ef4444;">3.</span> Faux support<br>
-            <span style="color:#ef4444;">4.</span> Demande de signature<br>
-            <span style="color:#ef4444;">5.</span> Pression d'urgence<br>
-            <span style="color:#ef4444;">6.</span> Demande de seed phrase
+            <b style="color:#f0f4f8;">phishing DeFi</b>.
+            Chaque étape reproduit une technique couramment utilisée par des scammers :
+            <br><br>
+            <span style="color:#ef4444;">1.</span>
+            Fausse alerte de sécurité
+            <br>
+            <span style="color:#ef4444;">2.</span>
+            Fausse connexion wallet
+            <br>
+            <span style="color:#ef4444;">3.</span>
+            Faux support
+            <br>
+            <span style="color:#ef4444;">4.</span>
+            Demande de signature
+            <br>
+            <span style="color:#ef4444;">5.</span>
+            Pression et urgence
+            <br>
+            <span style="color:#ef4444;">6.</span>
+            Demande de phrase de récupération
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    sec("🛡", "Les règles à ne jamais oublier", "#22c55e")
+    section_header("🛡", "RÈGLES ABSOLUES", "#22c55e")
 
     rules = [
         (
             "Votre seed phrase = votre wallet",
-            "Quiconque possède votre seed phrase possède votre wallet. Aucun support légitime n'a besoin de la connaître."
+            "Quiconque possède votre phrase de récupération peut potentiellement contrôler les fonds associés. Aucun support légitime n'a besoin de la connaître."
         ),
         (
             "L'urgence est une arme",
-            "Les scammers créent une pression artificielle pour vous empêcher de réfléchir."
+            "Un scammer veut vous empêcher de réfléchir. Plus la pression est forte, plus vous devez vous arrêter et vérifier."
         ),
         (
             "Un support légitime ne demande jamais votre seed",
-            "Ne communiquez jamais votre phrase de récupération, même à une personne prétendant être un employé officiel."
+            "Ne communiquez jamais votre phrase de récupération à un support, un protocole ou une personne qui vous contacte."
         ),
         (
             "Vérifiez toujours l'URL",
-            "Un faux domaine peut ressembler presque parfaitement au vrai."
+            "Un site peut imiter parfaitement une interface connue tout en utilisant un domaine frauduleux."
         ),
         (
-            "Une signature peut être dangereuse",
-            "Lisez toujours ce que vous signez et vérifiez les autorisations accordées."
+            "Lisez chaque signature",
+            "Une signature ou une approbation peut avoir des conséquences importantes. Ne signez jamais automatiquement."
         ),
         (
             "Formez-vous avant de manipuler des fonds",
-            "Un scammer ne vous donnera pas une seconde chance avec votre argent."
+            "La sécurité ne repose pas sur la chance. Comprenez ce que vous signez et ne laissez jamais la pression décider à votre place."
         ),
     ]
 
-    for i, (title, description) in enumerate(rules, 1):
+    for i, (title, text) in enumerate(rules, 1):
         st.markdown(
             f"""
-            <div class="rule-item">
+            <div class="rule">
                 <div class="rule-num">{i}</div>
                 <div>
-                    <b style="color:#f0f4f8;">{title}</b><br>
-                    {description}
+                    <b style="color:#f0f4f8;">{title}</b>
+                    <br>
+                    {text}
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
-
-    sec("◉", "Statistiques globales")
+    section_header("◉", "STATISTIQUES ANONYMES")
 
     st.markdown("""
-    <div class="m-card-wide">
-        <div style="font-size:12px;color:var(--text-mid);line-height:1.7;">
-            Ces chiffres sont collectés de manière
-            <b style="color:#f0f4f8;">100% anonyme</b>.<br>
-            Aucune donnée personnelle et aucune seed phrase ne sont stockées.
+    <div class="card">
+        <div style="color:#8899aa; font-size:12px; line-height:1.7;">
+            Ces chiffres sont collectés de manière <b style="color:#f0f4f8;">anonyme</b>.
+            <br>
+            Aucune seed phrase n'est stockée ou transmise par l'application.
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -783,12 +731,12 @@ def show_pedagogy(outcome):
     c1, c2 = st.columns(2)
 
     metrics = [
-        ("PARTICIPANTS", stats["participants"], "var(--accent)"),
-        ("ONT REFUSÉ LA SEED", stats["safe_exits"], "#22c55e"),
-        ("ONT CONNECTÉ LEUR WALLET", stats["wallet_connections"], "#f59e0b"),
-        ("ONT SIGNÉ", stats["signature_attempts"], "#f59e0b"),
-        ("ONT CONTINUÉ SOUS PRESSION", stats["urgency_continues"], "#ef4444"),
-        ("ONT TENTÉ LA SEED", stats["seed_attempts"], "#ef4444"),
+        ("PARTICIPANTS", stats["participants"], "#00d4aa"),
+        ("REFUS DE LA SEED", stats["safe_exits"], "#22c55e"),
+        ("CONNEXIONS WALLET", stats["wallet_connections"], "#f59e0b"),
+        ("TENTATIVES DE SIGNATURE", stats["signature_attempts"], "#f59e0b"),
+        ("ONT SUIVI L'URGENCE", stats["urgency_continues"], "#ef4444"),
+        ("TENTATIVES DE SEED", stats["seed_attempts"], "#ef4444"),
     ]
 
     for i, (label, value, color) in enumerate(metrics):
@@ -796,68 +744,42 @@ def show_pedagogy(outcome):
             st.markdown(
                 f"""
                 <div class="stat-card">
-                    <div class="stat-num" style="color:{color};">
-                        {value:,}
-                    </div>
-                    <div class="stat-lbl">{label}</div>
+                    <div class="stat-num" style="color:{color};">{value:,}</div>
+                    <div class="stat-label">{label}</div>
                 </div>
                 """.replace(",", "\u202f"),
                 unsafe_allow_html=True,
             )
 
     if stats["participants"] > 0:
-        percentage = stats["seed_attempts"] / stats["participants"] * 100
+        pct = stats["seed_attempts"] / stats["participants"] * 100
 
         st.markdown(
             f"""
-            <div class="d-card" style="text-align:center;">
-                <div class="d-card-title">
-                    🚨 STATISTIQUE QUI DOIT VOUS MARQUER
+            <div class="danger-card">
+                <div style="color:#ef4444; font-family:'JetBrains Mono',monospace; font-weight:700;">
+                    🚨 STATISTIQUE À RETENIR
                 </div>
-                <div style="
-                    font-family:var(--font-mono);
-                    font-size:42px;
-                    font-weight:700;
-                    color:#ef4444;
-                    margin:14px 0;
-                ">
-                    {percentage:.1f}%
+                <div style="font-size:42px; font-weight:700; color:#ef4444; margin:12px 0;">
+                    {pct:.1f}%
                 </div>
-                <div style="font-size:13px;color:#b0bec5;line-height:1.8;">
-                    des participants ont tenté de saisir leur seed phrase.<br>
-                    <span style="color:#f0f4f8;font-weight:600;">
-                        Un vrai scammer ne les aurait pas arrêtés.
-                    </span>
+                <div style="color:#b0bec5; line-height:1.8;">
+                    des participants ont tenté de saisir leur phrase de récupération.
+                    <br><br>
+                    <b style="color:#f0f4f8;">
+                        Un vrai scammer, lui, ne vous aurait pas arrêté.
+                    </b>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
-
-    st.markdown('<div class="btn-accent">', unsafe_allow_html=True)
     if st.button("◈ RECOMMENCER LA SIMULATION"):
         reset_app()
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="
-        text-align:center;
-        font-family:var(--font-mono);
-        font-size:10px;
-        color:var(--text-lo);
-        letter-spacing:1px;
-        border-top:1px solid var(--border-soft);
-        padding-top:20px;
-        margin-top:40px;
-    ">
-        ◈ KBOUR CRYPTO · WALLET SECURITY AWARENESS
-    </div>
-    """, unsafe_allow_html=True)
 
 # =========================================================
-# ROUTING
+# ROUTING FINAL
 # =========================================================
 if st.session_state.step == 99 or st.session_state.outcome == "fail":
     show_pedagogy("fail")
@@ -868,265 +790,206 @@ if st.session_state.completed:
     st.stop()
 
 # =========================================================
-# STEP 0 — FAUSSE ALERTE
+# ÉTAPE 0 — FAUSSE ALERTE
 # =========================================================
 if st.session_state.step == 0:
 
-    st.markdown("""
-    <div class="fake-browser">
-        <div class="fake-browser-bar">
-            <div class="fake-dots">
-                <div class="dot dot-r"></div>
-                <div class="dot dot-y"></div>
-                <div class="dot dot-g"></div>
-            </div>
-            <div class="fake-url-bar">
-                <span>🔒</span>
-                <span class="fake-url-text">https://</span>
-                <span class="fake-url-host">
-                    uniswap-security.protocol-verify.com
-                </span>
-            </div>
-        </div>
+    st.markdown(
+        """
+        <div class="fake-browser">
+        """ + browser_header() + """
+            <div class="fake-browser-content">
 
-        <div class="fake-browser-content">
-
-            <div style="
-                display:flex;
-                align-items:center;
-                gap:12px;
-                margin-bottom:20px;
-            ">
-                <div style="
-                    width:36px;
-                    height:36px;
-                    background:linear-gradient(135deg,#ff007a,#ff6b00);
-                    border-radius:50%;
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    font-size:18px;
-                ">🦄</div>
-
-                <div>
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
                     <div style="
-                        font-family:var(--font-mono);
-                        font-size:14px;
+                        width:38px;
+                        height:38px;
+                        border-radius:50%;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        background:linear-gradient(135deg,#ff007a,#ff6b00);
+                        font-size:19px;
+                    ">🦄</div>
+
+                    <div>
+                        <div style="
+                            color:#f0f4f8;
+                            font-family:'JetBrains Mono',monospace;
+                            font-size:14px;
+                            font-weight:700;
+                        ">Uniswap Protocol</div>
+
+                        <div style="
+                            color:#8899aa;
+                            font-family:'JetBrains Mono',monospace;
+                            font-size:10px;
+                        ">Security Center</div>
+                    </div>
+                </div>
+
+                <div style="
+                    padding:18px;
+                    border-radius:8px;
+                    background:rgba(239,68,68,.08);
+                    border:1px solid rgba(239,68,68,.30);
+                ">
+                    <div style="
+                        color:#ef4444;
+                        font-family:'JetBrains Mono',monospace;
+                        font-size:12px;
                         font-weight:700;
-                        color:#f0f4f8;
-                    ">
-                        Uniswap Protocol
-                    </div>
+                        margin-bottom:8px;
+                    ">⚠ SECURITY ALERT — ACTION REQUIRED</div>
+
                     <div style="
-                        font-family:var(--font-mono);
-                        font-size:10px;
-                        color:#8899aa;
+                        color:#b0bec5;
+                        font-size:13px;
+                        line-height:1.7;
                     ">
-                        Security Center
+                        We have detected
+                        <b style="color:#f0f4f8;">unauthorized access attempts</b>
+                        on your wallet address.
+                        <br>
+                        Your funds may be at risk.
+                        Verify your wallet immediately to prevent loss.
                     </div>
                 </div>
-            </div>
 
-            <div style="
-                background:rgba(239,68,68,.08);
-                border:1px solid rgba(239,68,68,.3);
-                border-radius:8px;
-                padding:18px;
-                margin-bottom:16px;
-            ">
                 <div style="
-                    font-family:var(--font-mono);
+                    color:#8899aa;
                     font-size:12px;
-                    color:#ef4444;
-                    font-weight:700;
-                    margin-bottom:8px;
-                ">
-                    ⚠ SECURITY ALERT — ACTION REQUIRED
-                </div>
-
-                <div style="
-                    font-size:13px;
-                    color:#b0bec5;
                     line-height:1.7;
+                    margin-top:16px;
                 ">
-                    We have detected
-                    <b style="color:#f0f4f8;">
-                        unauthorized access attempts
-                    </b>
-                    on your wallet address.<br>
-                    Your funds may be at risk.
+                    Smart Contract Security Monitor v4.2
+                    <br>
+                    Reference:
+                    <span style="color:#00d4aa; font-family:'JetBrains Mono',monospace;">
+                        SC-2024-A39F2
+                    </span>
                 </div>
-            </div>
 
-            <div style="
-                font-size:12px;
-                color:#8899aa;
-                line-height:1.6;
-            ">
-                This alert was triggered by our Smart Contract Security Monitor v4.2.<br>
-                Reference:
-                <span style="
-                    color:#00d4aa;
-                    font-family:var(--font-mono);
-                ">
-                    SC-2024-A39F2
-                </span>
             </div>
-
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     if st.button("🔍 VÉRIFIER MON WALLET"):
         st.session_state.step = 1
         st.rerun()
 
 # =========================================================
-# STEP 1 — CONNEXION
+# ÉTAPE 1 — CONNEXION WALLET
 # =========================================================
 elif st.session_state.step == 1:
 
-    progress_bar(1)
+    progress(1)
 
-    st.markdown("""
-    <div class="fake-browser">
-        <div class="fake-browser-bar">
-            <div class="fake-dots">
-                <div class="dot dot-r"></div>
-                <div class="dot dot-y"></div>
-                <div class="dot dot-g"></div>
-            </div>
+    st.markdown(
+        """
+        <div class="fake-browser">
+        """ + browser_header("/wallet/connect") + """
+            <div class="fake-browser-content">
 
-            <div class="fake-url-bar">
-                <span>🔒</span>
-                <span class="fake-url-text">https://</span>
-                <span class="fake-url-host">
-                    uniswap-security.protocol-verify.com
-                </span>
-                <span style="color:#8899aa;">
-                    /wallet/connect
-                </span>
+                <div style="
+                    color:#f0f4f8;
+                    font-family:'JetBrains Mono',monospace;
+                    font-size:13px;
+                    font-weight:700;
+                    margin-bottom:6px;
+                ">Wallet Verification</div>
+
+                <div style="
+                    color:#8899aa;
+                    font-size:13px;
+                    margin-bottom:20px;
+                ">Connect your wallet to proceed with the security check.</div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+
+                    <div style="
+                        padding:14px 16px;
+                        display:flex;
+                        align-items:center;
+                        gap:12px;
+                        border-radius:8px;
+                        background:#1a2535;
+                        border:1px solid rgba(14,165,233,.20);
+                    ">
+                        <div style="font-size:22px;">🐇</div>
+                        <div>
+                            <div style="
+                                color:#f0f4f8;
+                                font-family:'JetBrains Mono',monospace;
+                                font-size:12px;
+                                font-weight:700;
+                            ">RABBY WALLET</div>
+                            <div style="
+                                color:#8899aa;
+                                font-family:'JetBrains Mono',monospace;
+                                font-size:10px;
+                            ">Browser Extension</div>
+                        </div>
+                    </div>
+
+                    <div style="
+                        padding:14px 16px;
+                        display:flex;
+                        align-items:center;
+                        gap:12px;
+                        border-radius:8px;
+                        background:#1a2535;
+                        border:1px solid rgba(255,255,255,.06);
+                    ">
+                        <div style="font-size:22px;">🔵</div>
+                        <div>
+                            <div style="
+                                color:#f0f4f8;
+                                font-family:'JetBrains Mono',monospace;
+                                font-size:12px;
+                                font-weight:700;
+                            ">Coinbase Wallet</div>
+                            <div style="
+                                color:#8899aa;
+                                font-family:'JetBrains Mono',monospace;
+                                font-size:10px;
+                            ">Mobile & Extension</div>
+                        </div>
+                    </div>
+
+                    <div style="
+                        padding:14px 16px;
+                        display:flex;
+                        align-items:center;
+                        gap:12px;
+                        border-radius:8px;
+                        background:#1a2535;
+                        border:1px solid rgba(255,255,255,.06);
+                    ">
+                        <div style="font-size:22px;">◈</div>
+                        <div>
+                            <div style="
+                                color:#f0f4f8;
+                                font-family:'JetBrains Mono',monospace;
+                                font-size:12px;
+                                font-weight:700;
+                            ">WalletConnect</div>
+                            <div style="
+                                color:#8899aa;
+                                font-family:'JetBrains Mono',monospace;
+                                font-size:10px;
+                            ">All wallets via QR code</div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
-
-        <div class="fake-browser-content">
-
-            <div style="
-                font-family:var(--font-mono);
-                font-size:13px;
-                font-weight:600;
-                color:#f0f4f8;
-                margin-bottom:6px;
-            ">
-                Wallet Verification
-            </div>
-
-            <div style="
-                font-size:13px;
-                color:#8899aa;
-                margin-bottom:20px;
-            ">
-                Connect your wallet to proceed with the security check.
-            </div>
-
-            <div style="
-                display:flex;
-                flex-direction:column;
-                gap:10px;
-            ">
-
-                <div style="
-                    background:#1a2535;
-                    border:1px solid rgba(14,165,233,.2);
-                    border-radius:8px;
-                    padding:14px 16px;
-                    display:flex;
-                    align-items:center;
-                    gap:12px;
-                ">
-                    <div style="font-size:22px;">🐇</div>
-                    <div>
-                        <div style="
-                            font-family:var(--font-mono);
-                            font-size:12px;
-                            font-weight:600;
-                            color:#f0f4f8;
-                        ">
-                            RABBY WALLET
-                        </div>
-                        <div style="
-                            font-family:var(--font-mono);
-                            font-size:10px;
-                            color:#8899aa;
-                        ">
-                            Browser Extension
-                        </div>
-                    </div>
-                </div>
-
-                <div style="
-                    background:#1a2535;
-                    border:1px solid var(--border-soft);
-                    border-radius:8px;
-                    padding:14px 16px;
-                    display:flex;
-                    align-items:center;
-                    gap:12px;
-                ">
-                    <div style="font-size:22px;">🔵</div>
-                    <div>
-                        <div style="
-                            font-family:var(--font-mono);
-                            font-size:12px;
-                            font-weight:600;
-                            color:#f0f4f8;
-                        ">
-                            Coinbase Wallet
-                        </div>
-                        <div style="
-                            font-family:var(--font-mono);
-                            font-size:10px;
-                            color:#8899aa;
-                        ">
-                            Mobile & Extension
-                        </div>
-                    </div>
-                </div>
-
-                <div style="
-                    background:#1a2535;
-                    border:1px solid var(--border-soft);
-                    border-radius:8px;
-                    padding:14px 16px;
-                    display:flex;
-                    align-items:center;
-                    gap:12px;
-                ">
-                    <div style="font-size:22px;">◈</div>
-                    <div>
-                        <div style="
-                            font-family:var(--font-mono);
-                            font-size:12px;
-                            font-weight:600;
-                            color:#f0f4f8;
-                        ">
-                            WalletConnect
-                        </div>
-                        <div style="
-                            font-family:var(--font-mono);
-                            font-size:10px;
-                            color:#8899aa;
-                        ">
-                            All wallets via QR code
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     if st.button("🐇 CONNECTER RABBY WALLET"):
         increment_stat("wallet_connections")
@@ -1134,122 +997,88 @@ elif st.session_state.step == 1:
         st.rerun()
 
 # =========================================================
-# STEP 2 — SUPPORT
+# ÉTAPE 2 — SUPPORT
 # =========================================================
 elif st.session_state.step == 2:
 
-    progress_bar(2)
-
-    chat_step = st.session_state.chat_step
-
-    st.markdown("""
-    <div class="fake-browser">
-        <div class="fake-browser-bar">
-            <div class="fake-dots">
-                <div class="dot dot-r"></div>
-                <div class="dot dot-y"></div>
-                <div class="dot dot-g"></div>
-            </div>
-
-            <div class="fake-url-bar">
-                <span>🔒</span>
-                <span class="fake-url-text">https://</span>
-                <span class="fake-url-host">
-                    uniswap-security.protocol-verify.com
-                </span>
-                <span style="color:#8899aa;">
-                    /support/live
-                </span>
-            </div>
-        </div>
-
-        <div class="fake-browser-content">
-
-            <div style="
-                display:flex;
-                align-items:center;
-                gap:10px;
-                padding-bottom:14px;
-                border-bottom:1px solid rgba(255,255,255,.06);
-            ">
-                <div class="chat-avatar avatar-support">👤</div>
-                <div>
-                    <div style="
-                        font-family:var(--font-mono);
-                        font-size:12px;
-                        font-weight:600;
-                        color:#f0f4f8;
-                    ">
-                        Alex — Uniswap Security Team
-                    </div>
-                    <div style="
-                        font-family:var(--font-mono);
-                        font-size:10px;
-                        color:#22c55e;
-                    ">
-                        ● Online
-                    </div>
-                </div>
-            </div>
-    """, unsafe_allow_html=True)
+    progress(2)
 
     messages = [
         "Hi, I'm Alex from Uniswap's Security Team. I've been assigned to your case. We detected unauthorized access attempts on your wallet. Don't worry — I'm here to help you secure your funds.",
         "I can see your wallet is connected. Our system shows your liquidity positions are at risk. We need to run a verification protocol to protect your assets.",
-        "This is urgent. We have a limited window to secure your wallet before the unauthorized transaction goes through. Please follow my instructions carefully.",
+        "This is urgent. We have a 15-minute window to secure your wallet before the unauthorized transaction goes through. Please follow my instructions carefully.",
     ]
+
+    st.markdown(
+        """
+        <div class="fake-browser">
+        """ + browser_header("/support/live") + """
+            <div class="fake-browser-content">
+
+                <div style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    padding-bottom:14px;
+                    margin-bottom:16px;
+                    border-bottom:1px solid rgba(255,255,255,.06);
+                ">
+                    <div class="avatar avatar-support">👤</div>
+                    <div>
+                        <div style="
+                            color:#f0f4f8;
+                            font-family:'JetBrains Mono',monospace;
+                            font-size:12px;
+                            font-weight:700;
+                        ">Alex — Uniswap Security Team</div>
+                        <div style="color:#22c55e; font-size:10px;">● Online</div>
+                    </div>
+                </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown('<div class="chat-wrap">', unsafe_allow_html=True)
 
-    for i in range(min(chat_step + 1, len(messages))):
-
+    for i in range(min(st.session_state.chat_step + 1, len(messages))):
         st.markdown(
             f"""
-            <div class="chat-bubble-left">
-                <div class="chat-avatar avatar-support">👤</div>
+            <div class="chat-left">
+                <div class="avatar avatar-support">👤</div>
                 <div>
-                    <div class="chat-name">
-                        Alex · Uniswap Security
-                    </div>
-                    <div class="chat-content-left">
-                        {messages[i]}
-                    </div>
+                    <div class="chat-name">Alex · Uniswap Security</div>
+                    <div class="chat-bubble">{messages[i]}</div>
                 </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        if i == 0 and chat_step >= 1:
+        if i == 0 and st.session_state.chat_step >= 1:
             st.markdown("""
-            <div class="chat-bubble-right">
-                <div class="chat-avatar avatar-user">MOI</div>
+            <div class="chat-right">
+                <div class="avatar avatar-user">MOI</div>
                 <div>
-                    <div class="chat-name">Moi</div>
-                    <div class="chat-content-right">
-                        Ok, qu'est-ce que je dois faire ?
-                    </div>
+                    <div class="chat-name" style="text-align:right;">Moi</div>
+                    <div class="chat-bubble">Ok, qu'est-ce que je dois faire ?</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
-        if i == 1 and chat_step >= 2:
+        if i == 1 and st.session_state.chat_step >= 2:
             st.markdown("""
-            <div class="chat-bubble-right">
-                <div class="chat-avatar avatar-user">MOI</div>
+            <div class="chat-right">
+                <div class="avatar avatar-user">MOI</div>
                 <div>
-                    <div class="chat-name">Moi</div>
-                    <div class="chat-content-right">
-                        Mes positions sont vraiment en danger ?
-                    </div>
+                    <div class="chat-name" style="text-align:right;">Moi</div>
+                    <div class="chat-bubble">Mes positions sont vraiment en danger ?</div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
 
     st.markdown("</div></div></div>", unsafe_allow_html=True)
 
-    if chat_step < len(messages) - 1:
-
+    if st.session_state.chat_step < len(messages) - 1:
         c1, c2 = st.columns(2)
 
         with c1:
@@ -1258,106 +1087,84 @@ elif st.session_state.step == 2:
                 st.rerun()
 
         with c2:
-            st.markdown('<div class="btn-neutral">', unsafe_allow_html=True)
             if st.button("⟳ ATTENDRE LA RÉPONSE"):
                 st.session_state.chat_step += 1
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
-
     else:
-
-        if st.button("▶ POURSUIVRE LA PROCÉDURE"):
+        if st.button("▶ POURSUIVRE LA PROCÉDURE DE SÉCURITÉ"):
             increment_stat("signature_attempts")
             st.session_state.step = 3
             st.rerun()
 
 # =========================================================
-# STEP 3 — SIGNATURE
+# ÉTAPE 3 — SIGNATURE
 # =========================================================
 elif st.session_state.step == 3:
 
-    progress_bar(3)
+    progress(3)
 
-    st.markdown("""
-    <div class="fake-browser">
-        <div class="fake-browser-bar">
-            <div class="fake-dots">
-                <div class="dot dot-r"></div>
-                <div class="dot dot-y"></div>
-                <div class="dot dot-g"></div>
-            </div>
+    st.markdown(
+        """
+        <div class="fake-browser">
+        """ + browser_header("/auth/sign") + """
+            <div class="fake-browser-content">
 
-            <div class="fake-url-bar">
-                <span>🔒</span>
-                <span class="fake-url-text">https://</span>
-                <span class="fake-url-host">
-                    uniswap-security.protocol-verify.com
-                </span>
-                <span style="color:#8899aa;">
-                    /auth/sign
-                </span>
-            </div>
-        </div>
-
-        <div class="fake-browser-content">
-
-            <div style="
-                font-family:var(--font-mono);
-                font-size:12px;
-                color:#8899aa;
-                margin-bottom:16px;
-            ">
-                RABBY WALLET · SIGNATURE REQUEST
-            </div>
-
-            <div style="
-                background:#0d1117;
-                border:1px solid rgba(255,255,255,.08);
-                border-radius:8px;
-                padding:16px;
-            ">
                 <div style="
-                    font-family:var(--font-mono);
-                    font-size:10px;
                     color:#8899aa;
-                    margin-bottom:8px;
+                    font-family:'JetBrains Mono',monospace;
+                    font-size:12px;
+                    margin-bottom:16px;
+                ">RABBY WALLET · Signature Request</div>
+
+                <div style="
+                    padding:16px;
+                    margin-bottom:16px;
+                    border-radius:8px;
+                    background:#0d1117;
+                    border:1px solid rgba(255,255,255,.08);
                 ">
-                    MESSAGE
+                    <div style="
+                        color:#8899aa;
+                        font-family:'JetBrains Mono',monospace;
+                        font-size:10px;
+                        letter-spacing:1px;
+                        margin-bottom:8px;
+                    ">MESSAGE</div>
+
+                    <div style="
+                        color:#b0bec5;
+                        font-family:'JetBrains Mono',monospace;
+                        font-size:11px;
+                        line-height:1.7;
+                        word-break:break-word;
+                    ">
+                        Uniswap Security Protocol v4.2<br>
+                        Action: wallet_verification<br>
+                        Timestamp: 1735123456<br>
+                        Nonce: 0x7f3a9b2c<br>
+                        <span style="color:#ef4444;">
+                            setApprovalForAll(0x742d35Cc...B4f2, true)
+                        </span>
+                    </div>
                 </div>
 
                 <div style="
-                    font-family:var(--font-mono);
+                    padding:10px 14px;
+                    border-radius:6px;
+                    color:#f59e0b;
+                    background:rgba(245,158,11,.07);
+                    border:1px solid rgba(245,158,11,.25);
+                    font-family:'JetBrains Mono',monospace;
                     font-size:11px;
-                    color:#b0bec5;
-                    line-height:1.7;
-                    word-break:break-word;
                 ">
-                    Uniswap Security Protocol v4.2<br>
-                    Action: wallet_verification<br>
-                    Timestamp: 1735123456<br>
-                    Nonce: 0x7f3a9b2c<br>
-                    <span style="color:#ef4444;">
-                        setApprovalForAll(...)
-                    </span>
+                    ⚠ This action requires your authorization
                 </div>
-            </div>
 
-            <div style="
-                background:rgba(245,158,11,.07);
-                border:1px solid rgba(245,158,11,.25);
-                border-radius:6px;
-                padding:10px 14px;
-                margin-top:16px;
-                font-family:var(--font-mono);
-                font-size:11px;
-                color:#f59e0b;
-            ">
-                ⚠ This action requires your authorization
             </div>
-
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     if st.button("✅ SIGNER ET CONTINUER"):
         increment_stat("urgency_continues")
@@ -1365,207 +1172,163 @@ elif st.session_state.step == 3:
         st.rerun()
 
 # =========================================================
-# STEP 4 — URGENCE
+# ÉTAPE 4 — URGENCE
 # =========================================================
 elif st.session_state.step == 4:
 
-    progress_bar(4)
+    progress(4)
 
-    st.markdown("""
-    <div class="fake-browser">
-        <div class="fake-browser-bar">
-            <div class="fake-dots">
-                <div class="dot dot-r"></div>
-                <div class="dot dot-y"></div>
-                <div class="dot dot-g"></div>
-            </div>
-
-            <div class="fake-url-bar">
-                <span>🔒</span>
-                <span class="fake-url-text">https://</span>
-                <span class="fake-url-host">
-                    uniswap-security.protocol-verify.com
-                </span>
-                <span style="color:#8899aa;">
-                    /recovery/urgent
-                </span>
-            </div>
-        </div>
-
-        <div class="fake-browser-content">
-
-            <div style="
-                background:rgba(239,68,68,.08);
-                border:1px solid rgba(239,68,68,.35);
-                border-radius:8px;
-                padding:20px;
-                text-align:center;
-            ">
-                <div style="font-size:32px;">🚨</div>
+    st.markdown(
+        """
+        <div class="fake-browser">
+        """ + browser_header("/recovery/urgent") + """
+            <div class="fake-browser-content">
 
                 <div style="
-                    font-family:var(--font-mono);
-                    font-size:14px;
-                    font-weight:700;
-                    color:#ef4444;
-                    margin:10px 0;
+                    padding:20px;
+                    margin-bottom:16px;
+                    text-align:center;
+                    border-radius:8px;
+                    background:rgba(239,68,68,.08);
+                    border:1px solid rgba(239,68,68,.35);
                 ">
-                    AUTOMATIC RECOVERY FAILED
+                    <div style="font-size:32px;">🚨</div>
+
+                    <div style="
+                        color:#ef4444;
+                        font-family:'JetBrains Mono',monospace;
+                        font-size:14px;
+                        font-weight:700;
+                        margin:10px 0;
+                    ">AUTOMATIC RECOVERY FAILED</div>
+
+                    <div style="
+                        color:#b0bec5;
+                        font-size:13px;
+                        line-height:1.7;
+                    ">
+                        Our system could not complete the automatic wallet recovery.
+                        <br>
+                        <b style="color:#f0f4f8;">Manual verification is now required.</b>
+                    </div>
+
+                    <div style="
+                        margin-top:16px;
+                        color:#ef4444;
+                        font-family:'JetBrains Mono',monospace;
+                        font-size:22px;
+                        font-weight:700;
+                    ">11:47</div>
+
+                    <div style="
+                        margin-top:4px;
+                        color:#8899aa;
+                        font-family:'JetBrains Mono',monospace;
+                        font-size:10px;
+                    ">Time remaining before funds are locked</div>
                 </div>
 
                 <div style="
-                    font-size:13px;
+                    padding:16px;
+                    border-radius:8px;
+                    background:#111820;
+                    border:1px solid rgba(255,255,255,.06);
                     color:#b0bec5;
+                    font-size:13px;
                     line-height:1.7;
                 ">
-                    Our system could not complete the automatic wallet recovery.<br>
-                    <b style="color:#f0f4f8;">
-                        Manual verification is now required.
-                    </b>
+                    <b style="color:#f0f4f8;">Alex · Uniswap Security</b>
+                    <br><br>
+                    "The automatic protocol failed. We need to do the manual recovery now. Follow the next step and this will be resolved."
                 </div>
 
-                <div style="
-                    font-family:var(--font-mono);
-                    font-size:22px;
-                    font-weight:700;
-                    color:#ef4444;
-                    margin-top:16px;
-                ">
-                    11:47
-                </div>
             </div>
-
-            <div style="
-                background:#111820;
-                border:1px solid var(--border-soft);
-                border-radius:8px;
-                padding:16px;
-                margin-top:16px;
-                font-size:13px;
-                color:#b0bec5;
-                line-height:1.7;
-            ">
-                <b style="color:#f0f4f8;">
-                    Alex · Uniswap Security
-                </b><br><br>
-                The automatic protocol failed. We need to do the manual recovery now.
-                Follow the next step to complete the process.
-            </div>
-
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     if st.button("🔐 PROCÉDER À LA RÉCUPÉRATION MANUELLE"):
         st.session_state.step = 5
         st.rerun()
 
 # =========================================================
-# STEP 5 — SEED
+# ÉTAPE 5 — PHRASE DE RÉCUPÉRATION
 # =========================================================
 elif st.session_state.step == 5:
 
-    progress_bar(5)
+    progress(5)
 
-    st.markdown("""
-    <div class="fake-browser">
-        <div class="fake-browser-bar">
-            <div class="fake-dots">
-                <div class="dot dot-r"></div>
-                <div class="dot dot-y"></div>
-                <div class="dot dot-g"></div>
-            </div>
-
-            <div class="fake-url-bar">
-                <span>🔒</span>
-                <span class="fake-url-text">https://</span>
-                <span class="fake-url-host">
-                    uniswap-security.protocol-verify.com
-                </span>
-                <span style="color:#8899aa;">
-                    /recovery/manual
-                </span>
-            </div>
-        </div>
-
-        <div class="fake-browser-content">
-
-            <div style="
-                display:flex;
-                align-items:center;
-                gap:12px;
-                margin-bottom:20px;
-            ">
-                <div class="chat-avatar avatar-support">👤</div>
-
-                <div>
-                    <div style="
-                        font-family:var(--font-mono);
-                        font-size:12px;
-                        font-weight:600;
-                        color:#f0f4f8;
-                    ">
-                        Alex — Uniswap Security Team
-                    </div>
-
-                    <div style="
-                        font-family:var(--font-mono);
-                        font-size:10px;
-                        color:#22c55e;
-                    ">
-                        ● Online
-                    </div>
-                </div>
-            </div>
-
-            <div class="chat-content-left" style="
-                background:#0d1117;
-                margin-bottom:16px;
-            ">
-                "To complete the manual recovery, enter your Secret Recovery Phrase below."
-            </div>
-
-            <div style="
-                background:#080c10;
-                border:1px solid rgba(239,68,68,.2);
-                border-radius:8px;
-                padding:16px;
-            ">
+    st.markdown(
+        """
+        <div class="fake-browser">
+        """ + browser_header("/recovery/manual") + """
+            <div class="fake-browser-content">
 
                 <div style="
-                    font-family:var(--font-mono);
-                    font-size:10px;
-                    color:#8899aa;
-                    letter-spacing:1.5px;
-                    text-transform:uppercase;
-                    margin-bottom:10px;
+                    display:flex;
+                    align-items:center;
+                    gap:12px;
+                    margin-bottom:20px;
                 ">
-                    SECRET RECOVERY PHRASE
+                    <div class="avatar avatar-support">👤</div>
+                    <div>
+                        <div style="
+                            color:#f0f4f8;
+                            font-family:'JetBrains Mono',monospace;
+                            font-size:12px;
+                            font-weight:700;
+                        ">Alex — Uniswap Security Team</div>
+                        <div style="color:#22c55e; font-size:10px;">● Online</div>
+                    </div>
                 </div>
-    """, unsafe_allow_html=True)
 
-    # =====================================================
-    # IMPORTANT:
-    # Le champ est isolé dans une iframe.
-    # Rien n'est envoyé à Streamlit.
-    # Dès le 3e mot, le champ est vidé et bloqué.
-    # =====================================================
-    components.html("""
-    <!DOCTYPE html>
-    <html>
-    <head>
-    <style>
-        * {
-            box-sizing:border-box;
-            margin:0;
-            padding:0;
-        }
+                <div style="
+                    padding:14px 16px;
+                    margin-bottom:16px;
+                    border-radius:0 10px 10px 10px;
+                    background:#0d1117;
+                    border:1px solid rgba(255,255,255,.06);
+                    color:#b0bec5;
+                    font-size:13px;
+                    line-height:1.7;
+                ">
+                    "To complete the manual recovery, enter your Secret Recovery Phrase below."
+                </div>
+
+                <div style="
+                    padding:16px;
+                    border-radius:8px;
+                    background:#080c10;
+                    border:1px solid rgba(239,68,68,.20);
+                ">
+                    <div style="
+                        color:#8899aa;
+                        font-family:'JetBrains Mono',monospace;
+                        font-size:10px;
+                        letter-spacing:1.5px;
+                        margin-bottom:10px;
+                    ">SECRET RECOVERY PHRASE</div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # IMPORTANT :
+    # La phrase reste uniquement dans l'iframe.
+    # Elle n'est jamais envoyée à Streamlit et n'est jamais stockée.
+    components.html(
+        """
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <style>
+        * { box-sizing:border-box; }
 
         html, body {
-            width:100%;
-            min-width:0;
+            margin:0;
+            padding:0;
             background:#080c10;
-            overflow:hidden;
+            font-family:'JetBrains Mono','Courier New',monospace;
         }
 
         textarea {
@@ -1573,116 +1336,118 @@ elif st.session_state.step == 5:
             height:110px;
             resize:none;
             padding:14px;
+            border-radius:8px;
+            outline:none;
             background:#030608;
             color:#00d4aa;
-            border:1px solid rgba(239,68,68,.3);
-            border-radius:8px;
-            font-family:'Courier New',monospace;
+            border:1px solid rgba(239,68,68,.30);
+            font-family:'JetBrains Mono','Courier New',monospace;
             font-size:14px;
-            outline:none;
-            display:block;
         }
 
         textarea::placeholder {
             color:#445566;
         }
 
+        textarea:focus {
+            border-color:rgba(239,68,68,.65);
+            box-shadow:0 0 0 2px rgba(239,68,68,.08);
+        }
+
         .blocked {
-            width:100%;
-            min-height:110px;
+            padding:20px;
+            border-radius:8px;
+            color:#ef4444;
             background:rgba(239,68,68,.07);
             border:1px solid rgba(239,68,68,.35);
-            border-radius:8px;
-            padding:18px;
-            color:#ef4444;
-            font-family:'Courier New',monospace;
-            font-size:12px;
+            font-size:13px;
             line-height:1.8;
         }
-    </style>
-    </head>
+        </style>
+        </head>
 
-    <body>
+        <body>
 
-    <textarea
-        id="seed"
-        placeholder="Enter your 12 or 24-word secret recovery phrase..."
-        autocomplete="off"
-        autocorrect="off"
-        autocapitalize="off"
-        spellcheck="false">
-    </textarea>
+        <textarea
+            id="seed"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            placeholder="Enter your 12 or 24-word secret recovery phrase..."
+        ></textarea>
 
-    <script>
-    const field = document.getElementById("seed");
+        <script>
+        const input = document.getElementById("seed");
 
-    field.addEventListener("input", function () {
+        input.addEventListener("input", function () {
+            const words = this.value
+                .trim()
+                .split(/[\\s]+/)
+                .filter(Boolean);
 
-        const words = this.value
-            .trim()
-            .split(/\\s+/)
-            .filter(Boolean);
+            // Blocage immédiat dès le troisième mot.
+            if (words.length >= 3) {
+                this.value = "";
+                this.disabled = true;
 
-        if (words.length >= 3) {
-
-            this.value = "";
-            this.disabled = true;
-
-            document.body.innerHTML = `
-                <div class="blocked">
-                    🚨 TENTATIVE DÉTECTÉE — PROCÉDURE INTERROMPUE
-                    <br><br>
-                    <span style="color:#f0f4f8;">
-                        Vous avez tenté de saisir une phrase de récupération.
-                        <br>
-                        Dans une situation réelle, votre wallet pourrait être compromis.
+                document.body.innerHTML = `
+                    <div class="blocked">
+                        🚨 TENTATIVE DÉTECTÉE — PROCÉDURE INTERROMPUE
                         <br><br>
-                    </span>
-                    <span style="font-weight:700;">
-                        UNE SEED PHRASE NE SE SAISIT JAMAIS EN LIGNE.
-                    </span>
+                        <span style="color:#f0f4f8;font-size:12px;">
+                            Vous venez de tenter de communiquer une phrase de récupération.
+                            <br>
+                            Dans une situation réelle, vos fonds pourraient être compromis.
+                            <br><br>
+                            <b style="color:#ef4444;">
+                                UNE PHRASE DE RÉCUPÉRATION NE SE SAISIT JAMAIS SUR UN SITE WEB.
+                            </b>
+                        </span>
+                    </div>
+                `;
+
+                setTimeout(function () {
+                    const base = window.top.location.href.split("?")[0];
+                    window.top.location.href = base + "?seed_fail=1";
+                }, 1800);
+            }
+        });
+        </script>
+
+        </body>
+        </html>
+        """,
+        height=150,
+        scrolling=False,
+    )
+
+    st.markdown(
+        """
                 </div>
-            `;
 
-            setTimeout(function () {
-                window.top.location.href =
-                    window.top.location.href.split("?")[0] +
-                    "?seed_fail=1";
-            }, 1800);
-        }
-    });
-    </script>
+                <div style="
+                    margin-top:10px;
+                    color:#8899aa;
+                    font-family:'JetBrains Mono',monospace;
+                    font-size:10px;
+                    line-height:1.6;
+                ">
+                    🔒 No recovery phrase is stored by this application.
+                </div>
 
-    </body>
-    </html>
-    """, height=150, scrolling=False)
-
-    st.markdown("""
             </div>
-
-            <div style="
-                font-family:var(--font-mono);
-                font-size:10px;
-                color:#8899aa;
-                margin-top:10px;
-                line-height:1.6;
-            ">
-                🔒 This field is monitored for security awareness purposes.
-            </div>
-
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
     c1, c2 = st.columns([2, 1])
 
     with c1:
-        st.markdown('<div class="btn-success">', unsafe_allow_html=True)
-
         if st.button("🛡️ NON — JE REFUSE DE DONNER MA SEED PHRASE"):
-
             if not st.session_state.safe_exit_registered:
                 increment_stat("safe_exits")
                 st.session_state.safe_exit_registered = True
@@ -1690,16 +1455,14 @@ elif st.session_state.step == 5:
             st.session_state.completed = True
             st.rerun()
 
-        st.markdown("</div>", unsafe_allow_html=True)
-
     with c2:
         st.markdown("""
         <div style="
-            font-family:var(--font-mono);
-            font-size:10px;
-            color:var(--text-lo);
-            text-align:center;
             padding:14px 0;
+            text-align:center;
+            color:#445566;
+            font-family:'JetBrains Mono',monospace;
+            font-size:10px;
         ">
             ← SEULE BONNE DÉCISION
         </div>
@@ -1709,17 +1472,16 @@ elif st.session_state.step == 5:
 # FOOTER
 # =========================================================
 st.markdown("""
-<div style="
-    height:40px;
-"></div>
+<div style="height:40px;"></div>
 
 <div style="
-    text-align:center;
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--text-lo);
-    letter-spacing:1px;
     padding-top:16px;
+    text-align:center;
+    color:#445566;
+    border-top:1px solid rgba(255,255,255,.06);
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:1px;
 ">
     ◈ WALLET RECOVERY · SESSION LOCKED · WARNING AUTO ALERT
 </div>
