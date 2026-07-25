@@ -552,9 +552,9 @@ elif st.session_state.step == 1:
             <div style="font-family:'Inter',sans-serif; font-size:13px; color:#8899aa; margin-bottom:20px;">Connect your wallet to proceed with the security check.</div>
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <div style="background:#1a2535; border:1px solid rgba(14,165,233,0.2); border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:12px;">
-                    <div style="font-size:22px;">🦊</div>
+                    <div style="font-size:22px;">🐇</div>
                     <div>
-                        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#f0f4f8;">MetaMask</div>
+                        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#f0f4f8;">RABBY WALLET</div>
                         <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa;">Browser Extension</div>
                     </div>
                 </div>
