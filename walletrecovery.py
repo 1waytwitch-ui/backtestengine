@@ -540,7 +540,7 @@ elif st.session_state.step == 1:
                 <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
             </div>
             <div class="fake-url-bar">
-                <span class="fake-lock">🔒</span>
+                <span class="fake-lock"></span>
                 <span class="fake-url-text">https://</span><span class="fake-url-host">uniswap-security.protocol-verify.com</span><span style="color:#8899aa;">/wallet/connect</span>
             </div>
         </div>
