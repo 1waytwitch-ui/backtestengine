@@ -819,48 +819,52 @@ elif st.session_state.step == 5:
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px;">Secret Recovery Phrase</div>
     """, unsafe_allow_html=True)
 
-    # ── CHAMP BLOQUÉ — détection côté Python (Streamlit natif) ──
+    # ── CHAMP SEED — détection au 3e mot via on_change callback ──
     st.markdown("""
     <style>
-    /* Styliser le textarea natif Streamlit pour ressembler au champ de la simulation */
-    [data-testid="stTextArea"] textarea {
+    [data-testid="stTextInput"] input {
         background: #030608 !important;
         color: #00d4aa !important;
         border: 1px solid rgba(239,68,68,0.4) !important;
         border-radius: 8px !important;
         font-family: 'JetBrains Mono', monospace !important;
         font-size: 14px !important;
-        min-height: 110px !important;
+        padding: 14px !important;
+        height: 50px !important;
         caret-color: #00d4aa !important;
     }
-    [data-testid="stTextArea"] textarea:focus {
+    [data-testid="stTextInput"] input:focus {
         border-color: rgba(239,68,68,0.7) !important;
         box-shadow: 0 0 0 2px rgba(239,68,68,0.1) !important;
     }
-    [data-testid="stTextArea"] textarea::placeholder { color: #445566 !important; }
-    [data-testid="stTextArea"] label { display: none !important; }
+    [data-testid="stTextInput"] input::placeholder { color: #445566 !important; }
+    [data-testid="stTextInput"] label { display: none !important; }
     </style>
     """, unsafe_allow_html=True)
 
-    seed_input = st.text_area(
-        "seed",
-        value="",
-        placeholder="Enter your 12 or 24-word secret recovery phrase...",
-        label_visibility="collapsed",
-        key="seed_field",
-        height=110,
-    )
-
-    # Détection dès que 3 mots sont saisis → échec immédiat
-    if seed_input:
-        words = [w for w in seed_input.strip().split() if w]
+    def _check_seed():
+        val = st.session_state.get("seed_field", "") or ""
+        words = [w for w in val.strip().split() if w]
         if len(words) >= 3:
             if not st.session_state.seed_fail_registered:
                 increment_stat("seed_attempts")
                 st.session_state.seed_fail_registered = True
             st.session_state.outcome = "fail"
             st.session_state.step = 99
-            st.rerun()
+
+    st.text_input(
+        "seed",
+        value="",
+        placeholder="word1 word2 word3 word4 ...",
+        label_visibility="collapsed",
+        key="seed_field",
+        on_change=_check_seed,
+    )
+
+    # Aussi vérifier après chaque rerun (cas Enter ou coller)
+    _check_seed()
+    if st.session_state.step == 99:
+        st.rerun()
 
     st.markdown("""
             </div>
