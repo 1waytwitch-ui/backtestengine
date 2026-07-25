@@ -446,7 +446,7 @@ def show_pedagogy(outcome):
             <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:1.8;">
                 des personnes ayant fait cette simulation ont tenté de saisir leur seed phrase.<br>
                 <span style="color:#f0f4f8; font-weight:600;">Un vrai scammer ne les aurait pas arrêtées.</span><br><br>
-                Partagez cette simulation à vos proches. Une seed compromise = wallet vidé.
+                Partagez cette simulation. Une seed compromise = wallet vidé.
             </div>
         </div>""", unsafe_allow_html=True)
 
@@ -527,7 +527,7 @@ if st.session_state.step == 0:
 
     st.markdown("""
     <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); margin-top:16px; letter-spacing:1px;">
-        Ce site est une simulation éducative · KBOUR CRYPTO
+        WALLET LOCK
     </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════
