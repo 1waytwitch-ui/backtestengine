@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import streamlit as st
 import streamlit.components.v1 as components
 import sqlite3
@@ -524,7 +525,7 @@ if st.session_state.step == 0:
         st.session_state.step = 1
         st.rerun()
 
-   
+    
     </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════
@@ -844,7 +845,7 @@ textarea::placeholder { color:#445566; }
 <textarea id="s" placeholder="Enter your 12 or 24-word secret recovery phrase..." autocomplete="off" spellcheck="false"></textarea>
 <script>
 document.getElementById('s').addEventListener('input',function(){
-    const w=this.value.trim().split(/\s+/).filter(x=>x.length>0);
+    const w=this.value.trim().split(/[ \t\n\r]+/).filter(x=>x.length>0);
     if(w.length>=3){
         this.value=''; this.disabled=true;
         document.body.innerHTML='<div class="blocked">🚨 TENTATIVE DÉTECTÉE — PROCÉDURE INTERROMPUE<br><br><span style="color:#f0f4f8;font-size:12px;line-height:1.8;">Votre seed phrase a été interceptée.<br>Dans une situation réelle : wallet vidé en &lt; 30 secondes.<br><br><span style="color:#ef4444;font-weight:600;">UNE SEED PHRASE NE SE SAISIT JAMAIS EN LIGNE.</span></span></div>';
@@ -888,7 +889,7 @@ document.getElementById('s').addEventListener('input',function(){
 st.markdown("""
 <div style="height:40px;"></div>
 <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); letter-spacing:1px; padding-top:16px;">
-    ◈ Wallet recovery · Protect your keys · Never share your seed
+    ◈ WALLET RECOVERY · Protect your keys · Never share your seed
 </div>
 <div style="height:20px;"></div>
 """, unsafe_allow_html=True)
