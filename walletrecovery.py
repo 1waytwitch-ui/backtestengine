@@ -891,7 +891,7 @@ document.getElementById('s').addEventListener('input',function(){
 st.markdown("""
 <div style="height:40px;"></div>
 <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); letter-spacing:1px; padding-top:16px;">
-    ◈ Simulation éducative · KBOUR CRYPTO · Protect your keys · Never share your seed
+    ◈ WALLET RECOVERY · Protect your keys · Never share your seed
 </div>
 <div style="height:20px;"></div>
 """, unsafe_allow_html=True)
