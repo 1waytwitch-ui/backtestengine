@@ -819,52 +819,136 @@ elif st.session_state.step == 5:
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px;">Secret Recovery Phrase</div>
     """, unsafe_allow_html=True)
 
-    # ── CHAMP SEED — détection au 3e mot via on_change callback ──
-    st.markdown("""
-    <style>
-    [data-testid="stTextInput"] input {
-        background: #030608 !important;
-        color: #00d4aa !important;
-        border: 1px solid rgba(239,68,68,0.4) !important;
-        border-radius: 8px !important;
-        font-family: 'JetBrains Mono', monospace !important;
-        font-size: 14px !important;
-        padding: 14px !important;
-        height: 50px !important;
-        caret-color: #00d4aa !important;
+    # ── CHAMP SEED — 100% JS dans l'iframe, blocage au 3e mot ──
+    components.html("""
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#080c10; font-family:'JetBrains Mono','Courier New',monospace; }
+
+#wrap {
+    background:#030608;
+    border:1px solid rgba(239,68,68,0.35);
+    border-radius:8px;
+    padding:0;
+    overflow:hidden;
+}
+
+textarea {
+    width:100%;
+    height:110px;
+    resize:none;
+    padding:14px;
+    background:#030608;
+    color:#00d4aa;
+    border:none;
+    outline:none;
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+    line-height:1.7;
+    display:block;
+}
+textarea::placeholder { color:#2a3a4a; }
+
+.scam {
+    display:none;
+    padding:24px;
+    background:#080c10;
+    font-size:13px;
+    line-height:1.9;
+}
+.scam-title {
+    font-size:16px;
+    font-weight:700;
+    color:#ef4444;
+    margin-bottom:14px;
+    letter-spacing:1px;
+}
+.scam-line { color:#b0bec5; margin-bottom:4px; }
+.scam-line.red { color:#ef4444; font-weight:600; }
+.scam-line.green { color:#22c55e; }
+.progress-bar {
+    height:3px;
+    background:rgba(239,68,68,0.2);
+    border-radius:2px;
+    margin:14px 0;
+    overflow:hidden;
+}
+.progress-fill {
+    height:100%;
+    width:0%;
+    background:#ef4444;
+    border-radius:2px;
+    transition:width 2s linear;
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+    <textarea
+        id="s"
+        placeholder="Enter your 12 or 24-word secret recovery phrase..."
+        autocomplete="off"
+        spellcheck="false"
+    ></textarea>
+</div>
+
+<div class="scam" id="scam">
+    <div class="scam-title">VOUS AVEZ ETE SCAMME</div>
+    <div class="scam-line">&#9656; Connecting to blockchain...</div>
+    <div class="scam-line">&#9656; Verifying recovery phrase...</div>
+    <div class="scam-line red" id="transfer-line" style="display:none;">&#9656; Transferring assets... <span id="pct">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="bar"></div></div>
+    <div class="scam-line red" id="done-line" style="display:none;">
+        &#9656; Transfer complete. Wallet drained.
+    </div>
+    <div class="scam-line" id="msg2" style="display:none; margin-top:12px; color:#8899aa; font-size:11px;">
+        Dans une situation reelle, vos fonds seraient perdus en moins de 30 secondes.<br>
+        <span style="color:#ef4444; font-weight:600;">UNE SEED PHRASE NE SE SAISIT JAMAIS EN LIGNE.</span>
+    </div>
+</div>
+
+<script>
+var triggered = false;
+
+document.getElementById('s').addEventListener('input', function() {
+    if (triggered) return;
+    var words = this.value.trim().split(/[ \t\n\r]+/).filter(function(w){ return w.length > 0; });
+    if (words.length >= 3) {
+        triggered = true;
+        this.blur();
+        this.disabled = true;
+
+        // Afficher le bloc scam
+        document.getElementById('wrap').style.display = 'none';
+        var scam = document.getElementById('scam');
+        scam.style.display = 'block';
+
+        // Animation
+        setTimeout(function() {
+            document.getElementById('transfer-line').style.display = 'block';
+            var bar = document.getElementById('bar');
+            var pct = document.getElementById('pct');
+            bar.style.width = '100%';
+            var p = 0;
+            var iv = setInterval(function() {
+                p += 2;
+                pct.textContent = p + '%';
+                if (p >= 100) {
+                    clearInterval(iv);
+                    document.getElementById('done-line').style.display = 'block';
+                    document.getElementById('msg2').style.display = 'block';
+                }
+            }, 40);
+        }, 800);
     }
-    [data-testid="stTextInput"] input:focus {
-        border-color: rgba(239,68,68,0.7) !important;
-        box-shadow: 0 0 0 2px rgba(239,68,68,0.1) !important;
-    }
-    [data-testid="stTextInput"] input::placeholder { color: #445566 !important; }
-    [data-testid="stTextInput"] label { display: none !important; }
-    </style>
-    """, unsafe_allow_html=True)
-
-    def _check_seed():
-        val = st.session_state.get("seed_field", "") or ""
-        words = [w for w in val.strip().split() if w]
-        if len(words) >= 3:
-            if not st.session_state.seed_fail_registered:
-                increment_stat("seed_attempts")
-                st.session_state.seed_fail_registered = True
-            st.session_state.outcome = "fail"
-            st.session_state.step = 99
-
-    st.text_input(
-        "seed",
-        value="",
-        placeholder="word1 word2 word3 word4 ...",
-        label_visibility="collapsed",
-        key="seed_field",
-        on_change=_check_seed,
-    )
-
-    # Aussi vérifier après chaque rerun (cas Enter ou coller)
-    _check_seed()
-    if st.session_state.step == 99:
-        st.rerun()
+});
+</script>
+</body>
+</html>
+""", height=260, scrolling=False)
 
     st.markdown("""
             </div>
