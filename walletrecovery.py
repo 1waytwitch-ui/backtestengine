@@ -819,136 +819,73 @@ elif st.session_state.step == 5:
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px;">Secret Recovery Phrase</div>
     """, unsafe_allow_html=True)
 
-    # ── CHAMP SEED — 100% JS dans l'iframe, blocage au 3e mot ──
+    # ── CHAMP SEED — détection dès frappe ──
     components.html("""
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <style>
-* { box-sizing:border-box; margin:0; padding:0; }
-body { background:#080c10; font-family:'JetBrains Mono','Courier New',monospace; }
-
-#wrap {
-    background:#030608;
-    border:1px solid rgba(239,68,68,0.35);
-    border-radius:8px;
-    padding:0;
-    overflow:hidden;
-}
-
-textarea {
+body { margin:0; padding:0; background:#080c10; font-family:'JetBrains Mono',monospace; }
+#box {
     width:100%;
-    height:110px;
-    resize:none;
+    min-height:100px;
     padding:14px;
     background:#030608;
     color:#00d4aa;
-    border:none;
-    outline:none;
+    border:1px solid rgba(239,68,68,0.35);
+    border-radius:8px;
     font-family:'JetBrains Mono',monospace;
     font-size:14px;
-    line-height:1.7;
-    display:block;
+    outline:none;
+    box-sizing:border-box;
+    white-space:pre-wrap;
+    word-break:break-word;
 }
-textarea::placeholder { color:#2a3a4a; }
-
-.scam {
-    display:none;
-    padding:24px;
-    background:#080c10;
-    font-size:13px;
-    line-height:1.9;
-}
-.scam-title {
-    font-size:16px;
-    font-weight:700;
-    color:#ef4444;
-    margin-bottom:14px;
-    letter-spacing:1px;
-}
-.scam-line { color:#b0bec5; margin-bottom:4px; }
-.scam-line.red { color:#ef4444; font-weight:600; }
-.scam-line.green { color:#22c55e; }
-.progress-bar {
-    height:3px;
-    background:rgba(239,68,68,0.2);
-    border-radius:2px;
-    margin:14px 0;
-    overflow:hidden;
-}
-.progress-fill {
-    height:100%;
-    width:0%;
-    background:#ef4444;
-    border-radius:2px;
-    transition:width 2s linear;
+#box:empty:before {
+    content: attr(data-placeholder);
+    color: #2a3a4a;
+    pointer-events: none;
 }
 </style>
 </head>
 <body>
-<div id="wrap">
-    <textarea
-        id="s"
-        placeholder="Enter your 12 or 24-word secret recovery phrase..."
-        autocomplete="off"
-        spellcheck="false"
-    ></textarea>
-</div>
-
-<div class="scam" id="scam">
-    <div class="scam-title">VOUS AVEZ ETE SCAMME</div>
-    <div class="scam-line">&#9656; Connecting to blockchain...</div>
-    <div class="scam-line">&#9656; Verifying recovery phrase...</div>
-    <div class="scam-line red" id="transfer-line" style="display:none;">&#9656; Transferring assets... <span id="pct">0%</span></div>
-    <div class="progress-bar"><div class="progress-fill" id="bar"></div></div>
-    <div class="scam-line red" id="done-line" style="display:none;">
-        &#9656; Transfer complete. Wallet drained.
-    </div>
-    <div class="scam-line" id="msg2" style="display:none; margin-top:12px; color:#8899aa; font-size:11px;">
-        Dans une situation reelle, vos fonds seraient perdus en moins de 30 secondes.<br>
-        <span style="color:#ef4444; font-weight:600;">UNE SEED PHRASE NE SE SAISIT JAMAIS EN LIGNE.</span>
-    </div>
-</div>
-
+<div
+    id="box"
+    contenteditable="true"
+    data-placeholder="Enter your 12 or 24-word secret recovery phrase..."
+></div>
 <script>
-var triggered = false;
+var box = document.getElementById('box');
+var done = false;
 
-document.getElementById('s').addEventListener('input', function() {
-    if (triggered) return;
-    var words = this.value.trim().split(/[ \t\n\r]+/).filter(function(w){ return w.length > 0; });
+function check() {
+    if (done) return;
+    var text = box.innerText || box.textContent || '';
+    var words = text.trim().split(String.fromCharCode(32)).filter(function(w){ return w.length > 0; });
     if (words.length >= 3) {
-        triggered = true;
-        this.blur();
-        this.disabled = true;
-
-        // Afficher le bloc scam
-        document.getElementById('wrap').style.display = 'none';
-        var scam = document.getElementById('scam');
-        scam.style.display = 'block';
-
-        // Animation
-        setTimeout(function() {
-            document.getElementById('transfer-line').style.display = 'block';
-            var bar = document.getElementById('bar');
-            var pct = document.getElementById('pct');
-            bar.style.width = '100%';
-            var p = 0;
-            var iv = setInterval(function() {
-                p += 2;
-                pct.textContent = p + '%';
-                if (p >= 100) {
-                    clearInterval(iv);
-                    document.getElementById('done-line').style.display = 'block';
-                    document.getElementById('msg2').style.display = 'block';
-                }
-            }, 40);
-        }, 800);
+        done = true;
+        document.body.innerHTML =
+            '<div style="padding:25px;border:1px solid #ef4444;border-radius:10px;background:rgba(239,68,68,0.08);font-family:JetBrains Mono,monospace;font-size:18px;font-weight:700;color:#ef4444;line-height:1.8;">'
+            + '&#128680; VOUS AVEZ ETE SCAMME'
+            + '<br><br>'
+            + '<span style="font-size:13px;font-weight:400;color:#b0bec5;line-height:1.9;">'
+            + 'Vous venez de saisir votre seed phrase.<br>'
+            + 'Dans une situation reelle, votre wallet serait<br>'
+            + '<span style="color:#ef4444;font-weight:700;">vide en moins de 30 secondes.</span><br><br>'
+            + 'UNE SEED PHRASE NE SE SAISIT JAMAIS<br>'
+            + 'SUR UN SITE WEB, JAMAIS.'
+            + '</span></div>';
     }
-});
+}
+
+box.addEventListener('input', check);
+box.addEventListener('keyup', check);
+box.addEventListener('paste', function(){ setTimeout(check, 50); });
 </script>
 </body>
 </html>
-""", height=260, scrolling=False)
+""", height=200, scrolling=False)
 
     st.markdown("""
             </div>
