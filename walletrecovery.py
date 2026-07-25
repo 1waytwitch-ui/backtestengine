@@ -446,7 +446,7 @@ def show_pedagogy(outcome):
             <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:1.8;">
                 des personnes ayant fait cette simulation ont tenté de saisir leur seed phrase.<br>
                 <span style="color:#f0f4f8; font-weight:600;">Un vrai scammer ne les aurait pas arrêtées.</span><br><br>
-                Partagez cette simulation à vos proches. Une seed compromise = wallet vidé.
+                Partagez cette simulation. Une seed compromise = wallet vidé.
             </div>
         </div>""", unsafe_allow_html=True)
 
@@ -527,7 +527,7 @@ if st.session_state.step == 0:
 
     st.markdown("""
     <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); margin-top:16px; letter-spacing:1px;">
-        Ce site est une simulation éducative · KBOUR CRYPTO
+        WALLET LOCK
     </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════
@@ -552,9 +552,9 @@ elif st.session_state.step == 1:
             <div style="font-family:'Inter',sans-serif; font-size:13px; color:#8899aa; margin-bottom:20px;">Connect your wallet to proceed with the security check.</div>
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <div style="background:#1a2535; border:1px solid rgba(14,165,233,0.2); border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:12px;">
-                    <div style="font-size:22px;">🦊</div>
+                    <div style="font-size:22px;">🐇</div>
                     <div>
-                        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#f0f4f8;">MetaMask</div>
+                        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:#f0f4f8;">RABBY WALLET</div>
                         <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa;">Browser Extension</div>
                     </div>
                 </div>
@@ -576,7 +576,7 @@ elif st.session_state.step == 1:
         </div>
     </div>""", unsafe_allow_html=True)
 
-    if st.button("🦊 CONNECTER METAMASK"):
+    if st.button("🐇 CONNECTER RABBYWALLET"):
         increment_stat("wallet_connections")
         st.session_state.step = 2
         st.rerun()
@@ -708,7 +708,7 @@ elif st.session_state.step == 3:
             </div>
         </div>
         <div class="fake-browser-content">
-            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#8899aa; margin-bottom:16px;">MetaMask · Signature Request</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#8899aa; margin-bottom:16px;">RABBY WALLET · Signature Request</div>
             <div style="background:#0d1117; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:16px; margin-bottom:16px;">
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; letter-spacing:1px; margin-bottom:8px;">MESSAGE</div>
                 <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.7; word-break:break-all;">
@@ -819,107 +819,79 @@ elif st.session_state.step == 5:
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:10px;">Secret Recovery Phrase</div>
     """, unsafe_allow_html=True)
 
-    # ── CHAMP SEED — détection dès frappe ──
+    # ── CHAMP BLOQUÉ ──
     components.html("""
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
 <style>
-body { margin:0; padding:0; background:#080c10; font-family:'JetBrains Mono',monospace; }
-#box {
-    width:100%;
-    min-height:100px;
-    padding:14px;
-    background:#030608;
-    color:#00d4aa;
-    border:1px solid rgba(239,68,68,0.35);
-    border-radius:8px;
-    font-family:'JetBrains Mono',monospace;
-    font-size:14px;
-    outline:none;
-    box-sizing:border-box;
-    white-space:pre-wrap;
-    word-break:break-word;
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#080c10; font-family:'JetBrains Mono','Courier New',monospace; padding:0; }
+textarea {
+    width:100%; height:110px; resize:none; padding:14px;
+    background:#030608; color:#00d4aa;
+    border:1px solid rgba(239,68,68,0.3); border-radius:8px;
+    font-family:'JetBrains Mono',monospace; font-size:14px; outline:none;
+    transition:border-color .2s; display:block;
 }
-#box:empty:before {
-    content: attr(data-placeholder);
-    color: #2a3a4a;
-    pointer-events: none;
+textarea:focus { border-color:rgba(239,68,68,0.6); box-shadow:0 0 0 2px rgba(239,68,68,0.08); }
+textarea::placeholder { color:#445566; }
+.blocked {
+    background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.35);
+    border-radius:8px; padding:20px; color:#ef4444;
+    font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8;
 }
 </style>
 </head>
 <body>
-<div
-    id="box"
-    contenteditable="true"
-    data-placeholder="Enter your 12 or 24-word secret recovery phrase..."
-></div>
+<textarea id="s" placeholder="Enter your 12 or 24-word secret recovery phrase..." autocomplete="off" spellcheck="false"></textarea>
 <script>
-var box = document.getElementById('box');
-var done = false;
-
-function check() {
-    if (done) return;
-    var text = box.innerText || box.textContent || '';
-    var words = text.trim().split(String.fromCharCode(32)).filter(function(w){ return w.length > 0; });
-    if (words.length >= 3) {
-        done = true;
-        document.body.innerHTML =
-            '<div style="padding:25px;border:1px solid #ef4444;border-radius:10px;background:rgba(239,68,68,0.08);font-family:JetBrains Mono,monospace;font-size:18px;font-weight:700;color:#ef4444;line-height:1.8;">'
-            + '&#128680; VOUS AVEZ ETE SCAMME'
-            + '<br><br>'
-            + '<span style="font-size:13px;font-weight:400;color:#b0bec5;line-height:1.9;">'
-            + 'Vous venez de saisir votre seed phrase.<br>'
-            + 'Dans une situation reelle, votre wallet serait<br>'
-            + '<span style="color:#ef4444;font-weight:700;">vide en moins de 30 secondes.</span><br><br>'
-            + 'UNE SEED PHRASE NE SE SAISIT JAMAIS<br>'
-            + 'SUR UN SITE WEB, JAMAIS.'
-            + '</span></div>';
+document.getElementById('s').addEventListener('input',function(){
+    const w=this.value.trim().split(/[ \t\n\r]+/).filter(x=>x.length>0);
+    if(w.length>=3){
+        this.value=''; this.disabled=true;
+        document.body.innerHTML='<div class="blocked">🚨 TENTATIVE DÉTECTÉE — PROCÉDURE INTERROMPUE<br><br><span style="color:#f0f4f8;font-size:12px;line-height:1.8;">Votre seed phrase a été interceptée.<br>Dans une situation réelle : wallet vidé en &lt; 30 secondes.<br><br><span style="color:#ef4444;font-weight:600;">UNE SEED PHRASE NE SE SAISIT JAMAIS EN LIGNE.</span></span></div>';
+        setTimeout(function(){
+            const url=window.top.location.href.split("?")[0];
+            window.top.location.href=url+"?seed_fail=1";
+        },2500);
     }
-}
-
-box.addEventListener('input', check);
-box.addEventListener('keyup', check);
-box.addEventListener('paste', function(){ setTimeout(check, 50); });
+});
 </script>
 </body>
-</html>
-""", height=200, scrolling=False)
+</html>""", height=180, scrolling=False)
 
     st.markdown("""
             </div>
             <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; margin-top:10px; line-height:1.6;">
-                256-bit encryption &nbsp;·&nbsp; Your phrase is never stored &nbsp;·&nbsp; One-time use only
+                🔒 256-bit encryption · Your phrase is never stored · One-time use only
             </div>
         </div>
     </div>""", unsafe_allow_html=True)
 
-    # ── BOUTON REFUS — intentionnellement discret et bas de page ──
-    st.markdown("""
-    <div style="height:120px;"></div>
-    <div style="border-top:1px solid rgba(255,255,255,0.04); padding-top:20px; margin-top:10px;">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#2a3545;
-                    text-align:center; letter-spacing:1px; margin-bottom:12px;">
-            LEGAL · TERMS OF USE · PRIVACY POLICY · SECURITY
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    st.markdown('<div style="opacity:0.18; transform:scale(0.85); transform-origin:center;">', unsafe_allow_html=True)
-    if st.button("refuse / decline procedure"):
-        if not st.session_state.safe_exit_registered:
-            increment_stat("safe_exits")
-            st.session_state.safe_exit_registered = True
-        st.session_state.completed = True
-        st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+    col_a, col_b = st.columns([2, 1])
+    with col_a:
+        st.markdown('<div class="btn-success">', unsafe_allow_html=True)
+        if st.button("🛡️ NON — JE REFUSE DE DONNER MA SEED PHRASE"):
+            if not st.session_state.safe_exit_registered:
+                increment_stat("safe_exits")
+                st.session_state.safe_exit_registered = True
+            st.session_state.completed = True
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    with col_b:
+        st.markdown("""
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); text-align:center; padding:14px 0; line-height:1.6;">
+            ← Seule bonne décision
+        </div>""", unsafe_allow_html=True)
 
 # ── FOOTER ──
 st.markdown("""
 <div style="height:40px;"></div>
 <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); letter-spacing:1px; padding-top:16px;">
-    ◈ Simulation éducative · KBOUR CRYPTO · Protect your keys · Never share your seed
+    ◈ WALLET RECOVERY · SESSION LOCKED · WARNING AUTO ALERT
 </div>
 <div style="height:20px;"></div>
 """, unsafe_allow_html=True)
