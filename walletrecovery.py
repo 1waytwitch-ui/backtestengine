@@ -576,7 +576,7 @@ elif st.session_state.step == 1:
         </div>
     </div>""", unsafe_allow_html=True)
 
-    if st.button("🦊 CONNECTER METAMASK"):
+    if st.button("🐇 CONNECTER RABBYWALLET"):
         increment_stat("wallet_connections")
         st.session_state.step = 2
         st.rerun()
@@ -708,7 +708,7 @@ elif st.session_state.step == 3:
             </div>
         </div>
         <div class="fake-browser-content">
-            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#8899aa; margin-bottom:16px;">MetaMask · Signature Request</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:#8899aa; margin-bottom:16px;">RABBY WALLET · Signature Request</div>
             <div style="background:#0d1117; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:16px; margin-bottom:16px;">
                 <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:#8899aa; letter-spacing:1px; margin-bottom:8px;">MESSAGE</div>
                 <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#b0bec5; line-height:1.7; word-break:break-all;">
