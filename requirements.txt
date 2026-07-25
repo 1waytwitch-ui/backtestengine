@@ -5,6 +5,3 @@ numpy
 matplotlib
 plotly
 yfinance
-re
-time
-random
