@@ -1,5 +1,7 @@
 import streamlit as st
-import re
+import streamlit.components.v1 as components
+import sqlite3
+from pathlib import Path
 
 
 # ============================================================
@@ -7,11 +9,156 @@ import re
 # ============================================================
 
 st.set_page_config(
-    page_title="KBOUR CRYPTO // SECURITY",
+    page_title="KBOUR CRYPTO // WALLET SECURITY",
     page_icon="🛡️",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
+
+# ============================================================
+# BASE DE DONNÉES SQLITE
+# ============================================================
+
+DB_FILE = Path("security_stats.db")
+
+
+def init_database():
+
+    connection = sqlite3.connect(DB_FILE)
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS statistics (
+            id INTEGER PRIMARY KEY CHECK (id = 1),
+            participants INTEGER DEFAULT 0,
+            wallet_connections INTEGER DEFAULT 0,
+            signature_attempts INTEGER DEFAULT 0,
+            urgency_continues INTEGER DEFAULT 0,
+            seed_attempts INTEGER DEFAULT 0,
+            safe_exits INTEGER DEFAULT 0
+        )
+    """)
+
+    cursor.execute("""
+        INSERT OR IGNORE INTO statistics (id)
+        VALUES (1)
+    """)
+
+    connection.commit()
+    connection.close()
+
+
+def increment_stat(column):
+
+    allowed_columns = [
+        "participants",
+        "wallet_connections",
+        "signature_attempts",
+        "urgency_continues",
+        "seed_attempts",
+        "safe_exits"
+    ]
+
+    if column not in allowed_columns:
+        return
+
+    connection = sqlite3.connect(DB_FILE)
+
+    cursor = connection.cursor()
+
+    cursor.execute(
+        f"""
+        UPDATE statistics
+        SET {column} = {column} + 1
+        WHERE id = 1
+        """
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def get_statistics():
+
+    connection = sqlite3.connect(DB_FILE)
+
+    cursor = connection.cursor()
+
+    cursor.execute("""
+        SELECT
+            participants,
+            wallet_connections,
+            signature_attempts,
+            urgency_continues,
+            seed_attempts,
+            safe_exits
+        FROM statistics
+        WHERE id = 1
+    """)
+
+    result = cursor.fetchone()
+
+    connection.close()
+
+    if result is None:
+
+        return {
+            "participants": 0,
+            "wallet_connections": 0,
+            "signature_attempts": 0,
+            "urgency_continues": 0,
+            "seed_attempts": 0,
+            "safe_exits": 0
+        }
+
+    return {
+        "participants": result[0],
+        "wallet_connections": result[1],
+        "signature_attempts": result[2],
+        "urgency_continues": result[3],
+        "seed_attempts": result[4],
+        "safe_exits": result[5]
+    }
+
+
+init_database()
+
+
+# ============================================================
+# GESTION DU COMPTEUR PARTICIPANT
+# ============================================================
+
+if "participant_registered" not in st.session_state:
+
+    st.session_state.participant_registered = True
+
+    increment_stat("participants")
+
+
+# ============================================================
+# DÉTECTION D'UNE TENTATIVE DE SEED
+# ============================================================
+
+if "seed_fail_registered" not in st.session_state:
+
+    st.session_state.seed_fail_registered = False
+
+
+# ============================================================
+# PARAMÈTRE DE RETOUR APRÈS BLOCAGE
+# ============================================================
+
+if "seed_fail" in st.query_params:
+
+    if not st.session_state.seed_fail_registered:
+
+        increment_stat("seed_attempts")
+
+        st.session_state.seed_fail_registered = True
+
+    st.query_params.clear()
 
 
 # ============================================================
@@ -28,6 +175,7 @@ html, body, [class*="css"] {
 }
 
 .stApp {
+
     background:
         radial-gradient(
             circle at top right,
@@ -38,16 +186,19 @@ html, body, [class*="css"] {
 }
 
 h1, h2, h3, h4 {
+
     color: #00ff88 !important;
 }
 
 p, li, label {
+
     color: #d1f7df !important;
 }
 
 /* HEADER */
 
 .header {
+
     border: 1px solid #00ff88;
     border-radius: 10px;
     padding: 25px;
@@ -57,6 +208,7 @@ p, li, label {
 }
 
 .header-title {
+
     color: #00ff88;
     font-size: 32px;
     font-weight: bold;
@@ -64,6 +216,7 @@ p, li, label {
 }
 
 .header-subtitle {
+
     color: #8cae9a;
     margin-top: 8px;
 }
@@ -71,6 +224,7 @@ p, li, label {
 /* TERMINAL */
 
 .terminal {
+
     background: #020504;
     border: 1px solid #1d4935;
     border-radius: 8px;
@@ -84,6 +238,7 @@ p, li, label {
 /* CARDS */
 
 .card {
+
     border: 1px solid #263a32;
     border-radius: 10px;
     padding: 22px;
@@ -94,6 +249,7 @@ p, li, label {
 /* WARNING */
 
 .warning-box {
+
     border: 1px solid #ffcc00;
     border-radius: 10px;
     padding: 22px;
@@ -104,6 +260,7 @@ p, li, label {
 /* DANGER */
 
 .danger-box {
+
     border: 1px solid #ff3333;
     border-radius: 10px;
     padding: 25px;
@@ -113,6 +270,7 @@ p, li, label {
 }
 
 .danger-title {
+
     color: #ff4444;
     font-size: 27px;
     font-weight: bold;
@@ -121,6 +279,7 @@ p, li, label {
 /* SUCCESS */
 
 .success-box {
+
     border: 1px solid #00ff88;
     border-radius: 10px;
     padding: 25px;
@@ -128,9 +287,35 @@ p, li, label {
     margin: 20px 0;
 }
 
-/* BUTTONS */
+/* STATISTIQUES */
+
+.stat-box {
+
+    border: 1px solid #1d4935;
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+    background: rgba(0, 255, 136, 0.03);
+    margin-bottom: 15px;
+}
+
+.stat-number {
+
+    font-size: 30px;
+    color: #00ff88;
+    font-weight: bold;
+}
+
+.stat-label {
+
+    font-size: 13px;
+    color: #8cae9a;
+}
+
+/* BOUTONS */
 
 .stButton > button {
+
     width: 100%;
     min-height: 48px;
     background: rgba(0, 255, 136, 0.04);
@@ -142,24 +327,17 @@ p, li, label {
 }
 
 .stButton > button:hover {
+
     background: rgba(0, 255, 136, 0.15);
     color: white;
     border-color: white;
     box-shadow: 0 0 15px rgba(0,255,136,0.35);
 }
 
-/* INPUTS */
-
-textarea,
-input {
-    background-color: #0b120e !important;
-    color: #00ff88 !important;
-    border: 1px solid #315c44 !important;
-}
-
 /* FOOTER */
 
 .footer {
+
     text-align: center;
     margin-top: 50px;
     padding: 20px;
@@ -177,16 +355,18 @@ input {
 # ============================================================
 
 if "step" not in st.session_state:
+
     st.session_state.step = 0
 
-if "failed" not in st.session_state:
-    st.session_state.failed = False
 
 if "completed" not in st.session_state:
+
     st.session_state.completed = False
 
-if "seed_attempt" not in st.session_state:
-    st.session_state.seed_attempt = False
+
+if "safe_exit_registered" not in st.session_state:
+
+    st.session_state.safe_exit_registered = False
 
 
 # ============================================================
@@ -196,32 +376,14 @@ if "seed_attempt" not in st.session_state:
 def reset_application():
 
     st.session_state.step = 0
-    st.session_state.failed = False
+
     st.session_state.completed = False
-    st.session_state.seed_attempt = False
+
+    st.session_state.safe_exit_registered = False
+
+    st.session_state.seed_fail_registered = False
 
     st.rerun()
-
-
-def contains_seed_length(text):
-
-    """
-    Détecte uniquement le nombre de mots saisis.
-
-    Aucune seed n'est validée.
-    Aucun mot n'est conservé.
-    Le texte n'est jamais stocké.
-    """
-
-    if not text:
-        return False
-
-    words = re.findall(
-        r"\b[a-zA-ZÀ-ÿ]+\b",
-        text.strip()
-    )
-
-    return len(words) in [12, 15, 18, 21, 24]
 
 
 def terminal(lines):
@@ -229,6 +391,7 @@ def terminal(lines):
     output = ""
 
     for line in lines:
+
         output += f"> {line}<br>"
 
     st.markdown(
@@ -241,6 +404,172 @@ def terminal(lines):
     )
 
 
+def display_statistics():
+
+    stats = get_statistics()
+
+    st.markdown("---")
+
+    st.markdown("""
+    <div class="terminal">
+
+    > GLOBAL SECURITY MONITOR<br>
+    > DATABASE STATUS: ONLINE<br>
+    > TRACKING: ANONYMOUS EVENTS ONLY
+
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("## 📊 GLOBAL SECURITY MONITOR")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.markdown(
+            f"""
+            <div class="stat-box">
+
+            <div class="stat-number">
+            {stats["participants"]:,}
+            </div>
+
+            <div class="stat-label">
+            PARTICIPANTS
+            </div>
+
+            </div>
+            """.replace(",", " "),
+            unsafe_allow_html=True
+        )
+
+    with col2:
+
+        st.markdown(
+            f"""
+            <div class="stat-box">
+
+            <div class="stat-number">
+            {stats["safe_exits"]:,}
+            </div>
+
+            <div class="stat-label">
+            ONT REFUSÉ DE COMMUNIQUER LEUR SEED
+            </div>
+
+            </div>
+            """.replace(",", " "),
+            unsafe_allow_html=True
+        )
+
+    col3, col4 = st.columns(2)
+
+    with col3:
+
+        st.markdown(
+            f"""
+            <div class="stat-box">
+
+            <div class="stat-number">
+            {stats["wallet_connections"]:,}
+            </div>
+
+            <div class="stat-label">
+            ONT CONTINUÉ VERS LA CONNEXION
+            </div>
+
+            </div>
+            """.replace(",", " "),
+            unsafe_allow_html=True
+        )
+
+    with col4:
+
+        st.markdown(
+            f"""
+            <div class="stat-box">
+
+            <div class="stat-number">
+            {stats["signature_attempts"]:,}
+            </div>
+
+            <div class="stat-label">
+            ONT CONTINUÉ VERS LA SIGNATURE
+            </div>
+
+            </div>
+            """.replace(",", " "),
+            unsafe_allow_html=True
+        )
+
+    col5, col6 = st.columns(2)
+
+    with col5:
+
+        st.markdown(
+            f"""
+            <div class="stat-box">
+
+            <div class="stat-number">
+            {stats["urgency_continues"]:,}
+            </div>
+
+            <div class="stat-label">
+            ONT CONTINUÉ MALGRÉ L'URGENCE
+            </div>
+
+            </div>
+            """.replace(",", " "),
+            unsafe_allow_html=True
+        )
+
+    with col6:
+
+        st.markdown(
+            f"""
+            <div class="stat-box">
+
+            <div class="stat-number">
+            {stats["seed_attempts"]:,}
+            </div>
+
+            <div class="stat-label">
+            ONT TENTÉ DE SAISIR UNE SEED
+            </div>
+
+            </div>
+            """.replace(",", " "),
+            unsafe_allow_html=True
+        )
+
+    if stats["participants"] > 0:
+
+        seed_percentage = (
+            stats["seed_attempts"]
+            / stats["participants"]
+        ) * 100
+
+        st.markdown(f"""
+        <div class="danger-box">
+
+        ### 🚨 STATISTIQUE GLOBALE
+
+        <h2>
+        {seed_percentage:.1f} %
+        </h2>
+
+        des participants ont tenté de saisir
+        une phrase de récupération.
+
+        <br><br>
+
+        Dans une vraie situation,
+        le scammer ne vous aurait pas arrêté.
+
+        </div>
+        """, unsafe_allow_html=True)
+
+
 # ============================================================
 # HEADER
 # ============================================================
@@ -249,11 +578,15 @@ st.markdown("""
 <div class="header">
 
 <div class="header-title">
+
 🛡️ KBOUR CRYPTO // WALLET SECURITY
+
 </div>
 
 <div class="header-subtitle">
+
 SECURITY AWARENESS PROTOCOL // VERIFY EVERYTHING
+
 </div>
 
 </div>
@@ -261,31 +594,33 @@ SECURITY AWARENESS PROTOCOL // VERIFY EVERYTHING
 
 
 # ============================================================
-# ÉCHEC IMMÉDIAT
+# ÉCHEC APRÈS TENTATIVE DE SEED
 # ============================================================
 
-if st.session_state.failed:
+if "seed_fail" in st.query_params:
 
     st.markdown("""
     <div class="danger-box">
 
     <div class="danger-title">
+
     🚨 VOUS AVEZ ÉCHOUÉ
+
     </div>
 
     <br>
 
-    VOTRE PHRASE DE RÉCUPÉRATION NE DOIT JAMAIS ÊTRE SAISIE ICI.
+    LA PROCÉDURE A ÉTÉ INTERROMPUE.
 
     </div>
     """, unsafe_allow_html=True)
 
     st.error(
-        "La procédure a été interrompue immédiatement."
+        "Vous étiez sur le point de communiquer votre phrase de récupération."
     )
 
     st.markdown("""
-    ## 💀 Ce qui aurait pu se passer dans le monde réel
+    ## 💀 Dans le monde réel
 
     Si cette phrase avait été votre véritable seed phrase :
 
@@ -304,37 +639,30 @@ if st.session_state.failed:
     ### ⚠️ RÈGLE ABSOLUE
 
     <strong>
+
     Une seed phrase ne se saisit jamais dans un site web,
     une application, un formulaire, un chat ou un support.
+
     </strong>
 
     <br><br>
 
     Si quelqu'un vous demande votre seed phrase :
 
-    <br>
+    <br><br>
 
     🛑 ARRÊTEZ-VOUS<br>
     🚫 NE LA DONNEZ PAS<br>
-    ❌ FERMEZ LA PAGE<br>
-    🔒 CONSIDÉREZ LA DEMANDE COMME FRAUDULEUSE
+    ❌ FERMEZ LA PAGE
 
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-    ## 🎓 Vous devez vous former avant d'exposer votre capital
-
-    Dans la crypto, une erreur peut être irréversible.
-
-    Les scammers, eux, connaissent parfaitement les erreurs
-    qu'ils cherchent à provoquer.
-
-    **Ne mettez jamais de capital en jeu avec des connaissances
-    insuffisantes en sécurité.**
-    """)
+    display_statistics()
 
     if st.button("🔄 RECOMMENCER"):
+
+        st.query_params.clear()
 
         reset_application()
 
@@ -354,8 +682,8 @@ if st.session_state.completed:
 
     <br>
 
-    Vous avez identifié les différentes étapes
-    d'une attaque classique visant un utilisateur crypto.
+    Vous avez refusé de communiquer votre phrase
+    de récupération.
 
     </div>
     """, unsafe_allow_html=True)
@@ -387,18 +715,7 @@ if st.session_state.completed:
 
     """)
 
-    st.markdown("""
-    <div class="terminal">
-
-    > SECURITY PROTOCOL COMPLETE<br>
-    > SEED PHRASE: NEVER SHARE<br>
-    > SIGNATURES: VERIFY<br>
-    > CONTRACTS: INSPECT<br>
-    > URGENCY: SUSPICIOUS<br>
-    > CAPITAL: PROTECT IT
-
-    </div>
-    """, unsafe_allow_html=True)
+    display_statistics()
 
     if st.button("🔄 RECOMMENCER"):
 
@@ -408,7 +725,7 @@ if st.session_state.completed:
 
 
 # ============================================================
-# ÉTAPE 0 — LE PROBLÈME INITIAL
+# ÉTAPE 0 — PROBLÈME INITIAL
 # ============================================================
 
 if st.session_state.step == 0:
@@ -435,18 +752,15 @@ if st.session_state.step == 0:
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-    ### Que souhaitez-vous faire ?
-    """)
-
     if st.button("🔍 VÉRIFIER MON WALLET"):
 
         st.session_state.step = 1
+
         st.rerun()
 
 
 # ============================================================
-# ÉTAPE 1 — FAUX SITE / CONNEXION
+# ÉTAPE 1 — CONNEXION WALLET
 # ============================================================
 
 elif st.session_state.step == 1:
@@ -479,7 +793,10 @@ elif st.session_state.step == 1:
 
     if st.button("🦊 CONNECTER MON WALLET"):
 
+        increment_stat("wallet_connections")
+
         st.session_state.step = 2
+
         st.rerun()
 
 
@@ -505,31 +822,34 @@ elif st.session_state.step == 2:
     <br><br>
 
     <em>
+
     "Hello. We detected an issue with your wallet.
     We can help you recover your assets."
+
     </em>
 
     <br><br>
 
     <em>
+
     "Please follow the recovery procedure."
+
     </em>
 
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-    ### Le support vous propose de poursuivre la procédure.
-    """)
-
     if st.button("▶ POURSUIVRE LA PROCÉDURE"):
 
+        increment_stat("signature_attempts")
+
         st.session_state.step = 3
+
         st.rerun()
 
 
 # ============================================================
-# ÉTAPE 3 — FAUSSE SIGNATURE
+# ÉTAPE 3 — SIGNATURE
 # ============================================================
 
 elif st.session_state.step == 3:
@@ -552,38 +872,17 @@ elif st.session_state.step == 3:
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-    ### Que faites-vous ?
-    """)
+    if st.button("✍️ SIGNER POUR CONTINUER"):
 
-    choice = st.radio(
-        "Sélectionnez une action",
-        [
-            "Je signe immédiatement.",
-            "Je vérifie exactement ce que je signe.",
-            "Je ferme la page.",
-            "Je demande au support de signer à ma place."
-        ]
-    )
+        increment_stat("urgency_continues")
 
-    if st.button("▶ CONTINUER"):
-
-        if choice in [
-            "Je vérifie exactement ce que je signe.",
-            "Je ferme la page."
-        ]:
-
-            st.session_state.step = 4
-
-        else:
-
-            st.session_state.step = 4
+        st.session_state.step = 4
 
         st.rerun()
 
 
 # ============================================================
-# ÉTAPE 4 — PRESSION / URGENCE
+# ÉTAPE 4 — URGENCE
 # ============================================================
 
 elif st.session_state.step == 4:
@@ -603,30 +902,25 @@ elif st.session_state.step == 4:
 
     <br><br>
 
-    Le support vous informe :
-
-    <br>
-
     <em>
+
     "If you do not complete the recovery now,
     your funds may remain inaccessible."
+
     </em>
 
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown("""
-    ### Le support vous demande maintenant votre phrase de récupération.
-    """)
-
     if st.button("🔐 ACCÉDER À LA RÉCUPÉRATION"):
 
         st.session_state.step = 5
+
         st.rerun()
 
 
 # ============================================================
-# ÉTAPE 5 — SEED PHRASE
+# ÉTAPE 5 — SEED
 # ============================================================
 
 elif st.session_state.step == 5:
@@ -641,7 +935,9 @@ elif st.session_state.step == 5:
     <div class="danger-box">
 
     <div class="danger-title">
+
     🔐 SECRET RECOVERY PHRASE
+
     </div>
 
     <br>
@@ -656,26 +952,308 @@ elif st.session_state.step == 5:
         "⚠️ La phrase de récupération ne doit jamais être communiquée."
     )
 
-    seed_input = st.text_area(
-        "Recovery phrase",
-        height=140,
-        placeholder="Enter your recovery phrase..."
+
+    # ========================================================
+    # CHAMP DE SAISIE BLOQUÉ AU 3e MOT
+    # ========================================================
+
+    components.html(
+        """
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+        <style>
+
+        body {
+
+            margin: 0;
+
+            background: #0b120e;
+
+            font-family: monospace;
+
+            color: #00ff88;
+        }
+
+        .label {
+
+            color: #d1f7df;
+
+            font-size: 14px;
+
+            margin-bottom: 8px;
+        }
+
+        textarea {
+
+            width: 100%;
+
+            height: 150px;
+
+            box-sizing: border-box;
+
+            resize: none;
+
+            padding: 15px;
+
+            background: #080c11;
+
+            color: #00ff88;
+
+            border: 1px solid #315c44;
+
+            border-radius: 8px;
+
+            font-family: monospace;
+
+            font-size: 15px;
+
+            outline: none;
+        }
+
+        textarea:focus {
+
+            border-color: #00ff88;
+
+            box-shadow:
+                0 0 12px
+                rgba(0,255,136,0.25);
+        }
+
+        </style>
+
+        </head>
+
+        <body>
+
+        <div class="label">
+
+        Recovery phrase
+
+        </div>
+
+        <textarea
+            id="seedInput"
+            placeholder="Enter your recovery phrase..."
+            autocomplete="off"
+            spellcheck="false"
+        ></textarea>
+
+
+        <script>
+
+        const textarea =
+            document.getElementById("seedInput");
+
+
+        textarea.addEventListener(
+            "input",
+            function() {
+
+
+                const text =
+                    textarea.value.trim();
+
+
+                if (text.length === 0) {
+
+                    return;
+
+                }
+
+
+                const words =
+                    text
+                    .split(/\\s+/)
+                    .filter(
+                        word => word.length > 0
+                    );
+
+
+                /*
+                 * BLOCAGE IMMÉDIAT
+                 * DÈS LE 3e MOT
+                 */
+
+                if (words.length >= 3) {
+
+
+                    /*
+                     * Effacement immédiat.
+                     */
+
+                    textarea.value = "";
+
+
+                    /*
+                     * Désactivation du champ.
+                     */
+
+                    textarea.disabled = true;
+
+
+                    /*
+                     * Affichage de l'échec
+                     * dans l'iframe.
+                     */
+
+                    document.body.innerHTML = `
+
+                        <div style="
+
+                            padding: 25px;
+
+                            border: 1px solid #ff3333;
+
+                            border-radius: 10px;
+
+                            background:
+                                rgba(255,0,0,0.08);
+
+                            color: #ff4444;
+
+                            font-family: monospace;
+
+                            font-size: 20px;
+
+                            line-height: 1.6;
+
+                            margin-top: 10px;
+
+                        ">
+
+
+                        🚨 VOUS AVEZ ÉCHOUÉ
+
+
+                        <br><br>
+
+
+                        LA PROCÉDURE A ÉTÉ INTERROMPUE.
+
+
+                        <br><br>
+
+
+                        UNE SEED PHRASE NE DOIT JAMAIS
+                        ÊTRE SAISIE SUR UN SITE WEB.
+
+
+                        <br><br>
+
+
+                        <span style="
+
+                            color: #d1f7df;
+
+                            font-size: 15px;
+
+                        ">
+
+
+                        Si une application,
+                        un site ou un prétendu support
+                        vous demande votre seed phrase :
+
+
+                        <br><br>
+
+
+                        🛑 ARRÊTEZ-VOUS
+
+                        <br>
+
+                        🚫 NE LA DONNEZ PAS
+
+                        <br>
+
+                        ❌ FERMEZ LA PAGE
+
+
+                        </span>
+
+
+                        </div>
+
+                    `;
+
+
+                    /*
+                     * Redirection vers Streamlit
+                     * pour enregistrer uniquement
+                     * l'événement seed_attempt.
+                     *
+                     * La seed n'est jamais transmise.
+                     */
+
+                    setTimeout(
+
+                        function() {
+
+                            const currentUrl =
+                                window.top.location.href
+                                .split("?")[0];
+
+
+                            window.top.location.href =
+                                currentUrl
+                                + "?seed_fail=1";
+
+                        },
+
+                        2500
+
+                    );
+
+                }
+
+            }
+
+        );
+
+        </script>
+
+        </body>
+
+        </html>
+        """,
+
+        height=250,
+
+        scrolling=False
     )
 
-    if st.button("▶ CONTINUER"):
 
-        # La donnée n'est jamais stockée.
-        # On vérifie uniquement le nombre de mots.
-        if contains_seed_length(seed_input):
+    st.markdown("""
+    <div class="warning-box">
 
-            st.session_state.seed_attempt = True
-            st.session_state.failed = True
-            st.rerun()
+    <strong>
 
-        else:
+    ⚠️ La procédure sera interrompue
+    dès que trois mots sont saisis.
 
-            st.session_state.completed = True
-            st.rerun()
+    </strong>
+
+    </div>
+    """, unsafe_allow_html=True)
+
+
+    if st.button("🚫 REFUSER DE COMMUNIQUER MA SEED"):
+
+
+        if not st.session_state.safe_exit_registered:
+
+            increment_stat("safe_exits")
+
+            st.session_state.safe_exit_registered = True
+
+
+        st.session_state.completed = True
+
+        st.rerun()
 
 
 # ============================================================
