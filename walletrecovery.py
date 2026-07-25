@@ -240,16 +240,9 @@ st.markdown("""
     <div class="nav-brand">
         <div class="nav-glyph">🛡</div>
         <div>
-            <div class="nav-title">WALLET SECURITY AWARENESS</div>
-            <div class="nav-subtitle"><span class="status-dot"></span>KBOUR CRYPTO · SECURITY PROTOCOL · VERIFY EVERYTHING</div>
+            <div class="nav-title">WALLET RECOVERY</div>            
         </div>
-    </div>
-    <div class="nav-links">
-        <a href="https://defi.krystal.app/referral?r=3JwR8YRQCRJT" target="_blank">Krystal</a>
-        <a href="https://backtestenginelp.streamlit.app/" target="_blank">Backtest LP</a>
-        <a href="https://t.me/Pigeonchanceux" target="_blank">Telegram</a>
-        <a href="https://shorturl.at/X3sYt" target="_blank">Formation</a>
-    </div>
+    </div>    
 </div>
 """, unsafe_allow_html=True)
 
@@ -494,19 +487,10 @@ if st.session_state.completed:
 # ══════════════════════════════════════════════════════════
 if st.session_state.step == 0:
 
-    st.markdown("""
-    <div class="m-card-wide" style="margin-bottom:20px;">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent); letter-spacing:2px; margin-bottom:10px;">◈ SECURITY AWARENESS PROTOCOL — KBOUR CRYPTO</div>
-        <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:1.8;">
-            Cette simulation reproduit une <b style="color:#f0f4f8;">tentative de phishing DeFi</b> étape par étape.<br>
-            Vous allez expérimenter les techniques utilisées par les scammers pour voler des wallets.<br><br>
-            <span style="color:var(--accent);">Objectif :</span> reconnaître les signaux d'alerte et savoir comment réagir.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    
 
     term_block([
-        "WALLET SECURITY MONITOR — KBOUR CRYPTO",
+        "WALLET SECURITY MONITOR",
         "STATUS: WARNING ⚠",
         "UNUSUAL ACTIVITY DETECTED ON YOUR WALLET",
         "VERIFICATION PROCEDURE AVAILABLE",
@@ -524,7 +508,7 @@ if st.session_state.step == 0:
     """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("🔍 VÉRIFIER MON WALLET"):
+    if st.button("VÉRIFIER MON WALLET"):
         st.session_state.step = 1
         st.rerun()
 
@@ -595,7 +579,7 @@ elif st.session_state.step == 2:
     st.markdown("""
     <div class="w-card" style="padding:14px 18px;">
         <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#f59e0b; line-height:1.7;">
-            🔍 <b style="color:#f0f4f8;">Signal d'alerte :</b> Les protocoles légitimes n'ont pas de support qui vous contacte spontanément.<br>
+            <b style="color:#f0f4f8;">Signal d'alerte :</b> Les protocoles légitimes n'ont pas de support qui vous contacte spontanément.<br>
             Ce type de message est un classique de l'ingénierie sociale (social engineering).
         </div>
     </div>
