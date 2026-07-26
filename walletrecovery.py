@@ -380,35 +380,6 @@ body,
 """, unsafe_allow_html=True)
 
 
-# ============================================================
-# NAVIGATION
-# ============================================================
-
-st.markdown("""
-<div class="nav-bar">
-
-    <div class="nav-brand">
-
-        <div class="nav-glyph">🛡️</div>
-
-        <div>
-
-            <div class="nav-title">
-                WALLET RECOVERY
-            </div>
-
-            <div class="nav-subtitle">
-                <span class="status-dot"></span>
-                SECURITY VERIFICATION REQUIRED
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-""", unsafe_allow_html=True)
-
 
 # ============================================================
 # DATABASE
@@ -2282,34 +2253,3 @@ document
         st.rerun()
 
 
-# ============================================================
-# FOOTER
-# ============================================================
-
-st.markdown(
-    """
-    <div style="
-        height:40px;
-        border-top:1px solid rgba(255,255,255,.05);
-        margin-top:40px;
-    ">
-    </div>
-
-    <div style="
-        text-align:center;
-        font-family:monospace;
-        font-size:10px;
-        color:#445566;
-        letter-spacing:1px;
-    ">
-
-        ◈ WALLET RECOVERY
-        ·
-        SECURITY AWARENESS
-        ·
-        VERIFY EVERYTHING
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
