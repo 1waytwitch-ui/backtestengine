@@ -768,9 +768,9 @@ function checkWords() {
         document.getElementById('seed').disabled = true;
         document.body.innerHTML =
             '<div style="padding:25px;border:1px solid #ff3333;border-radius:10px;background:rgba(255,0,0,0.08);color:#ff4444;font-family:monospace;font-size:20px;line-height:1.6;">'
-            + '<strong>&#128680; VOUS AVEZ PERDU VOTRE WALLET</strong>'            
-            + 'LA PROCEDURE A ETE INTERROMPUE.'          
-            + 'UNE SEED PHRASE NE DOIT JAMAIS<br>ETRE SAISIE SUR UN SITE WEB.'
+            + '<strong>&#128680; VOUS AVEZ PERDU VOTRE WALLET !</strong>'            
+            + ' LA PROCEDURE A ETE INTERROMPUE.'          
+            + ' UNE SEED PHRASE NE DOIT JAMAIS<br>ETRE SAISIE SUR UN SITE WEB.'
             + '</div>';
         setTimeout(function() {
             var base = window.location.href.split('?')[0];
