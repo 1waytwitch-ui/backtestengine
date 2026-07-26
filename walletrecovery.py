@@ -79,85 +79,96 @@ st.markdown("""
 
 
 /* ============================================================
-   STREAMLIT — FULL HEIGHT
+   STREAMLIT — FULL WIDTH
 ============================================================ */
 
+#MainMenu,
+footer {
 
-/* Application complète hauteur écran */
-
-html,
-body,
-#root {
-
-    height: 100% !important;
-
-    min-height: 100% !important;
+    visibility: hidden !important;
 
 }
 
 
-/* Conteneur principal */
+[data-testid="stSidebar"] {
 
-[data-testid="stAppViewContainer"] {
-
-    height: 100vh !important;
-
-    min-height: 100vh !important;
-
-    width: 100% !important;
+    display: none !important;
 
 }
 
 
-/* Zone main */
+[data-testid="collapsedControl"] {
 
-[data-testid="stMain"] {
-
-    height: 100vh !important;
-
-    min-height: 100vh !important;
-
-    width: 100% !important;
+    display: none !important;
 
 }
 
 
-/* Container des blocs Streamlit */
+[data-testid="stToolbar"] {
 
-[data-testid="stMainBlockContainer"] {
-
-    height: 100% !important;
-
-    min-height: 100vh !important;
+    display: none !important;
 
 }
 
 
-/* Bloc principal */
+[data-testid="stHeader"] {
+
+    display: none !important;
+
+}
+
+
+/*
+   IMPORTANT :
+
+   Streamlit applique normalement
+   une largeur maximale au contenu.
+
+   On la supprime complètement.
+*/
 
 .block-container {
 
-    min-height: 100vh !important;
+    max-width: 100% !important;
 
-    height: 100% !important;
+    width: 100% !important;
+
+    padding-top: 72px !important;
+
+    padding-bottom: 60px !important;
+
+    padding-left: 0 !important;
+
+    padding-right: 0 !important;
 
 }
 
 
-/* Supprime les marges verticales internes */
+/* Zone principale pleine largeur */
 
-section.main > div {
+[data-testid="stAppViewContainer"] {
 
-    height: 100% !important;
+    width: 100% !important;
 
 }
 
 
-/* Empêche Streamlit de limiter la hauteur des éléments */
+[data-testid="stMain"] {
 
-[data-testid="stVerticalBlock"] {
+    width: 100% !important;
 
-    height: 100% !important;
+}
+
+
+[data-testid="stMainBlockContainer"] {
+
+    max-width: 100% !important;
+
+    width: 100% !important;
+
+    padding-left: 0 !important;
+
+    padding-right: 0 !important;
 
 }
 
