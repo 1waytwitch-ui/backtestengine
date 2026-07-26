@@ -4,6 +4,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import sqlite3
 from pathlib import Path
+from html import escape
 
 
 # ============================================================
@@ -70,7 +71,9 @@ body,
     font-family: var(--font-ui);
 }
 
-/* NAVIGATION */
+/* ============================================================
+   NAVIGATION
+============================================================ */
 
 .nav-bar {
     position: fixed;
@@ -141,7 +144,9 @@ body,
     }
 }
 
-/* SECTIONS */
+/* ============================================================
+   SECTIONS
+============================================================ */
 
 .sec-head {
     display: flex;
@@ -171,7 +176,9 @@ body,
     text-transform: uppercase;
 }
 
-/* CARDS */
+/* ============================================================
+   CARDS
+============================================================ */
 
 .m-card-wide {
     background: var(--bg-card);
@@ -213,7 +220,9 @@ body,
     letter-spacing: 1px;
 }
 
-/* BOUTONS */
+/* ============================================================
+   BOUTONS
+============================================================ */
 
 .stButton > button {
     width: 100% !important;
@@ -234,7 +243,9 @@ body,
     transform: translateY(-1px) !important;
 }
 
-/* INPUT */
+/* ============================================================
+   INPUT
+============================================================ */
 
 .stTextInput input {
     background: #111820 !important;
@@ -244,7 +255,9 @@ body,
     font-family: var(--font-ui) !important;
 }
 
-/* STATS */
+/* ============================================================
+   STATS
+============================================================ */
 
 .stat-card {
     background: var(--bg-card);
@@ -269,7 +282,9 @@ body,
     margin-top: 8px;
 }
 
-/* CHAT */
+/* ============================================================
+   CHAT
+============================================================ */
 
 .chat-wrap {
     display: flex;
@@ -342,7 +357,9 @@ body,
     margin-bottom: 4px;
 }
 
-/* RÈGLES */
+/* ============================================================
+   RÈGLES
+============================================================ */
 
 .rule-item {
     display: flex;
@@ -378,7 +395,6 @@ body,
 
 </style>
 """, unsafe_allow_html=True)
-
 
 
 # ============================================================
@@ -540,7 +556,24 @@ if not st.session_state.participant_registered:
 
 
 # ============================================================
-# SEED FAILURE
+# RESET COMPLET
+# ============================================================
+
+def reset_app():
+
+    for key in defaults:
+
+        if key in st.session_state:
+
+            del st.session_state[key]
+
+    st.query_params.clear()
+
+    st.rerun()
+
+
+# ============================================================
+# DÉTECTION DE L'ÉCHEC SEED
 # ============================================================
 
 if "seed_fail" in st.query_params:
@@ -558,12 +591,8 @@ if "seed_fail" in st.query_params:
     st.session_state.step = 99
 
 
-
-
 # ============================================================
 # FAUSSE PAGE HTML
-# IMPORTANT :
-# TOUTE LA PAGE EST RENDUE DANS components.html()
 # ============================================================
 
 def render_fake_browser(path, page_content, height=420):
@@ -671,9 +700,7 @@ body {{
         <div class="dots">
 
             <div class="dot red"></div>
-
             <div class="dot yellow"></div>
-
             <div class="dot green"></div>
 
         </div>
@@ -770,7 +797,43 @@ def get_support_reply(message):
 
 
 # ============================================================
-# PEDAGOGIE
+# SECTION
+# ============================================================
+
+def sec(icon, title, color=None):
+
+    color_style = ""
+
+    if color:
+
+        color_style = f"color:{color};"
+
+    st.markdown(
+        f"""
+        <div class="sec-head">
+
+            <div
+                class="sec-head-icon"
+                style="{color_style}"
+            >
+                {icon}
+            </div>
+
+            <div
+                class="sec-head-label"
+                style="{color_style}"
+            >
+                {title}
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+# ============================================================
+# PÉDAGOGIE
 # ============================================================
 
 def show_pedagogy(outcome):
@@ -856,10 +919,7 @@ def show_pedagogy(outcome):
 
                     <br><br>
 
-                    <span style="
-                        color:#22c55e;
-                        font-weight:700;
-                    ">
+                    <span style="color:#22c55e;font-weight:700;">
 
                         C'est la seule décision correcte.
 
@@ -1153,8 +1213,10 @@ def show_pedagogy(outcome):
                     <br><br>
 
                     <span style="color:#22c55e;">
+
                         Seulement {safe_percentage:.1f}%
                         ont résisté jusqu'au bout.
+
                     </span>
 
                 </div>
@@ -1177,7 +1239,7 @@ def show_pedagogy(outcome):
 
 
 # ============================================================
-# ROUTING
+# ROUTING PÉDAGOGIQUE
 # ============================================================
 
 if (
@@ -1198,8 +1260,7 @@ if st.session_state.completed:
 
 
 # ============================================================
-# ÉTAPE 0
-# FAUSSE ALERTE
+# ÉTAPE 0 — FAUSSE ALERTE
 # ============================================================
 
 if st.session_state.step == 0:
@@ -1312,14 +1373,10 @@ if st.session_state.step == 0:
 
 
 # ============================================================
-# ÉTAPE 1
-# CONNEXION WALLET
+# ÉTAPE 1 — CONNEXION WALLET
 # ============================================================
 
 elif st.session_state.step == 1:
-
-   
-
 
     render_fake_browser(
         "/wallet/connect",
@@ -1440,14 +1497,10 @@ elif st.session_state.step == 1:
 
 
 # ============================================================
-# ÉTAPE 2
-# CHAT SUPPORT
+# ÉTAPE 2 — CHAT SUPPORT
 # ============================================================
 
 elif st.session_state.step == 2:
-
-    
-
 
     support_openers = [
 
@@ -1461,10 +1514,9 @@ elif st.session_state.step == 2:
 
 
     render_fake_browser(
-
         "/support/live",
 
-        f"""
+        """
         <div style="
             display:flex;
             align-items:center;
@@ -1556,12 +1608,17 @@ elif st.session_state.step == 2:
         )
 
 
-        if index < len(
-            st.session_state.user_messages
-        ):
+        if index < len(st.session_state.user_messages):
 
-            message = (
-                st.session_state.user_messages[index]
+            message = st.session_state.user_messages[index]
+
+
+            safe_user_message = escape(
+                message["user"]
+            )
+
+            safe_reply = escape(
+                message["reply"]
             )
 
 
@@ -1583,7 +1640,7 @@ elif st.session_state.step == 2:
                         </div>
 
                         <div class="chat-content-right">
-                            {message["user"]}
+                            {safe_user_message}
                         </div>
 
                     </div>
@@ -1609,7 +1666,7 @@ elif st.session_state.step == 2:
                         </div>
 
                         <div class="chat-content-left">
-                            {message["reply"]}
+                            {safe_reply}
                         </div>
 
                     </div>
@@ -1689,14 +1746,10 @@ elif st.session_state.step == 2:
 
 
 # ============================================================
-# ÉTAPE 3
-# SIGNATURE
+# ÉTAPE 3 — SIGNATURE
 # ============================================================
 
 elif st.session_state.step == 3:
-
-    
-
 
     render_fake_browser(
 
@@ -1782,14 +1835,10 @@ elif st.session_state.step == 3:
 
 
 # ============================================================
-# ÉTAPE 4
-# URGENCE
+# ÉTAPE 4 — URGENCE
 # ============================================================
 
 elif st.session_state.step == 4:
-
-    
-
 
     render_fake_browser(
 
@@ -1882,14 +1931,10 @@ elif st.session_state.step == 4:
 
 
 # ============================================================
-# ÉTAPE 5
-# SEED
+# ÉTAPE 5 — SEED
 # ============================================================
 
 elif st.session_state.step == 5:
-
-   
-
 
     render_fake_browser(
 
@@ -1982,7 +2027,7 @@ elif st.session_state.step == 5:
 
 
     # ========================================================
-    # CHAMP SEED
+    # SIMULATION DU CHAMP SEED
     # ========================================================
 
     components.html(
@@ -2035,6 +2080,26 @@ textarea::placeholder {
 
 }
 
+.failure {
+
+    padding: 25px;
+
+    border: 1px solid #ff3333;
+
+    border-radius: 10px;
+
+    background: rgba(255,0,0,.08);
+
+    color: #ff4444;
+
+    font-family: monospace;
+
+    font-size: 20px;
+
+    line-height: 1.6;
+
+}
+
 </style>
 
 </head>
@@ -2055,7 +2120,9 @@ let done = false;
 function checkWords() {
 
     if (done) {
+
         return;
+
     }
 
     const textarea =
@@ -2064,8 +2131,14 @@ function checkWords() {
     const value =
         textarea.value.trim();
 
+    if (!value) {
+
+        return;
+
+    }
+
     const words =
-        value.split(/\s+/);
+        value.split(/\\s+/);
 
     if (words.length >= 3) {
 
@@ -2077,16 +2150,7 @@ function checkWords() {
 
         document.body.innerHTML = `
 
-            <div style="
-                padding:25px;
-                border:1px solid #ff3333;
-                border-radius:10px;
-                background:rgba(255,0,0,.08);
-                color:#ff4444;
-                font-family:monospace;
-                font-size:20px;
-                line-height:1.6;
-            ">
+            <div class="failure">
 
                 <strong>
                     🚨 VOUS AVEZ ÉCHOUÉ
@@ -2117,7 +2181,7 @@ function checkWords() {
 
             },
 
-            2500
+            1500
 
         );
 
@@ -2174,5 +2238,3 @@ document
         st.session_state.outcome = "success"
 
         st.rerun()
-
-
