@@ -2674,6 +2674,22 @@ elif st.session_state.step == 2:
 
             st.rerun()
 
+        /* Bouton Envoyer du chat */
+[data-testid="stChatInput"] button {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+[data-testid="stChatInput"] button:hover {
+    background: #dc2626 !important;
+}
+
+[data-testid="stChatInput"] svg {
+    fill: #ffffff !important;
+    color: #ffffff !important;
+}
+
 
 # ══════════════════════════════════════════════════════════
 # ── ÉTAPE 3 — SIGNATURE
