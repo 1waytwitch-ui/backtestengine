@@ -79,96 +79,85 @@ st.markdown("""
 
 
 /* ============================================================
-   STREAMLIT — FULL WIDTH
+   STREAMLIT — FULL HEIGHT
 ============================================================ */
 
-#MainMenu,
-footer {
 
-    visibility: hidden !important;
+/* Application complète hauteur écran */
 
-}
+html,
+body,
+#root {
 
+    height: 98% !important;
 
-[data-testid="stSidebar"] {
-
-    display: none !important;
-
-}
-
-
-[data-testid="collapsedControl"] {
-
-    display: none !important;
+    min-height: 98% !important;
 
 }
 
 
-[data-testid="stToolbar"] {
-
-    display: none !important;
-
-}
-
-
-[data-testid="stHeader"] {
-
-    display: none !important;
-
-}
-
-
-/*
-   IMPORTANT :
-
-   Streamlit applique normalement
-   une largeur maximale au contenu.
-
-   On la supprime complètement.
-*/
-
-.block-container {
-
-    max-width: 100% !important;
-
-    width: 100% !important;
-
-    padding-top: 72px !important;
-
-    padding-bottom: 60px !important;
-
-    padding-left: 0 !important;
-
-    padding-right: 0 !important;
-
-}
-
-
-/* Zone principale pleine largeur */
+/* Conteneur principal */
 
 [data-testid="stAppViewContainer"] {
 
-    width: 100% !important;
+    height: 98vh !important;
+
+    min-height: 98vh !important;
+
+    width: 98% !important;
 
 }
 
+
+/* Zone main */
 
 [data-testid="stMain"] {
 
-    width: 100% !important;
+    height: 98vh !important;
+
+    min-height: 98vh !important;
+
+    width: 98% !important;
 
 }
 
 
+/* Container des blocs Streamlit */
+
 [data-testid="stMainBlockContainer"] {
 
-    max-width: 100% !important;
+    height: 98% !important;
 
-    width: 100% !important;
+    min-height: 98vh !important;
 
-    padding-left: 0 !important;
+}
 
-    padding-right: 0 !important;
+
+/* Bloc principal */
+
+.block-container {
+
+    min-height: 98vh !important;
+
+    height: 98% !important;
+
+}
+
+
+/* Supprime les marges verticales internes */
+
+section.main > div {
+
+    height: 98% !important;
+
+}
+
+
+/* Empêche Streamlit de limiter la hauteur des éléments */
+
+[data-testid="stVerticalBlock"] {
+
+    height: 98% !important;
 
 }
 
