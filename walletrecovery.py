@@ -89,9 +89,9 @@ html,
 body,
 #root {
 
-    height: 98% !important;
+    height: 100% !important;
 
-    min-height: 98% !important;
+    min-height: 100% !important;
 
 }
 
@@ -100,11 +100,11 @@ body,
 
 [data-testid="stAppViewContainer"] {
 
-    height: 98vh !important;
+    height: 100vh !important;
 
-    min-height: 98vh !important;
+    min-height: 100vh !important;
 
-    width: 98% !important;
+    width: 100% !important;
 
 }
 
@@ -113,11 +113,11 @@ body,
 
 [data-testid="stMain"] {
 
-    height: 98vh !important;
+    height: 100vh !important;
 
-    min-height: 98vh !important;
+    min-height: 100vh !important;
 
-    width: 98% !important;
+    width: 100% !important;
 
 }
 
@@ -126,9 +126,9 @@ body,
 
 [data-testid="stMainBlockContainer"] {
 
-    height: 98% !important;
+    height: 100% !important;
 
-    min-height: 98vh !important;
+    min-height: 100vh !important;
 
 }
 
@@ -137,9 +137,9 @@ body,
 
 .block-container {
 
-    min-height: 98vh !important;
+    min-height: 100vh !important;
 
-    height: 98% !important;
+    height: 100% !important;
 
 }
 
@@ -148,7 +148,7 @@ body,
 
 section.main > div {
 
-    height: 98% !important;
+    height: 100% !important;
 
 }
 
@@ -157,10 +157,9 @@ section.main > div {
 
 [data-testid="stVerticalBlock"] {
 
-    height: 98% !important;
+    height: 100% !important;
 
 }
-
 
 /* ============================================================
    GLOBAL
