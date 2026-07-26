@@ -1446,7 +1446,7 @@ elif st.session_state.step == 1:
 
 elif st.session_state.step == 2:
 
-    progress_bar(2)
+    
 
 
     support_openers = [
@@ -1695,7 +1695,7 @@ elif st.session_state.step == 2:
 
 elif st.session_state.step == 3:
 
-    progress_bar(3)
+    
 
 
     render_fake_browser(
@@ -1788,7 +1788,7 @@ elif st.session_state.step == 3:
 
 elif st.session_state.step == 4:
 
-    progress_bar(4)
+    
 
 
     render_fake_browser(
@@ -1888,7 +1888,7 @@ elif st.session_state.step == 4:
 
 elif st.session_state.step == 5:
 
-    progress_bar(5)
+   
 
 
     render_fake_browser(
