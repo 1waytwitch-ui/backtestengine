@@ -1520,10 +1520,7 @@ def url_bar(path=""):
     return f"""
     <div class="fake-browser-bar">
         <div class="fake-dots">
-            <div class="dot dot-r"
-                 style="cursor:pointer;"
-                 title="Fermer l'onglet"
-                 onclick="window.location.href = window.location.href.split('?')[0] + '?closed_tab=1';"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <a href="?closed_tab=1" title="Fermer l'onglet" style="text-decoration:none;line-height:0;"><div class="dot dot-r" style="cursor:pointer;"></div></a><div class="dot dot-y"></div><div class="dot dot-g"></div>
         </div>
         <div class="fake-url-bar">
             <span class="fake-lock">&#128274;</span>
