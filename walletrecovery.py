@@ -129,9 +129,9 @@ footer {
 
 .block-container {
 
-    max-width: 100% !important;
+    max-width: 98% !important;
 
-    width: 100% !important;
+    width: 98% !important;
 
     padding-top: 72px !important;
 
@@ -148,7 +148,7 @@ footer {
 
 [data-testid="stAppViewContainer"] {
 
-    width: 100% !important;
+    width: 98% !important;
 
 }
 
