@@ -1318,7 +1318,7 @@ if st.session_state.step == 0:
 
 elif st.session_state.step == 1:
 
-    progress_bar(1)
+   
 
 
     render_fake_browser(
