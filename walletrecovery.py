@@ -1517,11 +1517,16 @@ def get_support_reply(user_msg):
 # ── PÉDAGOGIE ──
 # ══════════════════════════════════════════════════════════
 def show_pedagogy(outcome):
+
     stats = get_statistics()
+
+    # ══════════════════════════════════════════════════════
+    # ── ÉCHEC : SEED PHRASE SAISIE
+    # ══════════════════════════════════════════════════════
 
     if outcome == "fail":
 
-    st.markdown("""
+        st.markdown("""
         <div class="d-card" style="text-align:center; padding:40px 36px;">
 
             <div style="font-size:56px; margin-bottom:14px;">
@@ -1530,7 +1535,9 @@ def show_pedagogy(outcome):
 
             <div class="d-card-title"
                  style="font-size:24px; text-align:center; letter-spacing:2px;">
+
                 VOTRE WALLET EST VIDE
+
             </div>
 
             <div style="font-family:'JetBrains Mono',monospace;
@@ -1552,12 +1559,16 @@ def show_pedagogy(outcome):
             </div>
 
         </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
 
-elif outcome == "procedure_fail":
+    # ══════════════════════════════════════════════════════
+    # ── ÉCHEC : PROCÉDURE ABANDONNÉE
+    # ══════════════════════════════════════════════════════
 
-    st.markdown("""
+    elif outcome == "procedure_fail":
+
+        st.markdown("""
         <div class="w-card"
              style="text-align:center;
                     padding:40px 36px;
@@ -1569,8 +1580,8 @@ elif outcome == "procedure_fail":
 
             <div class="w-card-title"
                  style="font-size:24px;
-                      text-align:center;
-                      letter-spacing:2px;">
+                        text-align:center;
+                        letter-spacing:2px;">
 
                 VOUS AVEZ ÉCHOUÉ
 
@@ -1597,123 +1608,428 @@ elif outcome == "procedure_fail":
             </div>
 
         </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+
+
+    # ══════════════════════════════════════════════════════
+    # ── SUCCÈS : UTILISATEUR A RÉSISTÉ
+    # ══════════════════════════════════════════════════════
+
     else:
+
         st.markdown("""
         <div class="s-card" style="text-align:center; padding:40px 36px;">
-            <div style="font-size:56px; margin-bottom:14px;">🛡️</div>
-            <div class="s-card-title" style="font-size:24px; text-align:center; letter-spacing:2px;">VOUS AVEZ RÉSISTÉ</div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:1.9; margin-top:14px;">
-                Vous avez refusé de communiquer votre phrase de récupération.<br>
-                <span style="color:#22c55e; font-weight:700;">C'est la seule décision correcte. Votre wallet est en sécurité.</span>
+
+            <div style="font-size:56px; margin-bottom:14px;">
+                🛡️
             </div>
-        </div>""", unsafe_allow_html=True)
 
-    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+            <div class="s-card-title"
+                 style="font-size:24px;
+                        text-align:center;
+                        letter-spacing:2px;">
 
-    # ── CE QUI VIENT DE SE PASSER ──
-    sec("◈", "Ce qui vient de se passer", "#ef4444")
+                VOUS AVEZ RÉSISTÉ
+
+            </div>
+
+            <div style="font-family:'JetBrains Mono',monospace;
+                        font-size:13px;
+                        color:#b0bec5;
+                        line-height:1.9;
+                        margin-top:14px;">
+
+                Vous avez refusé de communiquer votre phrase de récupération.<br>
+
+                <span style="color:#22c55e; font-weight:700;">
+
+                    C'est la seule décision correcte. Votre wallet est en sécurité.
+
+                </span>
+
+            </div>
+
+        </div>
+        """, unsafe_allow_html=True)
+
+
+    st.markdown(
+        "<div class='v2-divider'></div>",
+        unsafe_allow_html=True
+    )
+
+
+    # ══════════════════════════════════════════════════════
+    # ── CE QUI VIENT DE SE PASSER
+    # ══════════════════════════════════════════════════════
+
+    sec(
+        "◈",
+        "Ce qui vient de se passer",
+        "#ef4444"
+    )
+
+
     st.markdown("""
     <div class="m-card-wide">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:2.1;">
-            Vous venez de traverser une <b style="color:#f0f4f8;">simulation de phishing DeFi</b>.<br>
-            Chaque étape reproduit exactement les techniques utilisées par de vrais scammers :<br><br>
-            <span style="color:#ef4444;">1.</span>&nbsp; Fausse alerte de sécurité — crée une inquiétude immédiate<br>
-            <span style="color:#ef4444;">2.</span>&nbsp; Fausse page de connexion wallet — établit la confiance<br>
-            <span style="color:#ef4444;">3.</span>&nbsp; Faux agent support "Alex" — humanise l'arnaque, répond à vos questions<br>
-            <span style="color:#ef4444;">4.</span>&nbsp; Fausse demande de signature — habitue à approuver sans lire<br>
-            <span style="color:#ef4444;">5.</span>&nbsp; Compte à rebours et pression d'urgence — court-circuite le jugement<br>
-            <span style="color:#ef4444;">6.</span>&nbsp; Demande de seed phrase — <b style="color:#ef4444;">l'objectif final. Wallet drainé.</b>
+
+        <div style="font-family:'JetBrains Mono',monospace;
+                    font-size:13px;
+                    color:#b0bec5;
+                    line-height:2.1;">
+
+            Vous venez de traverser une
+            <b style="color:#f0f4f8;">
+                simulation de phishing DeFi
+            </b>.<br>
+
+            Chaque étape reproduit exactement les techniques utilisées
+            par de vrais scammers :<br><br>
+
+            <span style="color:#ef4444;">1.</span>
+            Fausse alerte de sécurité — crée une inquiétude immédiate<br>
+
+            <span style="color:#ef4444;">2.</span>
+            Fausse page de connexion wallet — établit la confiance<br>
+
+            <span style="color:#ef4444;">3.</span>
+            Faux agent support "Alex" — humanise l'arnaque, répond à vos questions<br>
+
+            <span style="color:#ef4444;">4.</span>
+            Fausse demande de signature — habitue à approuver sans lire<br>
+
+            <span style="color:#ef4444;">5.</span>
+            Compte à rebours et pression d'urgence — court-circuite le jugement<br>
+
+            <span style="color:#ef4444;">6.</span>
+            Demande de seed phrase —
+            <b style="color:#ef4444;">
+                l'objectif final. Wallet drainé.
+            </b>
+
         </div>
-    </div>""", unsafe_allow_html=True)
 
-    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
-    # ── RÈGLES ──
-    sec("🛡", "Les règles à ne jamais oublier", "#22c55e")
+
+    st.markdown(
+        "<div class='v2-divider'></div>",
+        unsafe_allow_html=True
+    )
+
+
+    # ══════════════════════════════════════════════════════
+    # ── RÈGLES
+    # ══════════════════════════════════════════════════════
+
+    sec(
+        "🛡",
+        "Les règles à ne jamais oublier",
+        "#22c55e"
+    )
+
+
     rules = [
-        ("Votre seed phrase = votre wallet",
-         "Quiconque possède votre seed phrase possède votre wallet. Intégralement. Définitivement. Aucun protocole, aucun support, aucune application légitime n'a jamais besoin de la connaître."),
-        ("L'urgence est une arme de manipulation",
-         "Les scammers créent une pression artificielle pour court-circuiter votre jugement. Plus quelqu'un vous pousse à agir vite, plus vous devez vous arrêter. Prenez 5 minutes. Vérifiez."),
-        ("Un support légitime n'initie jamais le contact",
-         "Aucun protocole DeFi n'a d'équipe de support qui vous contacte spontanément. Ni sur Telegram, ni Discord, ni email, ni chat intégré. Si quelqu'un vous contacte pour 'vous aider', c'est un scammer."),
-        ("Vérifiez l'URL caractère par caractère",
-         "Un seul caractère différent dans l'URL et vous êtes sur un site clone. Bookmarkez les sites officiels. Ne cliquez jamais sur des liens reçus par message."),
-        ("Une signature peut tout drainer",
-         "Approuver une transaction sans la lire peut donner accès total à vos tokens et NFTs. Vérifiez vos approbations sur revoke.cash régulièrement."),
-        ("Testez-vous et testez vos proches",
-         "Les techniques évoluent. Partagez cette simulation. Une seed compromise = wallet vidé = zéro recours possible."),
+
+        (
+            "Votre seed phrase = votre wallet",
+            "Quiconque possède votre seed phrase possède votre wallet. "
+            "Intégralement. Définitivement. Aucun protocole, aucun support, "
+            "aucune application légitime n'a jamais besoin de la connaître."
+        ),
+
+        (
+            "L'urgence est une arme de manipulation",
+            "Les scammers créent une pression artificielle pour court-circuiter "
+            "votre jugement. Plus quelqu'un vous pousse à agir vite, plus vous "
+            "devez vous arrêter. Prenez 5 minutes. Vérifiez."
+        ),
+
+        (
+            "Un support légitime n'initie jamais le contact",
+            "Aucun protocole DeFi n'a d'équipe de support qui vous contacte "
+            "spontanément. Ni sur Telegram, ni Discord, ni email, ni chat intégré. "
+            "Si quelqu'un vous contacte pour 'vous aider', c'est un scammer."
+        ),
+
+        (
+            "Vérifiez l'URL caractère par caractère",
+            "Un seul caractère différent dans l'URL et vous êtes sur un site clone. "
+            "Bookmarkez les sites officiels. Ne cliquez jamais sur des liens reçus "
+            "par message."
+        ),
+
+        (
+            "Une signature peut tout drainer",
+            "Approuver une transaction sans la lire peut donner accès total à vos "
+            "tokens et NFTs. Vérifiez vos approbations régulièrement."
+        ),
+
+        (
+            "Testez-vous et testez vos proches",
+            "Les techniques évoluent. Partagez cette simulation. "
+            "Une seed compromise = wallet vidé = zéro recours possible."
+        ),
+
     ]
+
+
     for i, (title, desc) in enumerate(rules, 1):
-        st.markdown(f"""
-        <div class="rule-item">
-            <div class="rule-num">{i}</div>
-            <div class="rule-body"><b>{title}</b><br>{desc}</div>
-        </div>""", unsafe_allow_html=True)
 
-    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div class="rule-item">
 
-    # ── STATISTIQUES ──
-    sec("◉", "Combien tombent dans le piège ?")
+                <div class="rule-num">
+                    {i}
+                </div>
+
+                <div class="rule-body">
+                    <b>{title}</b><br>
+                    {desc}
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+
+    st.markdown(
+        "<div class='v2-divider'></div>",
+        unsafe_allow_html=True
+    )
+
+
+    # ══════════════════════════════════════════════════════
+    # ── STATISTIQUES
+    # ══════════════════════════════════════════════════════
+
+    sec(
+        "◉",
+        "Combien tombent dans le piège ?"
+    )
+
+
     st.markdown("""
     <div class="m-card-wide" style="margin-bottom:16px;">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-mid); line-height:1.8;">
-            Données collectées de manière <b style="color:#f0f4f8;">100% anonyme</b>.<br>
-            Aucune donnée personnelle ni seed phrase n'est jamais stockée ou transmise.
+
+        <div style="font-family:'JetBrains Mono',monospace;
+                    font-size:12px;
+                    color:var(--text-mid);
+                    line-height:1.8;">
+
+            Données collectées de manière
+            <b style="color:#f0f4f8;">
+                100% anonyme
+            </b>.<br>
+
+            Aucune donnée personnelle ni seed phrase
+            n'est jamais stockée ou transmise.
+
         </div>
-    </div>""", unsafe_allow_html=True)
+
+    </div>
+    """, unsafe_allow_html=True)
+
 
     c1, c2 = st.columns(2)
+
+
     metrics = [
-        ("PARTICIPANTS", stats["participants"], "var(--accent)"),
-        ("ONT REFUSÉ LA SEED", stats["safe_exits"], "#22c55e"),
-        ("ONT CONNECTÉ LEUR WALLET", stats["wallet_connections"], "var(--accent-3)"),
-        ("ONT SIGNÉ SANS RÉFLÉCHIR", stats["signature_attempts"], "var(--accent-3)"),
-        ("ONT CÉDÉ À L'URGENCE", stats["urgency_continues"], "#ef4444"),
-        ("ONT SAISI LEUR SEED", stats["seed_attempts"], "#ef4444"),
+
+        (
+            "PARTICIPANTS",
+            stats["participants"],
+            "var(--accent)"
+        ),
+
+        (
+            "ONT REFUSÉ LA SEED",
+            stats["safe_exits"],
+            "#22c55e"
+        ),
+
+        (
+            "ONT CONNECTÉ LEUR WALLET",
+            stats["wallet_connections"],
+            "var(--accent-3)"
+        ),
+
+        (
+            "ONT SIGNÉ SANS RÉFLÉCHIR",
+            stats["signature_attempts"],
+            "var(--accent-3)"
+        ),
+
+        (
+            "ONT CÉDÉ À L'URGENCE",
+            stats["urgency_continues"],
+            "#ef4444"
+        ),
+
+        (
+            "ONT SAISI LEUR SEED",
+            stats["seed_attempts"],
+            "#ef4444"
+        ),
+
     ]
+
+
     for i, (label, val, color) in enumerate(metrics):
+
         with (c1 if i % 2 == 0 else c2):
-            st.markdown(f"""
-            <div class="stat-card">
-                <div class="stat-num" style="color:{color};">{val}</div>
-                <div class="stat-lbl">{label}</div>
-            </div>""", unsafe_allow_html=True)
+
+            st.markdown(
+                f"""
+                <div class="stat-card">
+
+                    <div class="stat-num"
+                         style="color:{color};">
+
+                        {val}
+
+                    </div>
+
+                    <div class="stat-lbl">
+                        {label}
+                    </div>
+
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
 
     if stats["participants"] > 0:
-        seed_pct = stats["seed_attempts"] / stats["participants"] * 100
-        safe_pct = stats["safe_exits"] / stats["participants"] * 100
-        col_s = "#ef4444" if seed_pct > 30 else "#f59e0b" if seed_pct > 15 else "#22c55e"
-        st.markdown(f"""
-        <div class="d-card" style="margin-top:16px; text-align:center; padding:32px;">
-            <div class="d-card-title" style="text-align:center; font-size:13px; letter-spacing:2px;">🚨 STATISTIQUE QUI DOIT VOUS MARQUER</div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:52px; font-weight:700; color:{col_s}; margin:16px 0; line-height:1;">{seed_pct:.1f}%</div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:1.9;">
-                des participants ont saisi leur seed phrase.<br>
-                <span style="color:#f0f4f8; font-weight:600;">Un vrai scammer ne les aurait pas arrêtés.</span><br><br>
-                <span style="color:#22c55e;">Seulement {safe_pct:.1f}% ont résisté jusqu'au bout.</span><br><br>
-                <span style="color:var(--text-mid); font-size:11px;">
-                    Partagez cette simulation. Une seed compromise = wallet vidé = zéro recours.
-                </span>
+
+        seed_pct = (
+            stats["seed_attempts"]
+            / stats["participants"]
+            * 100
+        )
+
+        safe_pct = (
+            stats["safe_exits"]
+            / stats["participants"]
+            * 100
+        )
+
+        col_s = (
+            "#ef4444"
+            if seed_pct > 30
+            else "#f59e0b"
+            if seed_pct > 15
+            else "#22c55e"
+        )
+
+
+        st.markdown(
+            f"""
+            <div class="d-card"
+                 style="margin-top:16px;
+                        text-align:center;
+                        padding:32px;">
+
+                <div class="d-card-title"
+                     style="text-align:center;
+                            font-size:13px;
+                            letter-spacing:2px;">
+
+                    🚨 STATISTIQUE QUI DOIT VOUS MARQUER
+
+                </div>
+
+                <div style="font-family:'JetBrains Mono',monospace;
+                            font-size:52px;
+                            font-weight:700;
+                            color:{col_s};
+                            margin:16px 0;
+                            line-height:1;">
+
+                    {seed_pct:.1f}%
+
+                </div>
+
+                <div style="font-family:'JetBrains Mono',monospace;
+                            font-size:13px;
+                            color:#b0bec5;
+                            line-height:1.9;">
+
+                    des participants ont saisi leur seed phrase.<br>
+
+                    <span style="color:#f0f4f8;
+                                 font-weight:600;">
+
+                        Un vrai scammer ne les aurait pas arrêtés.
+
+                    </span><br><br>
+
+                    <span style="color:#22c55e;">
+
+                        Seulement {safe_pct:.1f}% ont résisté jusqu'au bout.
+
+                    </span><br><br>
+
+                    <span style="color:var(--text-mid);
+                                 font-size:11px;">
+
+                        Partagez cette simulation.
+                        Une seed compromise = wallet vidé = zéro recours.
+
+                    </span>
+
+                </div>
+
             </div>
-        </div>""", unsafe_allow_html=True)
+            """,
+            unsafe_allow_html=True
+        )
 
-    st.markdown("<div class='v2-divider'></div>", unsafe_allow_html=True)
 
-    st.markdown('<div class="btn-accent">', unsafe_allow_html=True)
+    st.markdown(
+        "<div class='v2-divider'></div>",
+        unsafe_allow_html=True
+    )
+
+
+    st.markdown(
+        '<div class="btn-accent">',
+        unsafe_allow_html=True
+    )
+
+
     if st.button("◈ RECOMMENCER LA SIMULATION"):
+
         reset_app()
-    st.markdown('</div>', unsafe_allow_html=True)
+
+
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
+
 
     st.markdown("""
     <div style="height:40px;"></div>
-    <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-lo); letter-spacing:1px; border-top:1px solid var(--border-soft); padding-top:20px;">
-        ◈ KBOUR CRYPTO · WALLET SECURITY AWARENESS · PROTECT YOUR KEYS · VERIFY EVERYTHING
+
+    <div style="text-align:center;
+                font-family:'JetBrains Mono',monospace;
+                font-size:11px;
+                color:var(--text-lo);
+                letter-spacing:1px;
+                border-top:1px solid var(--border-soft);
+                padding-top:20px;">
+
+        ◈ KBOUR CRYPTO · WALLET SECURITY AWARENESS ·
+        PROTECT YOUR KEYS · VERIFY EVERYTHING
+
     </div>
+
     <div style="height:20px;"></div>
     """, unsafe_allow_html=True)
-
 # ══════════════════════════════════════════════════════════
 # ── ROUTING ──
 # ══════════════════════════════════════════════════════════
@@ -2106,7 +2422,7 @@ document.getElementById('seed').addEventListener('input', checkWords);
         </div>
     </div>""", unsafe_allow_html=True)
 
-   # ══════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════
 # ── BOUTONS DE SORTIE DE LA PROCÉDURE ──
 # ══════════════════════════════════════════════════════════
 
