@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/wallet_security_v4.py << 'ENDOFPYTHON'
 # -*- coding: utf-8 -*-
 import streamlit as st
 import streamlit.components.v1 as components
