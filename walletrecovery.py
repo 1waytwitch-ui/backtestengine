@@ -13,6 +13,29 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ===================== FIX: MARKDOWN INDENTATION BUG =====================
+#
+# Streamlit's st.markdown() runs its content through a Markdown parser
+# BEFORE rendering the HTML. In Markdown, any line indented with 4+ spaces
+# is treated as an indented code block, so heavily-indented HTML (like the
+# f-strings used everywhere in this file) gets displayed as raw code
+# instead of being rendered as HTML.
+#
+# Fix: wrap st.markdown so every line has its leading whitespace stripped
+# before being handed to Streamlit. Leading whitespace has no effect on
+# how HTML/CSS renders, so this is safe and requires no other changes.
+
+_original_markdown = st.markdown
+
+def _dedented_markdown(body, *args, **kwargs):
+    if isinstance(body, str):
+        body = "\n".join(
+            line.lstrip() if line.strip() else line
+            for line in body.split("\n")
+        )
+    return _original_markdown(body, *args, **kwargs)
+
+st.markdown = _dedented_markdown
 
 # ===================== GLOBAL THEME =====================
 
