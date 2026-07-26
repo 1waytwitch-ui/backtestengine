@@ -230,18 +230,7 @@ div[data-baseweb="input"] input { background:var(--bg-panel) !important; color:v
 </style>
 """, unsafe_allow_html=True)
 
-# ── NAV BAR (volontairement vague — on est dans la peau d'un vrai site de scam) ──
-st.markdown("""
-<div class="nav-bar">
-    <div class="nav-brand">
-        <div class="nav-glyph">🛡</div>
-        <div>
-            <div class="nav-title">WALLET RECOVERY</div>
-            <div class="nav-subtitle"><span class="status-dot"></span>SECURITY VERIFICATION REQUIRED</div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+
 
 # ══════════════════════════════════════════════════════════
 # ── DATABASE ──
