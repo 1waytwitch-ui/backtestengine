@@ -2,6 +2,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import sqlite3
+import time
 from pathlib import Path
 
 # ===================== PAGE CONFIG =====================
@@ -1446,6 +1447,8 @@ defaults = {
 
     "chat_step": 0,
     "user_messages": [],
+
+    "selected_wallet": None,
 }
 for k, v in defaults.items():
     if k not in st.session_state:
@@ -2210,6 +2213,60 @@ elif st.session_state.step == 1:
 
     progress_bar(1)
 
+    selected = st.session_state.selected_wallet
+
+    wallets = [
+        ("MetaMask", "&#129418;", "Browser Extension"),
+        ("Rabby Wallet", "&#128007;", "Browser Extension"),
+        ("WalletConnect", "&#9670;", "All wallets via QR code"),
+    ]
+
+    def wallet_row_html(name, icon, subtitle):
+        is_selected = (selected == name)
+        border = "1px solid var(--accent)" if is_selected else "1px solid rgba(239,68,68,0.3)" if name == "MetaMask" and not selected else "1px solid var(--border-soft)"
+        glow = "box-shadow:0 0 0 1px var(--accent), 0 0 14px rgba(0,212,170,.25);" if is_selected else ""
+        check = """<span style="margin-left:auto;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;">&#10003; Selected</span>""" if is_selected else ""
+        return f"""
+                    <div style="background:#1a2535;
+                                border:{border};
+                                {glow}
+                                border-radius:8px;
+                                padding:14px 16px;
+                                display:flex;
+                                align-items:center;
+                                gap:12px;
+                                transition:all .2s;">
+
+                        <div style="font-size:22px;">
+                            {icon}
+                        </div>
+
+                        <div>
+
+                            <div style="font-family:'JetBrains Mono',monospace;
+                                        font-size:12px;
+                                        font-weight:600;
+                                        color:#f0f4f8;">
+
+                                {name}
+
+                            </div>
+
+                            <div style="font-family:'JetBrains Mono',monospace;
+                                        font-size:10px;
+                                        color:#8899aa;">
+
+                                {subtitle}
+
+                            </div>
+
+                        </div>
+
+                        {check}
+
+                    </div>
+        """
+
     st.markdown(
         f"""
         <div class="fake-browser">
@@ -2241,115 +2298,11 @@ elif st.session_state.step == 1:
                             flex-direction:column;
                             gap:10px;">
 
-                    <div style="background:#1a2535;
-                                border:1px solid rgba(239,68,68,0.3);
-                                border-radius:8px;
-                                padding:14px 16px;
-                                display:flex;
-                                align-items:center;
-                                gap:12px;">
+                    {wallet_row_html(*wallets[0])}
 
-                        <div style="font-size:22px;">
-                            &#129418;
-                        </div>
+                    {wallet_row_html(*wallets[1])}
 
-                        <div>
-
-                            <div style="font-family:'JetBrains Mono',monospace;
-                                        font-size:12px;
-                                        font-weight:600;
-                                        color:#f0f4f8;">
-
-                                MetaMask
-
-                            </div>
-
-                            <div style="font-family:'JetBrains Mono',monospace;
-                                        font-size:10px;
-                                        color:#8899aa;">
-
-                                Browser Extension
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div style="background:#1a2535;
-                                border:1px solid var(--border-soft);
-                                border-radius:8px;
-                                padding:14px 16px;
-                                display:flex;
-                                align-items:center;
-                                gap:12px;">
-
-                        <div style="font-size:22px;">
-                            &#128007;
-                        </div>
-
-                        <div>
-
-                            <div style="font-family:'JetBrains Mono',monospace;
-                                        font-size:12px;
-                                        font-weight:600;
-                                        color:#f0f4f8;">
-
-                                Rabby Wallet
-
-                            </div>
-
-                            <div style="font-family:'JetBrains Mono',monospace;
-                                        font-size:10px;
-                                        color:#8899aa;">
-
-                                Browser Extension
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div style="background:#1a2535;
-                                border:1px solid var(--border-soft);
-                                border-radius:8px;
-                                padding:14px 16px;
-                                display:flex;
-                                align-items:center;
-                                gap:12px;">
-
-                        <div style="font-size:20px;
-                                    color:#0ea5e9;
-                                    font-weight:700;
-                                    font-family:'JetBrains Mono',monospace;">
-
-                            &#9670;
-
-                        </div>
-
-                        <div>
-
-                            <div style="font-family:'JetBrains Mono',monospace;
-                                        font-size:12px;
-                                        font-weight:600;
-                                        color:#f0f4f8;">
-
-                                WalletConnect
-
-                            </div>
-
-                            <div style="font-family:'JetBrains Mono',monospace;
-                                        font-size:10px;
-                                        color:#8899aa;">
-
-                                All wallets via QR code
-
-                            </div>
-
-                        </div>
-
-                    </div>
+                    {wallet_row_html(*wallets[2])}
 
                 </div>
 
@@ -2360,10 +2313,49 @@ elif st.session_state.step == 1:
         unsafe_allow_html=True
     )
 
-    if st.button(
-        "🦊 CONNECTER MON WALLET",
-        key="btn_connect_wallet"
-    ):
+    st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
+
+    if selected is None:
+
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            if st.button("🦊 MetaMask", key="btn_sel_metamask", use_container_width=True):
+                st.session_state.selected_wallet = "MetaMask"
+                st.rerun()
+
+        with c2:
+            if st.button("🐰 Rabby", key="btn_sel_rabby", use_container_width=True):
+                st.session_state.selected_wallet = "Rabby Wallet"
+                st.rerun()
+
+        with c3:
+            if st.button("🔷 WalletConnect", key="btn_sel_walletconnect", use_container_width=True):
+                st.session_state.selected_wallet = "WalletConnect"
+                st.rerun()
+
+    else:
+
+        st.markdown(
+            f"""
+            <div class="m-card-wide" style="text-align:center;">
+
+                <div style="font-family:'JetBrains Mono',monospace;
+                            font-size:12px;
+                            color:var(--accent);
+                            letter-spacing:1px;">
+
+                    &#128274; Connecting to {selected}...
+
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+        with st.spinner(f"Connecting to {selected}..."):
+            time.sleep(1.3)
 
         increment_stat("wallet_connections")
 
