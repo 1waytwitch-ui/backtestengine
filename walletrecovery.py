@@ -1520,13 +1520,27 @@ def url_bar(path=""):
     return f"""
     <div class="fake-browser-bar">
         <div class="fake-dots">
-            <a href="?closed_tab=1" title="Fermer l'onglet" style="text-decoration:none;line-height:0;"><div class="dot dot-r" style="cursor:pointer;"></div></a><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
         </div>
         <div class="fake-url-bar">
             <span class="fake-lock">&#128274;</span>
             <span style="color:#b0bec5;">https://</span><span class="fake-url-host">uniswap-security.protocol-verify.com</span><span style="color:#8899aa;">{path}</span>
         </div>
     </div>"""
+
+def close_tab_control(key_suffix):
+    st.markdown(
+        "<div style='margin:2px 0 10px 0;font-family:JetBrains Mono,monospace;"
+        "font-size:10px;color:#445566;'>&#128073; Le bon réflexe : fermer l'onglet.</div>",
+        unsafe_allow_html=True
+    )
+    if st.button("✕ Fermer l'onglet", key=f"close_tab_{key_suffix}"):
+        if not st.session_state.safe_exit_registered:
+            increment_stat("safe_exits")
+            st.session_state.safe_exit_registered = True
+        st.session_state.outcome = "success"
+        st.session_state.completed = True
+        st.rerun()
 
 # ══════════════════════════════════════════════════════════
 # ── CHAT SUPPORT — réponses automatiques au message user ──
@@ -2054,7 +2068,7 @@ def show_pedagogy(outcome):
                     border-top:1px solid var(--border-soft);
                     padding-top:20px;">
 
-            ◈ WALLET RECOVERY ·
+            ◈ KBOUR CRYPTO · WALLET SECURITY AWARENESS ·
             PROTECT YOUR KEYS · VERIFY EVERYTHING
 
         </div>
@@ -2218,6 +2232,8 @@ if st.session_state.step == 0:
         st.session_state.step = 1
         st.rerun()
 
+    close_tab_control("step0")
+
 
 # ══════════════════════════════════════════════════════════
 # ── ÉTAPE 1 — CONNEXION WALLET
@@ -2340,6 +2356,8 @@ elif st.session_state.step == 1:
             if st.button("🔷 WalletConnect", key="btn_sel_walletconnect", use_container_width=True):
                 st.session_state.selected_wallet = "WalletConnect"
                 st.rerun()
+
+        close_tab_control("step1")
 
     else:
 
@@ -2657,6 +2675,8 @@ elif st.session_state.step == 2:
 
             st.rerun()
 
+    close_tab_control("step2")
+
 
 # ══════════════════════════════════════════════════════════
 # ── ÉTAPE 3 — SIGNATURE
@@ -2750,6 +2770,8 @@ elif st.session_state.step == 3:
         st.session_state.step = 4
 
         st.rerun()
+
+    close_tab_control("step3")
 
 
 # ══════════════════════════════════════════════════════════
@@ -2871,6 +2893,8 @@ elif st.session_state.step == 4:
         st.session_state.step = 5
 
         st.rerun()
+
+    close_tab_control("step4")
 
 
 # ══════════════════════════════════════════════════════════
