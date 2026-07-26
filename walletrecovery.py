@@ -514,8 +514,7 @@ if st.session_state.step == 0:
         st.session_state.step = 1
         st.rerun()
 
-    
-    </div>""", unsafe_allow_html=True)
+
 
 # ══════════════════════════════════════════════════════════
 # ── ÉTAPE 1 — CONNEXION WALLET ──
