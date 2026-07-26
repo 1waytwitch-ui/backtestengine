@@ -302,7 +302,7 @@ def show_pedagogy(outcome):
         st.markdown("""
         <div class="d-card" style="text-align:center; padding:40px 36px;">
             <div style="font-size:56px; margin-bottom:14px;">💀</div>
-            <div class="d-card-title" style="font-size:24px; text-align:center; letter-spacing:2px;">VOUS AVEZ ÉTÉ SCAMMÉ</div>
+            <div class="d-card-title" style="font-size:24px; text-align:center; letter-spacing:2px;">VOTRE WALLET EST VIDE</div>
             <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:1.9; margin-top:14px;">
                 Vous avez saisi votre phrase de récupération sur un site web.<br>
                 <span style="color:#ef4444; font-weight:700; font-size:15px;">Dans une situation réelle : wallet vide en &lt; 30 secondes.</span>
@@ -768,10 +768,8 @@ function checkWords() {
         document.getElementById('seed').disabled = true;
         document.body.innerHTML =
             '<div style="padding:25px;border:1px solid #ff3333;border-radius:10px;background:rgba(255,0,0,0.08);color:#ff4444;font-family:monospace;font-size:20px;line-height:1.6;">'
-            + '<strong>&#128680; VOUS AVEZ ECHOUE</strong>'
-            + '<br><br>'
-            + 'LA PROCEDURE A ETE INTERROMPUE.'
-            + '<br><br>'
+            + '<strong>&#128680; VOUS AVEZ PERDU VOTRE WALLET</strong>'            
+            + 'LA PROCEDURE A ETE INTERROMPUE.'          
             + 'UNE SEED PHRASE NE DOIT JAMAIS<br>ETRE SAISIE SUR UN SITE WEB.'
             + '</div>';
         setTimeout(function() {
