@@ -1407,10 +1407,20 @@ init_database()
 # ── SESSION STATE ──
 # ══════════════════════════════════════════════════════════
 defaults = {
-    "step": 0, "completed": False, "outcome": None,
+    "step": 0,
+    "completed": False,
+    "outcome": None,
+
     "participant_registered": False,
+
+    # Procédure refusée
     "safe_exit_registered": False,
+
+    # Procédure échouée
+    "failure_registered": False,
+
     "seed_fail_registered": False,
+
     "chat_step": 0,
     "user_messages": [],
 }
@@ -1422,11 +1432,28 @@ if not st.session_state.participant_registered:
     st.session_state.participant_registered = True
     increment_stat("participants")
 
+# ── ÉCHEC DE LA PROCÉDURE ──
+if "procedure_fail" in st.query_params:
+
+    if not st.session_state.failure_registered:
+        increment_stat("urgency_continues")
+        st.session_state.failure_registered = True
+
+    st.query_params.clear()
+
+    st.session_state.outcome = "procedure_fail"
+    st.session_state.step = 98
+
+
+# ── SEED PHRASE SAISIE ──
 if "seed_fail" in st.query_params:
+
     if not st.session_state.seed_fail_registered:
         increment_stat("seed_attempts")
         st.session_state.seed_fail_registered = True
+
     st.query_params.clear()
+
     st.session_state.outcome = "fail"
     st.session_state.step = 99
 
@@ -1493,15 +1520,84 @@ def show_pedagogy(outcome):
     stats = get_statistics()
 
     if outcome == "fail":
-        st.markdown("""
+
+    st.markdown("""
         <div class="d-card" style="text-align:center; padding:40px 36px;">
-            <div style="font-size:56px; margin-bottom:14px;">💀</div>
-            <div class="d-card-title" style="font-size:24px; text-align:center; letter-spacing:2px;">VOTRE WALLET EST VIDE</div>
-            <div style="font-family:'JetBrains Mono',monospace; font-size:13px; color:#b0bec5; line-height:1.9; margin-top:14px;">
-                Vous avez saisi votre phrase de récupération sur un site web.<br>
-                <span style="color:#ef4444; font-weight:700; font-size:15px;">Dans une situation réelle : wallet vide en &lt; 30 secondes.</span>
+
+            <div style="font-size:56px; margin-bottom:14px;">
+                💀
             </div>
-        </div>""", unsafe_allow_html=True)
+
+            <div class="d-card-title"
+                 style="font-size:24px; text-align:center; letter-spacing:2px;">
+                VOTRE WALLET EST VIDE
+            </div>
+
+            <div style="font-family:'JetBrains Mono',monospace;
+                        font-size:13px;
+                        color:#b0bec5;
+                        line-height:1.9;
+                        margin-top:14px;">
+
+                Vous avez saisi votre phrase de récupération sur un site web.<br>
+
+                <span style="color:#ef4444;
+                             font-weight:700;
+                             font-size:15px;">
+
+                    Dans une situation réelle : wallet vidé en quelques secondes.
+
+                </span>
+
+            </div>
+
+        </div>
+    """, unsafe_allow_html=True)
+
+
+elif outcome == "procedure_fail":
+
+    st.markdown("""
+        <div class="w-card"
+             style="text-align:center;
+                    padding:40px 36px;
+                    border-color:rgba(245,158,11,.45);">
+
+            <div style="font-size:56px; margin-bottom:14px;">
+                ⚠️
+            </div>
+
+            <div class="w-card-title"
+                 style="font-size:24px;
+                      text-align:center;
+                      letter-spacing:2px;">
+
+                VOUS AVEZ ÉCHOUÉ
+
+            </div>
+
+            <div style="font-family:'JetBrains Mono',monospace;
+                        font-size:13px;
+                        color:#b0bec5;
+                        line-height:1.9;
+                        margin-top:14px;">
+
+                Vous avez abandonné la procédure de sécurité
+                sous la pression du scénario.<br>
+
+                <span style="color:#f59e0b;
+                             font-weight:700;
+                             font-size:15px;">
+
+                    Dans une situation réelle, vous pourriez continuer
+                    à suivre les instructions du scammer.
+
+                </span>
+
+            </div>
+
+        </div>
+    """, unsafe_allow_html=True)
     else:
         st.markdown("""
         <div class="s-card" style="text-align:center; padding:40px 36px;">
@@ -1621,12 +1717,27 @@ def show_pedagogy(outcome):
 # ══════════════════════════════════════════════════════════
 # ── ROUTING ──
 # ══════════════════════════════════════════════════════════
+# ── ÉCHEC : SEED PHRASE SAISIE ──
 if st.session_state.step == 99 or st.session_state.outcome == "fail":
+
     show_pedagogy("fail")
+
     st.stop()
 
+
+# ── ÉCHEC : PROCÉDURE ABANDONNÉE ──
+if st.session_state.step == 98 or st.session_state.outcome == "procedure_fail":
+
+    show_pedagogy("procedure_fail")
+
+    st.stop()
+
+
+# ── SUCCÈS : UTILISATEUR A REFUSÉ LA SEED ──
 if st.session_state.completed:
+
     show_pedagogy("success")
+
     st.stop()
 
 # ══════════════════════════════════════════════════════════
@@ -1995,11 +2106,70 @@ document.getElementById('seed').addEventListener('input', checkWords);
         </div>
     </div>""", unsafe_allow_html=True)
 
-    st.markdown('<div style="opacity:0.15; transform:scale(0.8); transform-origin:center;">', unsafe_allow_html=True)
-    if st.button("decline / refuse procedure"):
+   # ══════════════════════════════════════════════════════════
+# ── BOUTONS DE SORTIE DE LA PROCÉDURE ──
+# ══════════════════════════════════════════════════════════
+
+st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
+
+col_refuse, col_fail = st.columns(2)
+
+
+# ──────────────────────────────────────────────────────────
+# BOUTON 1 — REFUSER LA PROCÉDURE
+# ──────────────────────────────────────────────────────────
+
+with col_refuse:
+
+    st.markdown(
+        '<div class="btn-success">',
+        unsafe_allow_html=True
+    )
+
+    if st.button(
+        "🛡 REFUSER LA PROCÉDURE",
+        key="btn_refuse_procedure"
+    ):
+
         if not st.session_state.safe_exit_registered:
+
             increment_stat("safe_exits")
+
             st.session_state.safe_exit_registered = True
+
         st.session_state.completed = True
+
         st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+# ──────────────────────────────────────────────────────────
+# BOUTON 2 — J'AI ÉCHOUÉ
+# ──────────────────────────────────────────────────────────
+
+with col_fail:
+
+    st.markdown(
+        '<div class="btn-neutral">',
+        unsafe_allow_html=True
+    )
+
+    if st.button(
+        "⚠ J'AI ÉCHOUÉ",
+        key="btn_procedure_failed"
+    ):
+
+        st.session_state.outcome = "procedure_fail"
+
+        st.session_state.step = 98
+
+        st.rerun()
+
+    st.markdown(
+        '</div>',
+        unsafe_allow_html=True
+    )
