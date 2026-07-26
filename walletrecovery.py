@@ -8,7 +8,7 @@ from pathlib import Path
 st.set_page_config(
     page_title="WALLET RECOVERY",
     page_icon="🛡",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed"
 )
 
@@ -154,18 +154,7 @@ html, body, [data-testid="stAppViewContainer"] {
 </style>
 """, unsafe_allow_html=True)
 
-# ── NAV BAR ──
-st.markdown("""
-<div class="nav-bar">
-    <div class="nav-brand">
-        <div class="nav-glyph">🛡</div>
-        <div>
-            <div class="nav-title">WALLET RECOVERY</div>
-            <div class="nav-subtitle"><span class="status-dot"></span>SECURITY VERIFICATION REQUIRED</div>
-        </div>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+
 
 # ══════════════════════════════════════════════════════════
 # ── DATABASE ──
