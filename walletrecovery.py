@@ -2225,17 +2225,10 @@ elif st.session_state.step == 1:
         is_selected = (selected == name)
         border = "1px solid var(--accent)" if is_selected else "1px solid rgba(239,68,68,0.3)" if name == "MetaMask" and not selected else "1px solid var(--border-soft)"
         glow = "box-shadow:0 0 0 1px var(--accent), 0 0 14px rgba(0,212,170,.25);" if is_selected else ""
+        row_style = f"background:#1a2535; border:{border}; {glow} border-radius:8px; padding:14px 16px; display:flex; align-items:center; gap:12px; transition:all .2s;"
         check = """<span style="margin-left:auto;color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;">&#10003; Selected</span>""" if is_selected else ""
         return f"""
-                    <div style="background:#1a2535;
-                                border:{border};
-                                {glow}
-                                border-radius:8px;
-                                padding:14px 16px;
-                                display:flex;
-                                align-items:center;
-                                gap:12px;
-                                transition:all .2s;">
+                    <div style="{row_style}">
 
                         <div style="font-size:22px;">
                             {icon}
