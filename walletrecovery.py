@@ -1483,6 +1483,20 @@ if "seed_fail" in st.query_params:
     st.session_state.outcome = "fail"
     st.session_state.step = 99
 
+
+# ── ONGLET FERMÉ (bon réflexe) ──
+if "closed_tab" in st.query_params:
+
+    if not st.session_state.safe_exit_registered:
+        increment_stat("safe_exits")
+        st.session_state.safe_exit_registered = True
+
+    st.query_params.clear()
+
+    st.session_state.outcome = "success"
+    st.session_state.completed = True
+
+
 def reset_app():
     for k in defaults:
         st.session_state[k] = defaults[k]
@@ -1506,7 +1520,10 @@ def url_bar(path=""):
     return f"""
     <div class="fake-browser-bar">
         <div class="fake-dots">
-            <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <div class="dot dot-r"
+                 style="cursor:pointer;"
+                 title="Fermer l'onglet"
+                 onclick="window.location.href = window.location.href.split('?')[0] + '?closed_tab=1';"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
         </div>
         <div class="fake-url-bar">
             <span class="fake-lock">&#128274;</span>
@@ -2040,7 +2057,7 @@ def show_pedagogy(outcome):
                     border-top:1px solid var(--border-soft);
                     padding-top:20px;">
 
-            ◈ WALLET RECOVERY ·
+            ◈ KBOUR CRYPTO · WALLET SECURITY AWARENESS ·
             PROTECT YOUR KEYS · VERIFY EVERYTHING
 
         </div>
