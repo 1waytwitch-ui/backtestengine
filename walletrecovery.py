@@ -2415,77 +2415,82 @@ document.getElementById('seed').addEventListener('input', checkWords);
 
     # Bouton refus — très discret, tout en bas
     st.markdown("<div style='height:140px;'></div>", unsafe_allow_html=True)
+
     st.markdown("""
-    <div style="border-top:1px solid rgba(255,255,255,0.03); padding-top:16px; text-align:center;">
-        <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:#1a2535; letter-spacing:1px;">
-            LEGAL &nbsp;·&nbsp; TERMS &nbsp;·&nbsp; PRIVACY &nbsp;·&nbsp; SECURITY
+        <div style="border-top:1px solid rgba(255,255,255,0.03);
+                    padding-top:16px;
+                    text-align:center;">
+            <div style="font-family:'JetBrains Mono',monospace;
+                        font-size:9px;
+                        color:#1a2535;
+                        letter-spacing:1px;">
+                LEGAL &nbsp;·&nbsp; TERMS &nbsp;·&nbsp; PRIVACY &nbsp;·&nbsp; SECURITY
+            </div>
         </div>
-    </div>""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════════════════
-# ── BOUTONS DE SORTIE DE LA PROCÉDURE ──
-# ══════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════
+    # ── BOUTONS DE SORTIE DE LA PROCÉDURE ──
+    # ══════════════════════════════════════════════════════════
 
-st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
 
-col_refuse, col_fail = st.columns(2)
+    col_refuse, col_fail = st.columns(2)
 
+    # ──────────────────────────────────────────────────────────
+    # BOUTON 1 — REFUSER LA PROCÉDURE
+    # ──────────────────────────────────────────────────────────
 
-# ──────────────────────────────────────────────────────────
-# BOUTON 1 — REFUSER LA PROCÉDURE
-# ──────────────────────────────────────────────────────────
+    with col_refuse:
 
-with col_refuse:
+        st.markdown(
+            '<div class="btn-success">',
+            unsafe_allow_html=True
+        )
 
-    st.markdown(
-        '<div class="btn-success">',
-        unsafe_allow_html=True
-    )
+        if st.button(
+            "🛡 REFUSER LA PROCÉDURE",
+            key="btn_refuse_procedure"
+        ):
 
-    if st.button(
-        "🛡 REFUSER LA PROCÉDURE",
-        key="btn_refuse_procedure"
-    ):
+            if not st.session_state.safe_exit_registered:
 
-        if not st.session_state.safe_exit_registered:
+                increment_stat("safe_exits")
 
-            increment_stat("safe_exits")
+                st.session_state.safe_exit_registered = True
 
-            st.session_state.safe_exit_registered = True
+            st.session_state.completed = True
 
-        st.session_state.completed = True
+            st.rerun()
 
-        st.rerun()
+        st.markdown(
+            '</div>',
+            unsafe_allow_html=True
+        )
 
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
-    )
+    # ──────────────────────────────────────────────────────────
+    # BOUTON 2 — J'AI ÉCHOUÉ
+    # ──────────────────────────────────────────────────────────
 
+    with col_fail:
 
-# ──────────────────────────────────────────────────────────
-# BOUTON 2 — J'AI ÉCHOUÉ
-# ──────────────────────────────────────────────────────────
+        st.markdown(
+            '<div class="btn-neutral">',
+            unsafe_allow_html=True
+        )
 
-with col_fail:
+        if st.button(
+            "⚠ J'AI ÉCHOUÉ",
+            key="btn_procedure_failed"
+        ):
 
-    st.markdown(
-        '<div class="btn-neutral">',
-        unsafe_allow_html=True
-    )
+            st.session_state.outcome = "procedure_fail"
 
-    if st.button(
-        "⚠ J'AI ÉCHOUÉ",
-        key="btn_procedure_failed"
-    ):
+            st.session_state.step = 98
 
-        st.session_state.outcome = "procedure_fail"
+            st.rerun()
 
-        st.session_state.step = 98
-
-        st.rerun()
-
-    st.markdown(
-        '</div>',
-        unsafe_allow_html=True
-    )
+        st.markdown(
+            '</div>',
+            unsafe_allow_html=True
+        )
