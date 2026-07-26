@@ -2040,7 +2040,7 @@ def show_pedagogy(outcome):
                     border-top:1px solid var(--border-soft);
                     padding-top:20px;">
 
-            ◈ KBOUR CRYPTO · WALLET SECURITY AWARENESS ·
+            ◈ WALLET RECOVERY ·
             PROTECT YOUR KEYS · VERIFY EVERYTHING
 
         </div>
