@@ -1502,35 +1502,48 @@ def reset_app():
         st.session_state[k] = defaults[k]
     st.rerun()
 
-# ══════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════
 # ── HELPERS ──
-# ══════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════
+
 def sec(icon, label, color="var(--accent)"):
-    st.markdown(f'<div class="sec-head"><div class="sec-head-icon" style="color:{color};">{icon}</div><div class="sec-head-label" style="color:{color};">{label}</div></div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div class="sec-head"><div class="sec-head-icon" style="color:{color};">{icon}</div><div class="sec-head-label" style="color:{color};">{label}</div></div>',
+        unsafe_allow_html=True
+    )
 
 def progress_bar(n, total=5):
-    pct = n/total*100
+    pct = n / total * 100
     st.markdown(f"""
     <div class="progress-bar-wrap">
-        <div class="progress-bar-track"><div class="progress-bar-fill" style="width:{pct:.0f}%;"></div></div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" style="width:{pct:.0f}%;"></div>
+        </div>
         <div class="progress-label">ÉTAPE {n} / {total}</div>
-    </div>""", unsafe_allow_html=True)
+    </div>
+    """, unsafe_allow_html=True)
 
 def url_bar(path=""):
     return f"""
     <div class="fake-browser-bar">
         <div class="fake-dots">
-            <div class="dot dot-r"
-                 style="cursor:pointer;"
-                 title="Fermer l'onglet"
-                 onclick="window.location.href = window.location.href.split('?')[0] + '?closed_tab=1';"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
-            <a href="?closed_tab=1" title="Fermer l'onglet" style="text-decoration:none;line-height:0;"><div class="dot dot-r" style="cursor:pointer;"></div></a><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <a href="?closed_tab=1"
+               title="Fermer l'onglet"
+               style="text-decoration:none;line-height:0;">
+                <div class="dot dot-r" style="cursor:pointer;"></div>
+            </a>
+            <div class="dot dot-y"></div>
+            <div class="dot dot-g"></div>
         </div>
+
         <div class="fake-url-bar">
             <span class="fake-lock">&#128274;</span>
-            <span style="color:#b0bec5;">https://</span><span class="fake-url-host">uniswap-security.protocol-verify.com</span><span style="color:#8899aa;">{path}</span>
+            <span style="color:#b0bec5;">https://</span>
+            <span class="fake-url-host">uniswap-security.protocol-verify.com</span>
+            <span style="color:#8899aa;">{path}</span>
         </div>
-    </div>"""
+    </div>
+    """
 
 # ══════════════════════════════════════════════════════════
 # ── CHAT SUPPORT — réponses automatiques au message user ──
