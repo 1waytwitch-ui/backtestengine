@@ -514,9 +514,7 @@ if st.session_state.step == 0:
         st.session_state.step = 1
         st.rerun()
 
-    st.markdown("""
-    <div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); margin-top:16px; letter-spacing:1px;">
-        Ce site est une simulation éducative · KBOUR CRYPTO
+    
     </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════
@@ -903,11 +901,4 @@ document.getElementById('seed').addEventListener('input', function() {
         st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ── FOOTER ──
-st.markdown("""
-<div style="height:40px;"></div>
-<div style="text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-lo); letter-spacing:1px; padding-top:16px;">
-    ◈ Simulation éducative · KBOUR CRYPTO · Protect your keys · Never share your seed
-</div>
-<div style="height:20px;"></div>
-""", unsafe_allow_html=True)
+
