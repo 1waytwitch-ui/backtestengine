@@ -194,13 +194,21 @@ html, body, [data-testid="stAppViewContainer"] {
     line-height: 1.6;
 }
 
-/* ========== METRIC CARDS ========== */
+.list-head {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-mid);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding-bottom: 4px;
+}
+
+/* ========== METRIC / TILE CARDS ========== */
 .m-card {
     background: var(--bg-card);
     border: 1px solid var(--border-soft);
     border-radius: 10px;
     padding: 16px 18px;
-    margin: 8px 0;
     transition: border-color 0.2s, box-shadow 0.2s;
     position: relative;
     overflow: hidden;
@@ -230,10 +238,10 @@ html, body, [data-testid="stAppViewContainer"] {
 
 .m-value {
     font-family: var(--font-mono);
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 600;
     color: var(--accent);
-    line-height: 1.1;
+    line-height: 1.15;
 }
 
 .m-value-red { color: var(--accent-red); }
@@ -241,12 +249,18 @@ html, body, [data-testid="stAppViewContainer"] {
 .m-value-amber { color: var(--accent-3); }
 .m-value-blue { color: var(--accent-2); }
 
-.m-card-wide {
-    background: var(--bg-card);
-    border: 1px solid var(--border-soft);
-    border-radius: 10px;
-    padding: 18px 20px;
-    margin: 8px 0;
+.m-sub {
+    font-size: 11px;
+    color: var(--text-mid);
+    margin-top: 7px;
+    line-height: 1.5;
+}
+
+.tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+    margin: 6px 0 20px 0;
 }
 
 .info-box {
@@ -349,6 +363,27 @@ label, .stLabel {
     filter: brightness(1.08) !important;
 }
 
+/* Compact delete/add buttons inside asset rows */
+.row-btn button {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    background: rgba(239,68,68,0.12) !important;
+    color: var(--accent-red) !important;
+    border: 1px solid rgba(239,68,68,0.3) !important;
+}
+
+.add-btn button {
+    background: transparent !important;
+    color: var(--accent) !important;
+    border: 1px dashed var(--border) !important;
+    width: 100% !important;
+}
+
+.add-btn button:hover {
+    background: var(--accent-dim) !important;
+    box-shadow: none !important;
+}
+
 /* ========== RADIO / CHECKBOX / SLIDER ========== */
 .stRadio label, .stCheckbox label { color: var(--text-hi) !important; font-size: 13px !important; }
 .stSlider > div > div > div { background: var(--accent) !important; }
@@ -386,6 +421,45 @@ h3 { font-size: 14px !important; font-weight: 600 !important; letter-spacing: 0.
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
+/* ==========================================================
+   TOOLTIPS (icône "?" + info-bulle au survol des champs)
+   Streamlit rend ça via BaseWeb — on force la visibilité et
+   le style pour matcher le design (fond sombre, bord teal).
+   ========================================================== */
+
+[data-testid="stTooltipIcon"],
+[data-testid="stTooltipHoverTarget"] svg {
+    color: var(--accent) !important;
+    fill: var(--accent) !important;
+    opacity: 0.9 !important;
+}
+
+[data-testid="stTooltipIcon"]:hover,
+[data-testid="stTooltipHoverTarget"]:hover svg {
+    opacity: 1 !important;
+}
+
+div[data-baseweb="tooltip"],
+div[data-baseweb="popover"] [role="tooltip"],
+div[role="tooltip"] {
+    background: #0d1720 !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.55) !important;
+    padding: 12px 16px !important;
+    max-width: 280px !important;
+    z-index: 999999 !important;
+}
+
+div[data-baseweb="tooltip"] *,
+div[data-baseweb="popover"] [role="tooltip"] *,
+div[role="tooltip"] * {
+    color: #eef4f8 !important;
+    font-family: var(--font-ui) !important;
+    font-size: 12.5px !important;
+    line-height: 1.6 !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -420,13 +494,26 @@ def sec(icon, label, sub=None):
     if sub:
         st.markdown(f"<div class='sec-sub'>{sub}</div>", unsafe_allow_html=True)
 
+def tile(label, value, sub="", value_class="m-value"):
+    sub_html = f'<div class="m-sub">{sub}</div>' if sub else ""
+    return f'''<div class="m-card">
+        <div class="m-label">{label}</div>
+        <div class="{value_class}">{value}</div>
+        {sub_html}
+    </div>'''
+
+def tile_grid(tiles_html):
+    st.markdown(f'<div class="tile-grid">{"".join(tiles_html)}</div>', unsafe_allow_html=True)
+
 SECRET_CODE = st.secrets["Secret_Code"]
 
 # ========== INIT SESSION STATE ==========
 for k, v in [
     ("authenticated", False), ("content", []), ("finished", False),
     ("disclaimer_shown", False), ("secret_content", []),
-    ("checklist_validee", False), ("checklist_content", [])
+    ("checklist_validee", False), ("checklist_content", []),
+    ("extra_collaterals", []), ("extra_borrows", []),
+    ("col_counter", 0), ("bor_counter", 0),
 ]:
     if k not in st.session_state:
         st.session_state[k] = v
@@ -464,7 +551,7 @@ if not st.session_state.finished:
         "  [✓] Pool générique Token A / Token B",
         "  [✓] Position LP | Range & Prix | Perte impermanente",
         "  [✓] Comparaison de stratégies post-sortie de range",
-        "  [✓] Collatéral & levier (alternative au rebalancing)",
+        "  [✓] Collatéral & levier multi-actifs (alternative au rebalancing)",
         "─────────────────────────────────────────",
         "▸ Optimisation en cours...",
         "  Vous pouvez analyser votre position hors range.",
@@ -627,13 +714,13 @@ sec("◎", "TA POSITION LP",
 col_sym_a, col_sym_b = st.columns(2)
 with col_sym_a:
     token_a_symbol = st.text_input(
-        "Token A (symbole)", value="WETH",
-        help="Premier actif de la pool — celui dont on regarde le prix. Exemple : WETH, CBBTC, VIRTUAL. Convention Uniswap v3 : le prix de la pool est exprimé en Token B par Token A."
+        "Nom du Token A (volatile)", value="WETH",
+        help="L'actif le plus volatile de la paire. Exemple : WETH, BTC, SOL. C'est le token que vous accumulez lors des baisses et que vous revendez lors des hausses."
     ).strip() or "TOKEN A"
 with col_sym_b:
     token_b_symbol = st.text_input(
-        "Token B (symbole)", value="USDC",
-        help="Second actif de la pool — souvent un stablecoin (USDC), mais peut aussi être un autre actif volatil (ex. WETH/CBBTC)."
+        "Nom du Token B (référence)", value="USDC",
+        help="Le second actif de la pool, souvent un stablecoin (USDC). Le prix de la pool est exprimé en Token B par Token A."
     ).strip() or "TOKEN B"
 
 st.markdown(
@@ -708,7 +795,7 @@ st.markdown(f"""
   Si {token_a_symbol} bouge de +30% et que la force relative est réglée à <b>1.5</b>, le BTC est simulé comme bougeant de +45%
   (il amplifie la hausse — mais amplifierait aussi une baisse). À <b>0.5</b>, le BTC ne bougerait que de +15% :
   il protège en cas de baisse de {token_a_symbol} mais capte moins d'upside en cas de hausse.
-  Concrètement, plus la valeur est haute, plus la stratégie « Moitié → BTC » devient une pari directionnel volatil ;
+  Concrètement, plus la valeur est haute, plus la stratégie « Moitié → BTC » devient un pari directionnel volatil ;
   plus elle est basse, plus cette moitié du portefeuille se comporte comme un amortisseur.
 </div>
 """, unsafe_allow_html=True)
@@ -737,18 +824,26 @@ recoup_days = abs(il_dollar) / daily_fee if daily_fee > 0 else float("inf")
 
 st.divider()
 
-status_col, il_col, recoup_col = st.columns(3)
-with status_col:
-    st.metric("Statut de la position", "Hors range" if out_of_range else "Dans le range")
-    st.caption(f"Range de pool : {p_lower:,.6f} — {p_upper:,.6f} {token_b_symbol} par {token_a_symbol}")
-with il_col:
-    st.metric("Perte impermanente verrouillée", f"${il_dollar:,.0f}", f"{il_pct:,.1f}%")
-with recoup_col:
-    if math.isfinite(recoup_days):
-        st.metric("Temps de récupération par les frais", f"{recoup_days:,.0f} jours")
-    else:
-        st.metric("Temps de récupération par les frais", "—")
-    st.caption("Valable une fois *revenu* dans le range — hors range, la position ne génère aucun frais.")
+tile_grid([
+    tile(
+        "Statut de la position",
+        "Hors range" if out_of_range else "Dans le range",
+        f"Range : {p_lower:,.6f} — {p_upper:,.6f} {token_b_symbol}/{token_a_symbol}",
+        "m-value-red" if out_of_range else "m-value-green",
+    ),
+    tile(
+        "Perte impermanente verrouillée",
+        f"${il_dollar:,.0f}",
+        f"{il_pct:,.1f}%",
+        "m-value-red" if il_dollar < 0 else "m-value-green",
+    ),
+    tile(
+        "Récupération par les frais",
+        f"{recoup_days:,.0f} jours" if math.isfinite(recoup_days) else "—",
+        "Valable une fois revenu dans le range — hors range, la position ne génère aucun frais.",
+        "m-value-amber",
+    ),
+])
 
 st.caption(
     f"Répartition actuelle : {x_now:,.4f} {token_a_symbol} (${x_now*prix_a_now:,.0f}) · "
@@ -832,9 +927,7 @@ target_values = {
     f"Sortir en {token_b_symbol}": qty_b_hodl_now * prix_b_target,
 }
 
-target_cols = st.columns(len(target_values))
-for col, (name, val) in zip(target_cols, target_values.items()):
-    col.metric(name, f"${val:,.0f}")
+tile_grid([tile(name, f"${val:,.0f}") for name, val in target_values.items()])
 
 # ----------------------------------------------------------------------
 # Collatéral & levier — alternative au rebalancing
@@ -847,77 +940,147 @@ st.markdown("""
   <b>Pourquoi cette option plutôt qu'un rebalancing ?</b> Rebalancer une position hors range implique de la retirer,
   de swapper une partie des actifs pour revenir à un ratio 50/50, puis de rouvrir un nouveau range — ce qui
   <b>réalise définitivement la perte</b> et paie des frais de swap supplémentaires. L'alternative consiste à sortir
-  tout ou partie de la position <b>sans vendre</b> : tu déposes l'actif obtenu en collatéral sur un protocole de
-  lending (ex. Aave), tu empruntes un stablecoin contre ce collatéral, puis tu redéploies ce capital emprunté pour
+  tout ou partie de la position <b>sans vendre</b> : tu déposes le ou les actifs obtenus en collatéral sur un
+  protocole de lending (ex. Aave), tu empruntes contre ce collatéral, puis tu redéploies le capital emprunté pour
   générer un rendement additionnel. Tu conserves ainsi <b>100% de l'exposition à la hausse</b> de ton collatéral,
   tout en faisant travailler le capital emprunté — au prix d'un risque de liquidation si le prix baisse trop.
 </div>
 """, unsafe_allow_html=True)
 
-collateral_choice = st.radio(
-    "Actif utilisé comme collatéral",
-    [token_a_symbol, "Autre actif"],
-    horizontal=True,
-    help="Par défaut on suppose que tu mets en collatéral le Token A retiré de ta position LP. Choisis 'Autre actif' si tu veux tester un actif différent (ex. un LST, un autre token que tu détiens déjà)."
+# ---------- Collatéral : ligne de base (Token A) + lignes ajoutées ----------
+st.markdown("**Actifs en collatéral**")
+head = st.columns([1.3, 1, 1, 1, 0.8, 0.8, 0.9, 0.4])
+for c, h in zip(head, ["Actif", "Quantité", "Prix actuel ($)", "Prix cible ($)", "LTV %", "Liq. %", "Rend. natif %", ""]):
+    c.markdown(f"<div class='list-head'>{h}</div>", unsafe_allow_html=True)
+
+base_row = st.columns([1.3, 1, 1, 1, 0.8, 0.8, 0.9, 0.4])
+base_row[0].markdown(
+    f"<div style='padding-top:8px;'><b>{token_a_symbol}</b><br>"
+    f"<span style='font-size:10px;color:var(--text-mid);'>issu de ta position</span></div>",
+    unsafe_allow_html=True,
+)
+base_row[1].markdown(f"<div style='padding-top:8px;'>{qty_a_hodl_now:,.4f}</div>", unsafe_allow_html=True)
+base_row[2].markdown(f"<div style='padding-top:8px;'>${prix_a_now:,.4f}</div>", unsafe_allow_html=True)
+base_row[3].markdown(f"<div style='padding-top:8px;'>${prix_a_target:,.4f}</div>", unsafe_allow_html=True)
+base_ltv = base_row[4].number_input(
+    "LTV base", min_value=1, max_value=90, value=50, step=1, label_visibility="collapsed", key="base_ltv",
+    help=f"Loan-to-Value appliqué à ton {token_a_symbol} en collatéral : quel % de sa valeur tu peux emprunter."
+)
+base_liq = base_row[5].number_input(
+    "Liq base", min_value=1, max_value=95, value=80, step=1, label_visibility="collapsed", key="base_liq",
+    help=f"Seuil de liquidation défini par le protocole de lending pour {token_a_symbol}."
+)
+base_native = base_row[6].number_input(
+    "Rend base", min_value=0.0, value=0.0, step=0.5, label_visibility="collapsed", key="base_native",
+    help=f"Rendement natif (ex. staking) que {token_a_symbol} génère simplement en le détenant en collatéral, en plus de sa variation de prix."
 )
 
-if collateral_choice == "Autre actif":
-    colX, colY, colZ = st.columns(3)
-    with colX:
-        collateral_symbol = st.text_input(
-            "Symbole de l'actif collatéral", value="stETH",
-            help="Le nom de l'actif que tu comptes déposer en collatéral sur le protocole de lending."
-        ).strip() or "COLLATÉRAL"
-    with colY:
-        collateral_price_now = st.number_input(
-            f"Prix actuel de {collateral_symbol} ($)", min_value=0.000001, value=1700.0, step=10.0,
-            help="Prix actuel en dollars de l'actif mis en collatéral."
-        )
-    with colZ:
-        collateral_price_target = st.number_input(
-            f"Prix cible de {collateral_symbol} ($)", min_value=0.000001, value=2000.0, step=10.0,
-            help="Prix futur testé pour l'actif collatéral, utilisé pour calculer l'équité nette au scénario cible."
-        )
+collateral_rows = [{
+    "symbol": token_a_symbol, "qty": qty_a_hodl_now, "price_now": prix_a_now,
+    "price_target": prix_a_target, "ltv": base_ltv, "liq": base_liq, "native_apy": base_native,
+}]
+
+for item in list(st.session_state.extra_collaterals):
+    uid = item["uid"]
+    row = st.columns([1.3, 1, 1, 1, 0.8, 0.8, 0.9, 0.4])
+    symbol = row[0].text_input(
+        "sym", value=item.get("symbol", ""), label_visibility="collapsed", key=f"col_sym_{uid}",
+        placeholder="ex. stETH", help="Symbole de cet actif additionnel mis en collatéral."
+    )
+    qty = row[1].number_input(
+        "qty", value=item.get("qty", 0.0), min_value=0.0, step=0.01, label_visibility="collapsed",
+        key=f"col_qty_{uid}", help="Quantité de cet actif que tu détiens et comptes déposer en collatéral."
+    )
+    price_now_i = row[2].number_input(
+        "pn", value=item.get("price_now", 1.0), min_value=0.000001, step=0.01, label_visibility="collapsed",
+        key=f"col_pn_{uid}", help="Prix actuel de cet actif en dollars."
+    )
+    price_target_i = row[3].number_input(
+        "pt", value=item.get("price_target", 1.0), min_value=0.000001, step=0.01, label_visibility="collapsed",
+        key=f"col_pt_{uid}", help="Prix cible testé pour cet actif dans le scénario futur."
+    )
+    ltv_i = row[4].number_input(
+        "ltv", value=item.get("ltv", 50), min_value=1, max_value=90, step=1, label_visibility="collapsed",
+        key=f"col_ltv_{uid}", help="LTV applicable à cet actif sur le protocole de lending."
+    )
+    liq_i = row[5].number_input(
+        "liq", value=item.get("liq", 80), min_value=1, max_value=95, step=1, label_visibility="collapsed",
+        key=f"col_liq_{uid}", help="Seuil de liquidation de cet actif."
+    )
+    native_i = row[6].number_input(
+        "nat", value=item.get("native_apy", 0.0), min_value=0.0, step=0.5, label_visibility="collapsed",
+        key=f"col_nat_{uid}", help="Rendement natif (staking) de cet actif, en plus de sa variation de prix."
+    )
+    with row[7]:
+        st.markdown('<div class="row-btn">', unsafe_allow_html=True)
+        if st.button("🗑", key=f"col_del_{uid}"):
+            st.session_state.extra_collaterals = [c for c in st.session_state.extra_collaterals if c["uid"] != uid]
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    collateral_rows.append({
+        "symbol": symbol or "ACTIF", "qty": qty, "price_now": price_now_i,
+        "price_target": price_target_i, "ltv": ltv_i, "liq": liq_i, "native_apy": native_i,
+    })
+
+st.markdown('<div class="add-btn">', unsafe_allow_html=True)
+if st.button("➕ Ajouter un actif en collatéral", key="add_collateral"):
+    st.session_state.col_counter += 1
+    st.session_state.extra_collaterals.append({"uid": st.session_state.col_counter})
+    st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
+
+# ---------- Emprunt : lignes ajoutées librement ----------
+st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+st.markdown("**Actifs empruntés**")
+
+if not st.session_state.extra_borrows:
+    st.caption("Aucun emprunt ajouté — clique sur « + » pour simuler un emprunt contre ton collatéral.")
 else:
-    collateral_symbol = token_a_symbol
-    collateral_price_now = prix_a_now
-    collateral_price_target = prix_a_target
+    head_b = st.columns([1.3, 1, 1, 1, 0.4])
+    for c, h in zip(head_b, ["Actif emprunté", "Quantité empruntée", "Prix actuel ($)", "APR d'emprunt %", ""]):
+        c.markdown(f"<div class='list-head'>{h}</div>", unsafe_allow_html=True)
 
-colA, colB, colC = st.columns(3)
-with colA:
-    collateral_qty = st.number_input(
-        f"Quantité en collatéral ({collateral_symbol})", min_value=0.0,
-        value=float(round(qty_a_hodl_now, 4)) if collateral_choice == token_a_symbol else 0.0, step=0.01,
-        help=f"Quantité de {collateral_symbol} que tu déposes en collatéral sur le protocole de lending."
+borrow_rows = []
+for item in list(st.session_state.extra_borrows):
+    uid = item["uid"]
+    row = st.columns([1.3, 1, 1, 1, 0.4])
+    symbol = row[0].text_input(
+        "bsym", value=item.get("symbol", token_b_symbol), label_visibility="collapsed", key=f"bor_sym_{uid}",
+        placeholder="ex. USDC", help="Symbole de l'actif que tu empruntes contre ton collatéral."
     )
-    ltv = st.slider(
-        "LTV d'emprunt (%)", min_value=1, max_value=90, value=50,
-        help="Loan-to-Value : quel pourcentage de la valeur de ton collatéral tu empruntes. Plus le LTV est élevé, plus le rendement potentiel est élevé mais plus le risque de liquidation est proche."
-    ) / 100
-with colB:
-    liq_threshold = st.slider(
-        "Seuil de liquidation (%)", min_value=1, max_value=95, value=80,
-        help="Ratio collatéral/dette en dessous duquel la position est liquidée par le protocole. Généralement fixé par le protocole de lending selon l'actif (ex. ~80% pour ETH sur Aave)."
-    ) / 100
-    borrow_apr = st.number_input(
-        "APR d'emprunt (%)", min_value=0.0, value=6.0, step=0.5,
-        help="Taux d'intérêt annuel que tu paies sur la dette empruntée."
+    qty = row[1].number_input(
+        "bqty", value=item.get("qty", 0.0), min_value=0.0, step=1.0, label_visibility="collapsed",
+        key=f"bor_qty_{uid}", help="Quantité de cet actif que tu empruntes."
     )
-with colC:
-    collateral_native_apy = st.number_input(
-        "Rendement natif du collatéral (%)", min_value=0.0, value=0.0, step=0.5,
-        help="Rendement que le collatéral génère par lui-même en le détenant (ex. staking d'un LST comme stETH). Laisse à 0 si l'actif ne génère pas de rendement natif."
+    price_now_i = row[2].number_input(
+        "bpn", value=item.get("price_now", 1.0), min_value=0.000001, step=0.01, label_visibility="collapsed",
+        key=f"bor_pn_{uid}", help="Prix actuel de l'actif emprunté en dollars. Laisse 1.0 si c'est un stablecoin."
     )
-    borrow_symbol = st.text_input(
-        "Actif emprunté (symbole)", value=token_b_symbol,
-        help="L'actif que tu empruntes contre ton collatéral — généralement un stablecoin."
-    ).strip() or token_b_symbol
+    apr_i = row[3].number_input(
+        "bapr", value=item.get("apr", 6.0), min_value=0.0, step=0.5, label_visibility="collapsed",
+        key=f"bor_apr_{uid}", help="Taux d'intérêt annuel payé sur cette dette."
+    )
+    with row[4]:
+        st.markdown('<div class="row-btn">', unsafe_allow_html=True)
+        if st.button("🗑", key=f"bor_del_{uid}"):
+            st.session_state.extra_borrows = [b for b in st.session_state.extra_borrows if b["uid"] != uid]
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
+    borrow_rows.append({"symbol": symbol or "DETTE", "qty": qty, "price_now": price_now_i, "apr": apr_i})
 
+st.markdown('<div class="add-btn">', unsafe_allow_html=True)
+if st.button("➕ Ajouter un actif emprunté", key="add_borrow"):
+    st.session_state.bor_counter += 1
+    st.session_state.extra_borrows.append({"uid": st.session_state.bor_counter})
+    st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 colD, colE = st.columns(2)
 with colD:
     deploy_apy = st.number_input(
         "APY du capital redéployé (%)", min_value=0.0, value=12.0, step=0.5,
-        help=f"Rendement annualisé que tu obtiens en réutilisant les {borrow_symbol} empruntés (ex. farming, prêt, autre stratégie)."
+        help="Rendement annualisé obtenu en réutilisant la valeur totale empruntée (ex. farming, prêt, autre stratégie)."
     )
 with colE:
     horizon_months = st.slider(
@@ -925,33 +1088,55 @@ with colE:
         help="Durée sur laquelle tu simules cette stratégie de collatéral et levier."
     )
 
-borrowable = collateral_qty * collateral_price_now * ltv
+# ---------- Calculs agrégés ----------
 t = horizon_months / 12
-debt_owed = borrowable * (1 + borrow_apr / 100 * t)
-deployed_value = borrowable * (1 + deploy_apy / 100 * t)
-collateral_native_yield = collateral_qty * collateral_price_now * (collateral_native_apy / 100 * t)
 
-liquidation_price = (borrowable / (collateral_qty * liq_threshold)) if collateral_qty > 0 else float("nan")
-health_factor = (
-    (collateral_qty * collateral_price_now * liq_threshold) / borrowable if borrowable > 0 else float("inf")
-)
-price_buffer_pct = (
-    (collateral_price_now - liquidation_price) / collateral_price_now * 100 if collateral_price_now else float("nan")
-)
+total_collateral_now = sum(r["qty"] * r["price_now"] for r in collateral_rows)
+total_collateral_target = sum(r["qty"] * r["price_target"] for r in collateral_rows)
+total_borrow_capacity = sum(r["qty"] * r["price_now"] * r["ltv"] / 100 for r in collateral_rows)
+total_liq_weighted = sum(r["qty"] * r["price_now"] * r["liq"] / 100 for r in collateral_rows)
+collateral_native_yield = sum(r["qty"] * r["price_now"] * (r["native_apy"] / 100 * t) for r in collateral_rows)
 
-net_equity_target = collateral_qty * collateral_price_target - debt_owed + deployed_value + collateral_native_yield
-edge_vs_hold = deployed_value - debt_owed  # ce que la stratégie ajoute par rapport à simplement détenir le collatéral
+total_debt_now = sum(b["qty"] * b["price_now"] for b in borrow_rows)
+total_debt_future = sum(b["qty"] * b["price_now"] * (1 + b["apr"] / 100 * t) for b in borrow_rows)
+
+deployed_value = total_debt_now * (1 + deploy_apy / 100 * t)
+
+health_factor = total_liq_weighted / total_debt_now if total_debt_now > 0 else float("inf")
+marge_liquidation_pct = (health_factor - 1) * 100 if math.isfinite(health_factor) else float("inf")
+
+net_equity_target = total_collateral_target - total_debt_future + deployed_value + collateral_native_yield
+edge_vs_hold = deployed_value - total_debt_future
 
 st.divider()
-m1, m2, m3 = st.columns(3)
-m1.metric(f"Tu peux emprunter (en {borrow_symbol}, valeur $)", f"${borrowable:,.0f}")
-m2.metric(f"Prix de liquidation de {collateral_symbol}", f"${liquidation_price:,.0f}")
-m3.metric("Health factor", f"{health_factor:,.2f}", help="Ratio de sécurité de la position empruntée. 1.0 = liquidation.")
 
-m4, m5, m6 = st.columns(3)
-m4.metric("Marge de prix avant liquidation", f"{price_buffer_pct:,.1f}%")
-m5.metric(f"Équité nette si {collateral_symbol} → ${collateral_price_target:,.0f}", f"${net_equity_target:,.0f}")
-m6.metric(f"Avantage vs. détenir {collateral_symbol} sans levier", f"${edge_vs_hold:,.0f}")
+tiles = [
+    tile("Capacité d'emprunt totale", f"${total_borrow_capacity:,.0f}", "Basée sur le LTV de chaque actif en collatéral"),
+    tile("Dette actuelle", f"${total_debt_now:,.0f}"),
+    tile("Dette au terme (+ intérêts)", f"${total_debt_future:,.0f}", f"Horizon : {horizon_months} mois"),
+]
+if total_debt_now > 0:
+    tiles += [
+        tile(
+            "Health factor", f"{health_factor:,.2f}", "1.0 = liquidation",
+            "m-value-red" if health_factor < 1.1 else "m-value-green",
+        ),
+        tile(
+            "Marge avant liquidation", f"{marge_liquidation_pct:,.1f}%",
+            "Approximation : suppose une baisse uniforme de tous les collatéraux",
+            "m-value-red" if marge_liquidation_pct < 10 else "m-value-amber",
+        ),
+    ]
+tiles += [
+    tile("Équité nette au scénario cible", f"${net_equity_target:,.0f}"),
+    tile(
+        "Avantage vs. détenir sans levier", f"${edge_vs_hold:,.0f}", "",
+        "m-value-green" if edge_vs_hold >= 0 else "m-value-red",
+    ),
+]
+tile_grid(tiles)
 
-if health_factor < 1.1 and math.isfinite(health_factor):
+if total_debt_now == 0:
+    st.caption("Ajoute au moins un actif emprunté pour calculer le health factor et la marge avant liquidation.")
+elif health_factor < 1.1:
     st.warning("Health factor proche ou sous 1.0 — risque de liquidation élevé avec ces paramètres.")
