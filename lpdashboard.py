@@ -343,6 +343,31 @@ div[data-baseweb="input"] input:focus,
     font-family: var(--font-mono) !important;
 }
 
+/* Le menu déroulant des select/multiselect (BaseWeb) s'affiche lui aussi
+   dans un portail séparé, distinct du popover des tooltips — on le cible
+   spécifiquement pour éviter le fond blanc par défaut. */
+div[data-baseweb="menu"],
+div[data-baseweb="popover"] div[data-baseweb="menu"],
+ul[role="listbox"] {
+    background: #0d1720 !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+}
+
+li[role="option"] {
+    background: transparent !important;
+    color: #eef4f8 !important;
+}
+
+li[role="option"] * {
+    color: #eef4f8 !important;
+}
+
+li[role="option"]:hover,
+li[aria-selected="true"] {
+    background: var(--accent-dim) !important;
+}
+
 /* ========== LABELS ========== */
 label, .stLabel {
     font-family: var(--font-ui) !important;
