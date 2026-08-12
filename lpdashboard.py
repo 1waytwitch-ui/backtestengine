@@ -936,7 +936,7 @@ sec("◫", "COMPARAISON DES STRATÉGIES",
 
 price_a_range = np.linspace(prix_a_now * 0.3, prix_a_now * 2.5, 200)
 
-# 1. Rester dans le LP
+# 1. Rester dans la LP
 stay_lp = [lp_value_usd(p, prix_b_now, L, p_lower, p_upper) for p in price_a_range]
 
 # 2. Retirer et détenir Token A spot (tout converti en Token A au prix actuel)
@@ -957,7 +957,7 @@ qty_b_hodl_now = lp_value_now / prix_b_now
 exit_b = [qty_b_hodl_now * prix_b_now for _ in price_a_range]  # B supposé constant sur ce graphique
 
 strategies = {
-    "Rester dans le LP": stay_lp,
+    "Rester dans la LP": stay_lp,
     f"Détenir {token_a_symbol} spot": hold_a,
     "Moitié → BTC": half_btc,
     f"Sortir en {token_b_symbol}": exit_b,
@@ -996,7 +996,7 @@ x_t, y_t = lp_amounts(P_target, L, p_lower, p_upper)
 btc_price_target = btc_price * (1 + btc_rel_strength * (prix_a_target / prix_a_now - 1))
 
 target_values = {
-    "Rester dans le LP": x_t * prix_a_target + y_t * prix_b_target,
+    "Rester dans la LP": x_t * prix_a_target + y_t * prix_b_target,
     f"Détenir {token_a_symbol} spot": qty_a_hodl_now * prix_a_target,
     "Moitié → BTC": a_half_amount * prix_a_target + btc_amount * btc_price_target,
     f"Sortir en {token_b_symbol}": qty_b_hodl_now * prix_b_target,
