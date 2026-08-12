@@ -343,29 +343,56 @@ div[data-baseweb="input"] input:focus,
     font-family: var(--font-mono) !important;
 }
 
-/* Le menu déroulant des select/multiselect (BaseWeb) s'affiche lui aussi
-   dans un portail séparé, distinct du popover des tooltips — on le cible
-   spécifiquement pour éviter le fond blanc par défaut. */
+/* ==========================================================
+   PORTAILS BASEWEB (menus déroulants select/multiselect, ET
+   tooltips) — ces éléments sont montés hors de .stApp, à la
+   racine du document, donc on les cible très largement et on
+   force TOUS leurs descendants en dark mode avec !important
+   pour battre les styles inline blancs par défaut de BaseWeb.
+   ========================================================== */
+
+div[data-baseweb="popover"],
 div[data-baseweb="menu"],
-div[data-baseweb="popover"] div[data-baseweb="menu"],
-ul[role="listbox"] {
+div[data-baseweb="tooltip"],
+ul[data-baseweb="menu-list"],
+[role="listbox"],
+[role="tooltip"] {
+    background-color: #0d1720 !important;
     background: #0d1720 !important;
     border: 1px solid var(--border) !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.55) !important;
 }
 
-li[role="option"] {
+div[data-baseweb="popover"] *,
+div[data-baseweb="menu"] *,
+div[data-baseweb="tooltip"] *,
+ul[data-baseweb="menu-list"] *,
+[role="listbox"] *,
+[role="tooltip"] * {
+    background-color: transparent !important;
     background: transparent !important;
     color: #eef4f8 !important;
+    font-family: var(--font-ui) !important;
+    font-size: 13px !important;
 }
 
-li[role="option"] * {
-    color: #eef4f8 !important;
-}
-
-li[role="option"]:hover,
-li[aria-selected="true"] {
+[role="option"]:hover,
+[role="option"][aria-selected="true"] {
+    background-color: var(--accent-dim) !important;
     background: var(--accent-dim) !important;
+}
+
+[data-testid="stTooltipIcon"],
+[data-testid="stTooltipHoverTarget"] svg {
+    color: var(--accent) !important;
+    fill: var(--accent) !important;
+    opacity: 0.9 !important;
+}
+
+[data-testid="stTooltipIcon"]:hover,
+[data-testid="stTooltipHoverTarget"]:hover svg {
+    opacity: 1 !important;
 }
 
 /* ========== LABELS ========== */
