@@ -495,12 +495,11 @@ def sec(icon, label, sub=None):
         st.markdown(f"<div class='sec-sub'>{sub}</div>", unsafe_allow_html=True)
 
 def tile(label, value, sub="", value_class="m-value"):
+    # IMPORTANT : tout sur une seule ligne, sans indentation — un HTML multi-ligne
+    # indenté ici est interprété comme un bloc de code par le moteur Markdown
+    # de Streamlit dès que plusieurs tuiles sont concaténées.
     sub_html = f'<div class="m-sub">{sub}</div>' if sub else ""
-    return f'''<div class="m-card">
-        <div class="m-label">{label}</div>
-        <div class="{value_class}">{value}</div>
-        {sub_html}
-    </div>'''
+    return f'<div class="m-card"><div class="m-label">{label}</div><div class="{value_class}">{value}</div>{sub_html}</div>'
 
 def tile_grid(tiles_html):
     st.markdown(f'<div class="tile-grid">{"".join(tiles_html)}</div>', unsafe_allow_html=True)
