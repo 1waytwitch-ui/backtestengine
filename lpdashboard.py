@@ -1,9 +1,18 @@
 import math
+import re
 import time
 import random
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
+
+
+def html(content):
+    """Affiche du HTML. Collapse tous les retours à la ligne / l'indentation en un
+    seul espace : le moteur Markdown de Streamlit interprète sinon les lignes
+    indentées (4+ espaces) comme un bloc de code, ce qui casse le rendu dès que
+    le HTML multi-ligne est un peu complexe (ex: plusieurs cartes concaténées)."""
+    st.markdown(re.sub(r"\s+", " ", content).strip(), unsafe_allow_html=True)
 
 # ===================== PAGE CONFIG =====================
 st.set_page_config(
@@ -14,7 +23,7 @@ st.set_page_config(
 )
 
 # ===================== GLOBAL THEME (dark mode + design system) =====================
-st.markdown("""
+html("""
 <style>
 
 /* =========================
@@ -439,10 +448,25 @@ h3 { font-size: 14px !important; font-weight: 600 !important; letter-spacing: 0.
     opacity: 1 !important;
 }
 
+/* Le popover Streamlit s'affiche dans un portail à la racine du DOM (pas
+   forcément dans .stApp), donc on cible large et on force le fond à TOUS
+   les niveaux d'imbrication (popover > wrapper > contenu markdown). */
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] div,
 div[data-baseweb="tooltip"],
-div[data-baseweb="popover"] [role="tooltip"],
-div[role="tooltip"] {
+div[data-baseweb="tooltip"] div,
+[role="tooltip"],
+[role="tooltip"] div,
+[data-testid="stTooltipContent"],
+[data-testid="stTooltipContent"] * {
+    background-color: #0d1720 !important;
     background: #0d1720 !important;
+    color: #eef4f8 !important;
+}
+
+div[data-baseweb="popover"],
+div[data-baseweb="tooltip"],
+[role="tooltip"] {
     border: 1px solid var(--border) !important;
     border-radius: 10px !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.55) !important;
@@ -451,9 +475,9 @@ div[role="tooltip"] {
     z-index: 999999 !important;
 }
 
+div[data-baseweb="popover"] *,
 div[data-baseweb="tooltip"] *,
-div[data-baseweb="popover"] [role="tooltip"] *,
-div[role="tooltip"] * {
+[role="tooltip"] * {
     color: #eef4f8 !important;
     font-family: var(--font-ui) !important;
     font-size: 12.5px !important;
@@ -461,10 +485,10 @@ div[role="tooltip"] * {
 }
 
 </style>
-""", unsafe_allow_html=True)
+""")
 
 # ========== TOP NAV BAR ==========
-st.markdown("""
+html("""
 <div class="nav-bar">
     <div class="nav-brand">
         <div class="nav-glyph">◈</div>
@@ -481,16 +505,16 @@ st.markdown("""
         <a href="https://shorturl.at/X3sYt" target="_blank">Formation</a>
     </div>
 </div>
-""", unsafe_allow_html=True)
+""")
 
 # ========== HELPERS ==========
 
 def sec(icon, label, sub=None):
-    st.markdown(f"""
+    html(f"""
     <div class="sec-head">
         <div class="sec-head-icon">{icon}</div>
         <div class="sec-head-label">{label}</div>
-    </div>""", unsafe_allow_html=True)
+    </div>""")
     if sub:
         st.markdown(f"<div class='sec-sub'>{sub}</div>", unsafe_allow_html=True)
 
@@ -588,11 +612,11 @@ if st.session_state.finished and not st.session_state.disclaimer_shown:
         add_term_line(st.session_state.content, terminal_placeholder, line)
     st.session_state.disclaimer_shown = True
 
-st.markdown("""
+html("""
 <div class="disc-bar">
   <span>⚠</span> Cet outil montre comment une position LP peut perdre malgré un APR affiché élevé, pas comment gagner à coup sûr.
 </div>
-""", unsafe_allow_html=True)
+""")
 
 # ========== SECRET CODE ==========
 if not st.session_state.authenticated:
@@ -618,11 +642,11 @@ if not st.session_state.authenticated:
                 st.error("Code incorrect")
     st.stop()
 
-st.markdown("""
+html("""
 <div class="disc-bar" style="border-color:var(--accent); color:var(--accent);">
   <span>◈</span> ACCÈS AUTORISÉ — Bonjour et bienvenue !
 </div>
-""", unsafe_allow_html=True)
+""")
 
 # ========== CHECKLIST ==========
 checklist_items = [
@@ -658,11 +682,11 @@ if not st.session_state.checklist_validee:
         st.rerun()
     st.stop()
 
-st.markdown("""
+html("""
 <div class="disc-bar">
   <span>◈</span> déverrouillage du dashboard...
 </div>
-""", unsafe_allow_html=True)
+""")
 
 # ----------------------------------------------------------------------
 # Fonctions de calcul — mécanique Uniswap v3 (liquidité concentrée)
@@ -788,7 +812,7 @@ with col5:
         help=f"1.0 = le BTC suit exactement les variations de {token_a_symbol} · <1 = le BTC est à la traîne · >1 = le BTC amplifie les mouvements de {token_a_symbol}.",
     )
 
-st.markdown(f"""
+html(f"""
 <div class="info-box">
   <b>Ce que change la force relative du BTC :</b> ce curseur ne fixe pas un prix, il fixe une <b>sensibilité</b>.
   Si {token_a_symbol} bouge de +30% et que la force relative est réglée à <b>1.5</b>, le BTC est simulé comme bougeant de +45%
@@ -797,7 +821,7 @@ st.markdown(f"""
   Concrètement, plus la valeur est haute, plus la stratégie « Moitié → BTC » devient un pari directionnel volatil ;
   plus elle est basse, plus cette moitié du portefeuille se comporte comme un amortisseur.
 </div>
-""", unsafe_allow_html=True)
+""")
 
 # Range de la position (le prix de pool P = prix_A / prix_B)
 P_entry = prix_a_entry / prix_b_entry
@@ -934,7 +958,7 @@ tile_grid([tile(name, f"${val:,.0f}") for name, val in target_values.items()])
 
 sec("⚡", "COLLATÉRAL & LEVIER — ALTERNATIVE AU REBALANCING")
 
-st.markdown("""
+html("""
 <div class="info-box">
   <b>Pourquoi cette option plutôt qu'un rebalancing ?</b> Rebalancer une position hors range implique de la retirer,
   de swapper une partie des actifs pour revenir à un ratio 50/50, puis de rouvrir un nouveau range — ce qui
@@ -944,7 +968,7 @@ st.markdown("""
   générer un rendement additionnel. Tu conserves ainsi <b>100% de l'exposition à la hausse</b> de ton collatéral,
   tout en faisant travailler le capital emprunté — au prix d'un risque de liquidation si le prix baisse trop.
 </div>
-""", unsafe_allow_html=True)
+""")
 
 # ---------- Collatéral : ligne de base (Token A) + lignes ajoutées ----------
 st.markdown("**Actifs en collatéral**")
