@@ -807,11 +807,11 @@ def lp_amounts(P, L, p_lower, p_upper):
     sqrt_pb = math.sqrt(p_upper)
 
     if P <= p_lower:
-        x = L * (1 / sqrt_pa - 1 / sqrt_pb)   # full en Token A
+        x = L * (1 / sqrt_pa - 1 / sqrt_pb)   # tout en Token A
         y = 0.0
     elif P >= p_upper:
         x = 0.0
-        y = L * (sqrt_pb - sqrt_pa)            # full en Token B
+        y = L * (sqrt_pb - sqrt_pa)            # tout en Token B
     else:
         x = L * (1 / sqrt_p - 1 / sqrt_pb)
         y = L * (sqrt_p - sqrt_pa)
@@ -839,7 +839,7 @@ def lp_value_usd(prix_a, prix_b, L, p_lower, p_upper):
 # ----------------------------------------------------------------------
 
 sec("◎", "TA POSITION LP",
-    "Renseigne les deux actifs de ta pool Uniswap v3. Les valeurs par défaut (WETH/USDC) sont un exemple — remplace-les par ta propre paire.")
+    "Renseigne les deux actifs de la pool. Les valeurs par défaut (WETH/USDC) sont un exemple — remplace-les par ta propre paire.")
 
 col_sym_a, col_sym_b = st.columns(2)
 with col_sym_a:
