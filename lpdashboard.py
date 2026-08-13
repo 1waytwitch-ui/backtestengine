@@ -1171,7 +1171,7 @@ sec("⚡", "COLLATÉRAL & LEVIER — ALTERNATIVE AU REBALANCING")
 html("""
 <div class="info-box">
   <b>Pourquoi cette option plutôt qu'un rebalancing ?</b> Rebalancer une position hors range implique de la retirer,
-  de swapper une partie des actifs pour revenir à un ratio 50/50, puis de rouvrir un nouveau range — ce qui
+  de swapper une partie des actifs pour revenir avec un nouveau ratio et rouvrir un nouveau range — ce qui
   <b>réalise définitivement la perte</b> et paie des frais de swap supplémentaires. L'alternative consiste à sortir
   tout ou partie de la position <b>sans vendre</b> : tu déposes le ou les actifs obtenus en collatéral sur un
   protocole de lending (ex. Aave), tu empruntes contre ce collatéral, puis tu redéploies le capital emprunté pour
