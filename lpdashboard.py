@@ -839,7 +839,7 @@ def lp_value_usd(prix_a, prix_b, L, p_lower, p_upper):
 # ----------------------------------------------------------------------
 
 sec("◎", "TA POSITION LP",
-    "Renseigne les deux actifs de la pool. Les valeurs par défaut (WETH/USDC) sont un exemple — remplace-les par ta propre paire.")
+    "Renseigne les deux actifs de ta pool Uniswap v3. Les valeurs par défaut (WETH/USDC) sont un exemple — remplace-les par ta propre paire.")
 
 col_sym_a, col_sym_b = st.columns(2)
 with col_sym_a:
@@ -899,7 +899,7 @@ with col1:
 with col2:
     range_width_pct = st.slider(
         "Largeur de range (±%)", min_value=1, max_value=80, value=15,
-        help="Amplitude de ta range autour du prix d'entrée. Un range étroit concentre les frais mais sort plus vite du range ; un range large reste plus longtemps actif mais dilue le rendement."
+        help="Amplitude de ta range autour du prix d'entrée. Un range étroit concentre les frais mais sort plus vite de la range ; un range large reste plus longtemps actif mais dilue le rendement."
     )
 with col3:
     fee_apr = st.number_input(
@@ -1035,11 +1035,11 @@ else:
 html(f"""
 <div class="teach-card">
   <div class="teach-eyebrow">Vue pédagogique · Mécanique de la pool</div>
-  <div class="teach-title">Ce qui se passe quand le prix sort du range</div>
+  <div class="teach-title">Ce qui se passe quand le prix sort de la range</div>
   <div class="teach-track">
-    <div class="teach-zone teach-zone-below">En dessous → full {token_a_symbol}</div>
+    <div class="teach-zone teach-zone-below">En dessous → tout {token_a_symbol}</div>
     <div class="teach-zone teach-zone-range">RANGE</div>
-    <div class="teach-zone teach-zone-above">Au-dessus → full {token_b_symbol}</div>
+    <div class="teach-zone teach-zone-above">Au-dessus → tout {token_b_symbol}</div>
     <div class="teach-entry-marker" style="left:{entry_pct:.2f}%;">
       <div class="teach-entry-label">entrée</div>
     </div>
@@ -1077,7 +1077,7 @@ price_a_range = np.linspace(prix_a_now * 0.3, prix_a_now * 2.5, 200)
 # 1. Rester dans le LP
 stay_lp = [lp_value_usd(p, prix_b_now, L, p_lower, p_upper) for p in price_a_range]
 
-# 2. Retirer et détenir Token A spot (full converti en Token A au prix actuel)
+# 2. Retirer et détenir Token A spot (tout converti en Token A au prix actuel)
 qty_a_hodl_now = lp_value_now / prix_a_now
 hold_a = [qty_a_hodl_now * p for p in price_a_range]
 
@@ -1142,6 +1142,26 @@ target_values = {
 
 tile_grid([tile(name, f"${val:,.0f}") for name, val in target_values.items()])
 
+_vals_list = list(target_values.values())
+_same_price = abs(prix_a_target - prix_a_now) < 1e-9 and abs(prix_b_target - prix_b_now) < 1e-9
+if max(_vals_list) - min(_vals_list) < 0.01:
+    if _same_price:
+        st.info(
+            "Les 4 valeurs sont identiques car le prix cible saisi est égal au prix actuel : aucun changement "
+            "n'est simulé. Modifie le prix cible pour voir les stratégies diverger."
+        )
+    else:
+        st.info(
+            "Les 4 valeurs sont identiques ici pour une autre raison que des prix égaux — vérifie tes montants "
+            "(dépôt, quantités) si ce n'est pas le résultat attendu."
+        )
+elif abs(target_values["Rester dans le LP"] - target_values[f"Détenir {token_a_symbol} spot"]) < 0.01:
+    st.caption(
+        f"« Rester dans le LP » et « Détenir {token_a_symbol} spot » affichent la même valeur : le prix (actuel "
+        f"et cible) est en dehors de ta range, la position est donc figée à 100% {token_a_symbol} — il n'y a plus "
+        f"rien à rééquilibrer, les deux stratégies deviennent mathématiquement identiques."
+    )
+
 # ----------------------------------------------------------------------
 # Collatéral & levier — alternative au rebalancing
 # ----------------------------------------------------------------------
@@ -1162,11 +1182,11 @@ html("""
 
 # ---------- Collatéral : ligne de base (Token A) + lignes ajoutées ----------
 st.markdown("**Actifs en collatéral**")
-head = st.columns([1.3, 1, 1, 1, 0.8, 0.8, 0.9, 0.4])
-for c, h in zip(head, ["Actif", "Quantité", "Prix actuel ($)", "Prix cible ($)", "LTV %", "Liq. %", "Rend. natif %", ""]):
+head = st.columns([1.3, 1, 1, 1, 0.8, 0.9, 0.4])
+for c, h in zip(head, ["Actif", "Quantité", "Prix actuel ($)", "Prix cible ($)", "Liq. %", "Rend. natif %", ""]):
     c.markdown(f"<div class='list-head'>{h}</div>", unsafe_allow_html=True)
 
-base_row = st.columns([1.3, 1, 1, 1, 0.8, 0.8, 0.9, 0.4])
+base_row = st.columns([1.3, 1, 1, 1, 0.8, 0.9, 0.4])
 base_row[0].markdown(
     f"<div style='padding-top:8px;'><b>{token_a_symbol}</b><br>"
     f"<span style='font-size:10px;color:var(--text-mid);'>issu de ta position</span></div>",
@@ -1175,27 +1195,23 @@ base_row[0].markdown(
 base_row[1].markdown(f"<div style='padding-top:8px;'>{qty_a_hodl_now:,.4f}</div>", unsafe_allow_html=True)
 base_row[2].markdown(f"<div style='padding-top:8px;'>${prix_a_now:,.4f}</div>", unsafe_allow_html=True)
 base_row[3].markdown(f"<div style='padding-top:8px;'>${prix_a_target:,.4f}</div>", unsafe_allow_html=True)
-base_ltv = base_row[4].number_input(
-    "LTV base", min_value=1, max_value=90, value=50, step=1, label_visibility="collapsed", key="base_ltv",
-    help=f"Loan-to-Value appliqué à ton {token_a_symbol} en collatéral : quel % de sa valeur tu peux emprunter."
-)
-base_liq = base_row[5].number_input(
+base_liq = base_row[4].number_input(
     "Liq base", min_value=1, max_value=95, value=80, step=1, label_visibility="collapsed", key="base_liq",
     help=f"Seuil de liquidation défini par le protocole de lending pour {token_a_symbol}."
 )
-base_native = base_row[6].number_input(
+base_native = base_row[5].number_input(
     "Rend base", min_value=0.0, value=0.0, step=0.5, label_visibility="collapsed", key="base_native",
     help=f"Rendement natif (ex. staking) que {token_a_symbol} génère simplement en le détenant en collatéral, en plus de sa variation de prix."
 )
 
 collateral_rows = [{
     "symbol": token_a_symbol, "qty": qty_a_hodl_now, "price_now": prix_a_now,
-    "price_target": prix_a_target, "ltv": base_ltv, "liq": base_liq, "native_apy": base_native,
+    "price_target": prix_a_target, "liq": base_liq, "native_apy": base_native,
 }]
 
 for item in list(st.session_state.extra_collaterals):
     uid = item["uid"]
-    row = st.columns([1.3, 1, 1, 1, 0.8, 0.8, 0.9, 0.4])
+    row = st.columns([1.3, 1, 1, 1, 0.8, 0.9, 0.4])
     symbol = row[0].text_input(
         "sym", value=item.get("symbol", ""), label_visibility="collapsed", key=f"col_sym_{uid}",
         placeholder="ex. stETH", help="Symbole de cet actif additionnel mis en collatéral."
@@ -1212,19 +1228,15 @@ for item in list(st.session_state.extra_collaterals):
         "pt", value=item.get("price_target", 1.0), min_value=0.000001, step=0.01, label_visibility="collapsed",
         key=f"col_pt_{uid}", help="Prix cible testé pour cet actif dans le scénario futur."
     )
-    ltv_i = row[4].number_input(
-        "ltv", value=item.get("ltv", 50), min_value=1, max_value=90, step=1, label_visibility="collapsed",
-        key=f"col_ltv_{uid}", help="LTV applicable à cet actif sur le protocole de lending."
-    )
-    liq_i = row[5].number_input(
+    liq_i = row[4].number_input(
         "liq", value=item.get("liq", 80), min_value=1, max_value=95, step=1, label_visibility="collapsed",
         key=f"col_liq_{uid}", help="Seuil de liquidation de cet actif."
     )
-    native_i = row[6].number_input(
+    native_i = row[5].number_input(
         "nat", value=item.get("native_apy", 0.0), min_value=0.0, step=0.5, label_visibility="collapsed",
         key=f"col_nat_{uid}", help="Rendement natif (staking) de cet actif, en plus de sa variation de prix."
     )
-    with row[7]:
+    with row[6]:
         st.markdown('<div class="row-btn">', unsafe_allow_html=True)
         if st.button("🗑", key=f"col_del_{uid}"):
             st.session_state.extra_collaterals = [c for c in st.session_state.extra_collaterals if c["uid"] != uid]
@@ -1232,7 +1244,7 @@ for item in list(st.session_state.extra_collaterals):
         st.markdown('</div>', unsafe_allow_html=True)
     collateral_rows.append({
         "symbol": symbol or "ACTIF", "qty": qty, "price_now": price_now_i,
-        "price_target": price_target_i, "ltv": ltv_i, "liq": liq_i, "native_apy": native_i,
+        "price_target": price_target_i, "liq": liq_i, "native_apy": native_i,
     })
 
 st.markdown('<div class="add-btn">', unsafe_allow_html=True)
@@ -1242,7 +1254,14 @@ if st.button("➕ Ajouter un actif en collatéral", key="add_collateral"):
     st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ---------- Emprunt : lignes ajoutées librement ----------
+st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+global_ltv = st.slider(
+    "LTV global (%)", min_value=1, max_value=90, value=50,
+    help="Loan-to-Value appliqué à la valeur TOTALE de tous tes actifs en collatéral cumulés — un seul réglage "
+         "quel que soit le nombre d'actifs ajoutés ci-dessus."
+)
+
+
 st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
 st.markdown("**Actifs empruntés**")
 
@@ -1306,7 +1325,7 @@ t = horizon_months / 12
 
 total_collateral_now = sum(r["qty"] * r["price_now"] for r in collateral_rows)
 total_collateral_target = sum(r["qty"] * r["price_target"] for r in collateral_rows)
-total_borrow_capacity = sum(r["qty"] * r["price_now"] * r["ltv"] / 100 for r in collateral_rows)
+total_borrow_capacity = total_collateral_now * global_ltv / 100
 total_liq_weighted = sum(r["qty"] * r["price_now"] * r["liq"] / 100 for r in collateral_rows)
 collateral_native_yield = sum(r["qty"] * r["price_now"] * (r["native_apy"] / 100 * t) for r in collateral_rows)
 
@@ -1324,7 +1343,7 @@ edge_vs_hold = deployed_value - total_debt_future
 st.divider()
 
 tiles = [
-    tile("Capacité d'emprunt totale", f"${total_borrow_capacity:,.0f}", "Basée sur le LTV de chaque actif en collatéral"),
+    tile("Capacité d'emprunt totale", f"${total_borrow_capacity:,.0f}", f"LTV global de {global_ltv}% appliqué à ${total_collateral_now:,.0f} de collatéral"),
     tile("Dette actuelle", f"${total_debt_now:,.0f}"),
     tile("Dette au terme (+ intérêts)", f"${total_debt_future:,.0f}", f"Horizon : {horizon_months} mois"),
 ]
