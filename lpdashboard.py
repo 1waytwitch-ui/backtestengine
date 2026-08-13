@@ -362,6 +362,7 @@ ul[data-baseweb="menu-list"],
     border: 1px solid var(--border) !important;
     border-radius: 10px !important;
     box-shadow: 0 10px 30px rgba(0,0,0,0.55) !important;
+    z-index: 999999 !important;
 }
 
 div[data-baseweb="popover"] *,
@@ -481,60 +482,6 @@ h3 { font-size: 14px !important; font-weight: 600 !important; letter-spacing: 0.
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-
-/* ==========================================================
-   TOOLTIPS (icône "?" + info-bulle au survol des champs)
-   Streamlit rend ça via BaseWeb — on force la visibilité et
-   le style pour matcher le design (fond sombre, bord teal).
-   ========================================================== */
-
-[data-testid="stTooltipIcon"],
-[data-testid="stTooltipHoverTarget"] svg {
-    color: var(--accent) !important;
-    fill: var(--accent) !important;
-    opacity: 0.9 !important;
-}
-
-[data-testid="stTooltipIcon"]:hover,
-[data-testid="stTooltipHoverTarget"]:hover svg {
-    opacity: 1 !important;
-}
-
-/* Le popover Streamlit s'affiche dans un portail à la racine du DOM (pas
-   forcément dans .stApp), donc on cible large et on force le fond à TOUS
-   les niveaux d'imbrication (popover > wrapper > contenu markdown). */
-div[data-baseweb="popover"],
-div[data-baseweb="popover"] div,
-div[data-baseweb="tooltip"],
-div[data-baseweb="tooltip"] div,
-[role="tooltip"],
-[role="tooltip"] div,
-[data-testid="stTooltipContent"],
-[data-testid="stTooltipContent"] * {
-    background-color: #0d1720 !important;
-    background: #0d1720 !important;
-    color: #eef4f8 !important;
-}
-
-div[data-baseweb="popover"],
-div[data-baseweb="tooltip"],
-[role="tooltip"] {
-    border: 1px solid var(--border) !important;
-    border-radius: 10px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.55) !important;
-    padding: 12px 16px !important;
-    max-width: 280px !important;
-    z-index: 999999 !important;
-}
-
-div[data-baseweb="popover"] *,
-div[data-baseweb="tooltip"] *,
-[role="tooltip"] * {
-    color: #eef4f8 !important;
-    font-family: var(--font-ui) !important;
-    font-size: 12.5px !important;
-    line-height: 1.6 !important;
-}
 
 </style>
 """)
@@ -936,7 +883,7 @@ sec("◫", "COMPARAISON DES STRATÉGIES",
 
 price_a_range = np.linspace(prix_a_now * 0.3, prix_a_now * 2.5, 200)
 
-# 1. Rester dans la LP
+# 1. Rester dans le LP
 stay_lp = [lp_value_usd(p, prix_b_now, L, p_lower, p_upper) for p in price_a_range]
 
 # 2. Retirer et détenir Token A spot (tout converti en Token A au prix actuel)
@@ -957,7 +904,7 @@ qty_b_hodl_now = lp_value_now / prix_b_now
 exit_b = [qty_b_hodl_now * prix_b_now for _ in price_a_range]  # B supposé constant sur ce graphique
 
 strategies = {
-    "Rester dans la LP": stay_lp,
+    "Rester dans le LP": stay_lp,
     f"Détenir {token_a_symbol} spot": hold_a,
     "Moitié → BTC": half_btc,
     f"Sortir en {token_b_symbol}": exit_b,
@@ -996,7 +943,7 @@ x_t, y_t = lp_amounts(P_target, L, p_lower, p_upper)
 btc_price_target = btc_price * (1 + btc_rel_strength * (prix_a_target / prix_a_now - 1))
 
 target_values = {
-    "Rester dans la LP": x_t * prix_a_target + y_t * prix_b_target,
+    "Rester dans le LP": x_t * prix_a_target + y_t * prix_b_target,
     f"Détenir {token_a_symbol} spot": qty_a_hodl_now * prix_a_target,
     "Moitié → BTC": a_half_amount * prix_a_target + btc_amount * btc_price_target,
     f"Sortir en {token_b_symbol}": qty_b_hodl_now * prix_b_target,
@@ -1013,7 +960,7 @@ sec("⚡", "COLLATÉRAL & LEVIER — ALTERNATIVE AU REBALANCING")
 html("""
 <div class="info-box">
   <b>Pourquoi cette option plutôt qu'un rebalancing ?</b> Rebalancer une position hors range implique de la retirer,
-  de swapper une partie des actifs pour revenir à un nouveau ratio, puis de rouvrir un nouveau range — ce qui
+  de swapper une partie des actifs pour revenir à un ratio 50/50, puis de rouvrir un nouveau range — ce qui
   <b>réalise définitivement la perte</b> et paie des frais de swap supplémentaires. L'alternative consiste à sortir
   tout ou partie de la position <b>sans vendre</b> : tu déposes le ou les actifs obtenus en collatéral sur un
   protocole de lending (ex. Aave), tu empruntes contre ce collatéral, puis tu redéploies le capital emprunté pour
@@ -1215,3 +1162,40 @@ if total_debt_now == 0:
     st.caption("Ajoute au moins un actif emprunté pour calculer le health factor et la marge avant liquidation.")
 elif health_factor < 1.1:
     st.warning("Health factor proche ou sous 1.0 — risque de liquidation élevé avec ces paramètres.")
+
+# ---------- Prix de liquidation en $ par actif de collatéral ----------
+if total_debt_now > 0:
+    st.subheader("Prix de liquidation par actif")
+    st.caption(
+        "Pour chaque actif, le prix (en $) auquel LUI SEUL devrait tomber pour déclencher la liquidation, "
+        "en supposant que le prix des AUTRES actifs en collatéral reste constant."
+    )
+
+    liq_price_tiles = []
+    for r in collateral_rows:
+        if r["qty"] <= 0 or r["liq"] <= 0:
+            continue
+        other_liq_value = total_liq_weighted - r["qty"] * r["price_now"] * r["liq"] / 100
+        denom = r["qty"] * r["liq"] / 100
+        liq_price_i = (total_debt_now - other_liq_value) / denom if denom > 0 else float("nan")
+
+        if liq_price_i <= 0:
+            liq_price_tiles.append(tile(
+                f"{r['symbol']} — prix de liquidation",
+                "Non atteignable",
+                f"Le reste du collatéral couvre la dette même si {r['symbol']} tombe à $0",
+                "m-value-green",
+            ))
+        else:
+            buffer_pct = (r["price_now"] - liq_price_i) / r["price_now"] * 100 if r["price_now"] else float("nan")
+            liq_price_tiles.append(tile(
+                f"{r['symbol']} — prix de liquidation",
+                f"${liq_price_i:,.4f}",
+                f"Prix actuel : ${r['price_now']:,.4f} · marge : {buffer_pct:,.1f}%",
+                "m-value-red" if buffer_pct < 15 else "m-value-amber",
+            ))
+
+    if liq_price_tiles:
+        tile_grid(liq_price_tiles)
+    else:
+        st.caption("Aucun actif en collatéral avec une quantité et un seuil de liquidation valides.")
