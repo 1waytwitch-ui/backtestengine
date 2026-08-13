@@ -807,11 +807,11 @@ def lp_amounts(P, L, p_lower, p_upper):
     sqrt_pb = math.sqrt(p_upper)
 
     if P <= p_lower:
-        x = L * (1 / sqrt_pa - 1 / sqrt_pb)   # full en Token A
+        x = L * (1 / sqrt_pa - 1 / sqrt_pb)   # tout en Token A
         y = 0.0
     elif P >= p_upper:
         x = 0.0
-        y = L * (sqrt_pb - sqrt_pa)            # full en Token B
+        y = L * (sqrt_pb - sqrt_pa)            # tout en Token B
     else:
         x = L * (1 / sqrt_p - 1 / sqrt_pb)
         y = L * (sqrt_p - sqrt_pa)
@@ -899,7 +899,7 @@ with col1:
 with col2:
     range_width_pct = st.slider(
         "Largeur de range (±%)", min_value=1, max_value=80, value=15,
-        help="Amplitude de ta range autour du prix d'entrée. Un range étroit concentre les frais mais sort plus vite du range ; un range large reste plus longtemps actif mais dilue le rendement."
+        help="Amplitude de ta range autour du prix d'entrée. Un range étroit concentre les frais mais sort plus vite de la range ; un range large reste plus longtemps actif mais dilue le rendement."
     )
 with col3:
     fee_apr = st.number_input(
@@ -973,12 +973,13 @@ tile_grid([
         "Valable une fois revenu dans le range — hors range, la position ne génère aucun frais.",
         "m-value-amber",
     ),
+    tile(
+        "Répartition actuelle",
+        f"{x_now:,.4f} {token_a_symbol} · {y_now:,.4f} {token_b_symbol}",
+        f"Soit ${x_now*prix_a_now:,.0f} en {token_a_symbol} et ${y_now*prix_b_now:,.0f} en {token_b_symbol}",
+        "m-value-blue",
+    ),
 ])
-
-st.caption(
-    f"Répartition actuelle : {x_now:,.4f} {token_a_symbol} (${x_now*prix_a_now:,.0f}) · "
-    f"{y_now:,.4f} {token_b_symbol} (${y_now*prix_b_now:,.0f})"
-)
 
 # ----------------------------------------------------------------------
 # Vue pédagogique — mécanique de la pool (position du prix dans la range,
@@ -1034,11 +1035,11 @@ else:
 html(f"""
 <div class="teach-card">
   <div class="teach-eyebrow">Vue pédagogique · Mécanique de la pool</div>
-  <div class="teach-title">Ce qui se passe quand le prix sort du range</div>
+  <div class="teach-title">Ce qui se passe quand le prix sort de la range</div>
   <div class="teach-track">
-    <div class="teach-zone teach-zone-below">En dessous → full {token_a_symbol}</div>
+    <div class="teach-zone teach-zone-below">En dessous → tout {token_a_symbol}</div>
     <div class="teach-zone teach-zone-range">RANGE</div>
-    <div class="teach-zone teach-zone-above">Au-dessus → full {token_b_symbol}</div>
+    <div class="teach-zone teach-zone-above">Au-dessus → tout {token_b_symbol}</div>
     <div class="teach-entry-marker" style="left:{entry_pct:.2f}%;">
       <div class="teach-entry-label">entrée</div>
     </div>
@@ -1076,7 +1077,7 @@ price_a_range = np.linspace(prix_a_now * 0.3, prix_a_now * 2.5, 200)
 # 1. Rester dans le LP
 stay_lp = [lp_value_usd(p, prix_b_now, L, p_lower, p_upper) for p in price_a_range]
 
-# 2. Retirer et détenir Token A spot (full converti en Token A au prix actuel)
+# 2. Retirer et détenir Token A spot (tout converti en Token A au prix actuel)
 qty_a_hodl_now = lp_value_now / prix_a_now
 hold_a = [qty_a_hodl_now * p for p in price_a_range]
 
@@ -1127,7 +1128,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # Valeurs exactes au scénario cible (utilise les DEUX prix cibles saisis, A et B)
-st.subheader(f"Scénario exact — {token_a_symbol} → ${prix_a_target:,.4f} et {token_b_symbol} → ${prix_b_target:,.4f}")
+st.subheader(f"Scénario exact — {token_a_symbol} → \\${prix_a_target:,.4f} et {token_b_symbol} → \\${prix_b_target:,.4f}")
 
 x_t, y_t = lp_amounts(P_target, L, p_lower, p_upper)
 btc_price_target = btc_price * (1 + btc_rel_strength * (prix_a_target / prix_a_now - 1))
