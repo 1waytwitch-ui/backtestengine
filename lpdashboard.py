@@ -478,6 +478,114 @@ h3 { font-size: 14px !important; font-weight: 600 !important; letter-spacing: 0.
 /* ========== DIVIDER ========== */
 .v2-divider { height: 1px; background: linear-gradient(90deg, var(--border), transparent); margin: 30px 0; }
 
+/* ========== VUE PÉDAGOGIQUE — MÉCANIQUE DE LA POOL ========== */
+.teach-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 20px 24px 22px 24px;
+    margin: 10px 0 26px 0;
+}
+.teach-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent-3);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.teach-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-hi);
+    margin-bottom: 22px;
+}
+.teach-track {
+    position: relative;
+    display: flex;
+    height: 52px;
+    border-radius: 10px;
+    overflow: visible;
+    border: 1px solid var(--border-soft);
+    margin-bottom: 30px;
+}
+.teach-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--text-mid);
+    text-transform: uppercase;
+    text-align: center;
+    padding: 0 6px;
+}
+.teach-zone-below { width: 25%; background: rgba(255,255,255,0.02); border-radius: 9px 0 0 9px; }
+.teach-zone-range { width: 50%; background: var(--accent-dim); color: var(--accent-3); font-weight: 700; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+.teach-zone-above { width: 25%; background: rgba(255,255,255,0.02); border-radius: 0 9px 9px 0; }
+.teach-marker {
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-3);
+    border: 3px solid #0b0f19;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 4px rgba(245,158,11,0.22);
+    z-index: 5;
+}
+.teach-price-label {
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-hi);
+    font-weight: 700;
+    white-space: nowrap;
+}
+.teach-entry-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-left: 1px dashed var(--text-mid);
+    z-index: 3;
+}
+.teach-entry-label {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    white-space: nowrap;
+}
+.teach-badges { display: flex; gap: 8px; margin-bottom: 18px; }
+.teach-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+}
+.teach-badge-green { background: rgba(34,197,94,0.12); color: var(--accent-green); border: 1px solid rgba(34,197,94,0.3); }
+.teach-badge-red { background: rgba(239,68,68,0.12); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.3); }
+.teach-ratio { display: flex; height: 34px; border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+.teach-ratio-a { background: var(--accent-3); display: flex; align-items: center; justify-content: center; color: #241a04; font-weight: 700; font-size: 12px; white-space: nowrap; }
+.teach-ratio-b { background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; color: var(--text-hi); font-weight: 700; font-size: 12px; white-space: nowrap; }
+.teach-holding { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-mid); margin-bottom: 12px; }
+.teach-holding b { color: var(--text-hi); }
+.teach-note { font-size: 12.5px; color: var(--text-mid); line-height: 1.6; }
+
 /* ========== SCROLLBAR ========== */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -871,6 +979,88 @@ st.caption(
     f"Répartition actuelle : {x_now:,.4f} {token_a_symbol} (${x_now*prix_a_now:,.0f}) · "
     f"{y_now:,.4f} {token_b_symbol} (${y_now*prix_b_now:,.0f})"
 )
+
+# ----------------------------------------------------------------------
+# Vue pédagogique — mécanique de la pool (position du prix dans la range,
+# ratio Token A / Token B, statut de la position)
+# ----------------------------------------------------------------------
+
+def _clamp(v, lo, hi):
+    return max(lo, min(hi, v))
+
+_lo_bound = p_lower * 0.6
+_hi_bound = p_upper * 1.6 if p_upper * 1.6 > p_upper else p_upper * 1.2
+
+def _price_to_pct(P):
+    if P <= p_lower:
+        span = max(p_lower - _lo_bound, 1e-9)
+        return 25 * _clamp((P - _lo_bound) / span, 0, 1)
+    elif P >= p_upper:
+        span = max(_hi_bound - p_upper, 1e-9)
+        return 75 + 25 * _clamp((P - p_upper) / span, 0, 1)
+    else:
+        span = max(p_upper - p_lower, 1e-9)
+        return 25 + 50 * (P - p_lower) / span
+
+marker_pct = _price_to_pct(P_now)
+entry_pct = _price_to_pct(P_entry)
+in_range = not out_of_range
+
+badge_range_label, badge_range_cls = ("DANS LA RANGE", "teach-badge-green") if in_range else ("HORS RANGE", "teach-badge-red")
+badge_fees_label, badge_fees_cls = ("GÉNÈRE DES FRAIS", "teach-badge-green") if in_range else ("PAS DE FRAIS", "teach-badge-red")
+
+value_a_now_teach = x_now * prix_a_now
+value_b_now_teach = y_now * prix_b_now
+total_now_teach = (value_a_now_teach + value_b_now_teach) or 1.0
+pct_a_teach = value_a_now_teach / total_now_teach * 100
+pct_b_teach = 100 - pct_a_teach
+
+if in_range:
+    teach_note = (
+        f"Le prix est dans ta range : la position est active, génère des frais et se rééquilibre "
+        f"automatiquement — elle vend un peu de {token_a_symbol} quand le prix monte et en rachète quand il baisse."
+    )
+elif P_now <= p_lower:
+    teach_note = (
+        f"Le prix est sous ta range : la position est passée intégralement en {token_a_symbol}, elle ne génère "
+        f"plus de frais et attend un retour du prix pour se réactiver."
+    )
+else:
+    teach_note = (
+        f"Le prix est au-dessus de ta range : la position est passée intégralement en {token_b_symbol}, elle ne "
+        f"génère plus de frais tant que le prix ne redescend pas dans la range."
+    )
+
+html(f"""
+<div class="teach-card">
+  <div class="teach-eyebrow">Vue pédagogique · Mécanique de la pool</div>
+  <div class="teach-title">Ce qui se passe quand le prix sort de la range</div>
+  <div class="teach-track">
+    <div class="teach-zone teach-zone-below">En dessous → tout {token_a_symbol}</div>
+    <div class="teach-zone teach-zone-range">RANGE</div>
+    <div class="teach-zone teach-zone-above">Au-dessus → tout {token_b_symbol}</div>
+    <div class="teach-entry-marker" style="left:{entry_pct:.2f}%;">
+      <div class="teach-entry-label">entrée</div>
+    </div>
+    <div class="teach-marker" style="left:{marker_pct:.2f}%;">
+      <div class="teach-price-label">${prix_a_now:,.2f}</div>
+    </div>
+  </div>
+  <div class="teach-badges">
+    <span class="teach-badge {badge_range_cls}">{badge_range_label}</span>
+    <span class="teach-badge {badge_fees_cls}">{badge_fees_label}</span>
+  </div>
+  <div class="teach-ratio">
+    <div class="teach-ratio-a" style="width:{pct_a_teach:.1f}%;">{pct_a_teach:.0f}% {token_a_symbol}</div>
+    <div class="teach-ratio-b" style="width:{pct_b_teach:.1f}%;">{pct_b_teach:.0f}% {token_b_symbol}</div>
+  </div>
+  <div class="teach-holding">
+    <span>Détient <b>{x_now:,.4f} {token_a_symbol}</b></span>
+    <span><b>{y_now:,.0f} {token_b_symbol}</b></span>
+  </div>
+  <div class="teach-note">{teach_note}</div>
+</div>
+""")
 
 # ----------------------------------------------------------------------
 # Comparaison des 4 stratégies
