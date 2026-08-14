@@ -1023,8 +1023,8 @@ if in_range:
     )
 elif P_now <= p_lower:
     teach_note = (
-        f"Le prix est sous ta range : la position est passée intégralement en {token_a_symbol}, elle ne génère "
-        f"plus de frais et attend un retour du prix pour se réactiver."
+        f"Le prix est sorti du range : la position est passée intégralement en {token_a_symbol}, elle ne génère "
+        f"plus de frais et attend un retour du prix dans la fourchette pour se réactiver."
     )
 else:
     teach_note = (
@@ -1037,9 +1037,9 @@ html(f"""
   <div class="teach-eyebrow">Vue pédagogique · Mécanique de la pool</div>
   <div class="teach-title">Ce qui se passe quand le prix sort du range</div>
   <div class="teach-track">
-    <div class="teach-zone teach-zone-below">En dessous → full {token_a_symbol}</div>
+    <div class="teach-zone teach-zone-below">En bas de range → full {token_a_symbol}</div>
     <div class="teach-zone teach-zone-range">RANGE</div>
-    <div class="teach-zone teach-zone-above">Au-dessus → full {token_b_symbol}</div>
+    <div class="teach-zone teach-zone-above">En haut de range → full {token_b_symbol}</div>
     <div class="teach-entry-marker" style="left:{entry_pct:.2f}%;">
       <div class="teach-entry-label">entrée</div>
     </div>
