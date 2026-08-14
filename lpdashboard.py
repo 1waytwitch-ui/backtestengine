@@ -899,11 +899,11 @@ with col1:
 with col2:
     range_width_pct = st.slider(
         "Largeur de range (±%)", min_value=1, max_value=80, value=15,
-        help="Amplitude de ta range autour du prix d'entrée. Un range étroit concentre les frais mais sort plus vite du range ; un range large reste plus longtemps actif mais dilue le rendement."
+        help="Amplitude de ton range autour du prix d'entrée. Un range étroit concentre les frais mais sort plus vite du range ; un range large reste plus longtemps actif mais dilue le rendement."
     )
 with col3:
     fee_apr = st.number_input(
-        "APR de frais quand dans le range (%)", min_value=0.0, value=20.0, step=1.0,
+        "APR moyen des fees (%)", min_value=0.0, value=20.0, step=1.0,
         help="Rendement annualisé en frais de swap généré par la position UNIQUEMENT lorsqu'elle est dans le range. Utilisé pour estimer le temps de récupération de l'IL."
     )
 
