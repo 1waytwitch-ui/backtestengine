@@ -761,7 +761,7 @@ checklist_items = [
     "J'ai défini un range cohérent avec la volatilité actuelle et la tendance du marché",
     "Je sais qu'un range trop étroit augmente les fees mais réduit le temps dans le range",
     "Je sais qu'un range trop large réduit le rendement",
-    "Je comprends que hors range, ma position ne génère plus aucun frais",
+    "Je comprends que hors range, ma position ne génère plus aucun fees",
     "J'ai évalué la perte impermanente déjà verrouillée sur ma position",
     "Je comprends les 4 façons de rejouer la suite (LP, spot, BTC, sortie)",
     "Si j'utilise l'option collatéral & levier, je comprends le risque de liquidation",
@@ -819,7 +819,7 @@ def lp_amounts(P, L, p_lower, p_upper):
 
 
 def compute_liquidity(deposit_in_b, P0, p_lower, p_upper):
-    """Déduit L à partir du montant déposé à l'entrée, exprimé en unités de Token B (P0 doit être dans la range)."""
+    """Déduit L à partir du montant déposé à l'entrée, exprimé en unités de Token B (P0 doit être dans le range)."""
     sqrt_p0 = math.sqrt(P0)
     sqrt_pa = math.sqrt(p_lower)
     sqrt_pb = math.sqrt(p_upper)
@@ -856,7 +856,7 @@ with col_sym_b:
 st.markdown(
     f"Ta position de liquidité concentrée **{token_a_symbol}/{token_b_symbol}** est sortie de sa range. "
     "Cet outil montre la perte impermanente déjà verrouillée, le temps "
-    "nécessaire pour la récupérer via les frais, et ce qui arrive à ton "
+    "nécessaire pour la récupérer via les fees, et ce qui arrive à ton "
     "capital selon quatre manières de jouer la suite."
 )
 
@@ -899,7 +899,7 @@ with col1:
 with col2:
     range_width_pct = st.slider(
         "Largeur de range (±%)", min_value=1, max_value=80, value=15,
-        help="Amplitude de ton range autour du prix d'entrée. Un range étroit concentre les frais mais sort plus vite du range ; un range large reste plus longtemps actif mais dilue le rendement."
+        help="Amplitude de ton range autour du prix d'entrée. Un range étroit concentre les fees mais sort plus vite du range ; un range large reste plus longtemps actif mais dilue le rendement."
     )
 with col3:
     fee_apr = st.number_input(
@@ -968,9 +968,9 @@ tile_grid([
         "m-value-red" if il_dollar < 0 else "m-value-green",
     ),
     tile(
-        "Récupération par les frais",
+        "Récupération par les fees",
         f"{recoup_days:,.0f} jours" if math.isfinite(recoup_days) else "—",
-        "Valable une fois revenu dans le range — hors range, la position ne génère aucun frais.",
+        "Valable une fois revenu dans le range — hors range, la position ne génère aucun fees.",
         "m-value-amber",
     ),
     tile(
@@ -982,7 +982,7 @@ tile_grid([
 ])
 
 # ----------------------------------------------------------------------
-# Vue pédagogique — mécanique de la pool (position du prix dans la range,
+# Vue pédagogique — mécanique de la pool (position du prix dans le range,
 # ratio Token A / Token B, statut de la position)
 # ----------------------------------------------------------------------
 
@@ -1007,8 +1007,8 @@ marker_pct = _price_to_pct(P_now)
 entry_pct = _price_to_pct(P_entry)
 in_range = not out_of_range
 
-badge_range_label, badge_range_cls = ("DANS LA RANGE", "teach-badge-green") if in_range else ("HORS RANGE", "teach-badge-red")
-badge_fees_label, badge_fees_cls = ("GÉNÈRE DES FRAIS", "teach-badge-green") if in_range else ("PAS DE FRAIS", "teach-badge-red")
+badge_range_label, badge_range_cls = ("DANS LE RANGE", "teach-badge-green") if in_range else ("HORS RANGE", "teach-badge-red")
+badge_fees_label, badge_fees_cls = ("GÉNÈRE DES FEES", "teach-badge-green") if in_range else ("PAS DE FEES", "teach-badge-red")
 
 value_a_now_teach = x_now * prix_a_now
 value_b_now_teach = y_now * prix_b_now
@@ -1018,18 +1018,18 @@ pct_b_teach = 100 - pct_a_teach
 
 if in_range:
     teach_note = (
-        f"Le prix est dans ta range : la position est active, génère des frais et se rééquilibre "
+        f"Le prix est dans ta range : la position est active, génère des FEES et se rééquilibre "
         f"automatiquement — elle vend un peu de {token_a_symbol} quand le prix monte et en rachète quand il baisse."
     )
 elif P_now <= p_lower:
     teach_note = (
         f"Le prix est sorti du range : la position est passée intégralement en {token_a_symbol}, elle ne génère "
-        f"plus de frais et attend un retour du prix dans la fourchette pour se réactiver."
+        f"plus de fees et attend un retour du prix dans la fourchette pour se réactiver."
     )
 else:
     teach_note = (
         f"Le prix est au-dessus de ta range : la position est passée intégralement en {token_b_symbol}, elle ne "
-        f"génère plus de frais tant que le prix ne redescend pas dans la range."
+        f"génère plus de fees tant que le prix ne redescend pas dans le range."
     )
 
 html(f"""
